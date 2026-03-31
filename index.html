@@ -1,0 +1,870 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EDDIE — Interactive Experience</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;500;700;800&display=swap');
+  *{margin:0;padding:0;box-sizing:border-box}
+  :root{--bg:#191919;--fg:#e8e8ec;--dim:rgba(255,255,255,0.08);--mid:rgba(255,255,255,0.3);--accent:#c0ff00}
+  html,body{background:var(--bg);color:var(--fg);font-family:'Space Mono',monospace;overflow:hidden;height:100dvh;width:100vw;-webkit-font-smoothing:antialiased}
+
+  .grain{position:fixed;inset:-50%;width:200%;height:200%;z-index:9999;pointer-events:none;opacity:0.03;
+    background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    animation:gs .4s steps(1) infinite}
+  @keyframes gs{0%{transform:translate(0,0)}25%{transform:translate(-1%,2%)}50%{transform:translate(2%,-1%)}75%{transform:translate(-2%,1%)}}
+
+  /* PAGE 1 */
+  #page-attention{position:fixed;inset:0;z-index:100;display:flex;align-items:center;justify-content:center;background:var(--bg);transition:opacity .6s ease,transform .6s ease}
+  #page-attention.exit{opacity:0;transform:scale(.98);pointer-events:none}
+  .attention-container{max-width:520px;padding:40px}
+  .attention-icon{width:48px;height:48px;border:2px solid var(--accent);border-radius:50%;display:flex;align-items:center;justify-content:center;margin-bottom:32px;animation:ip 3s ease-in-out infinite}
+  .attention-icon svg{width:24px;height:24px;stroke:var(--accent);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+  @keyframes ip{0%,100%{box-shadow:0 0 0 0 rgba(192,255,0,.15)}50%{box-shadow:0 0 0 12px transparent}}
+  .attention-title{font-family:'Syne',sans-serif;font-weight:800;font-size:11px;letter-spacing:.4em;text-transform:uppercase;color:var(--accent);margin-bottom:36px}
+  .attention-items{list-style:none;display:flex;flex-direction:column;gap:20px;margin-bottom:40px}
+  .attention-items li{display:flex;gap:14px;align-items:flex-start;font-size:12px;line-height:1.7;color:var(--mid);letter-spacing:.02em}
+  .attention-items li .marker{flex-shrink:0;width:6px;height:6px;margin-top:7px;border:1px solid rgba(255,255,255,.2);border-radius:1px;transform:rotate(45deg)}
+  .attention-items li strong{color:var(--fg);font-weight:400}
+  .attention-divider{width:100%;height:1px;background:var(--dim);margin-bottom:32px}
+  .attention-privacy{font-size:10px;line-height:1.8;color:rgba(255,255,255,.2);letter-spacing:.05em;margin-bottom:40px;padding-left:20px;border-left:1px solid rgba(255,255,255,.06)}
+  .start-btn{display:inline-flex;align-items:center;gap:12px;padding:14px 32px;background:transparent;border:1px solid rgba(255,255,255,.15);color:var(--fg);font-family:'Space Mono',monospace;font-size:11px;letter-spacing:.3em;text-transform:uppercase;cursor:pointer;transition:all .3s ease;position:relative;overflow:hidden}
+  .start-btn::before{content:'';position:absolute;inset:0;background:var(--accent);transform:scaleX(0);transform-origin:left;transition:transform .4s cubic-bezier(.16,1,.3,1);z-index:-1}
+  .start-btn:hover{border-color:var(--accent);color:var(--bg)}
+  .start-btn:hover::before{transform:scaleX(1)}
+  .start-btn .arrow{transition:transform .3s ease}
+  .start-btn:hover .arrow{transform:translateX(4px)}
+
+  /* PAGE 2 */
+  #page-landing{position:fixed;inset:0;z-index:50;display:none;opacity:0;transition:opacity .8s ease}
+  #page-landing.active{display:block;opacity:1}
+  video#webcam{position:fixed;inset:0;width:100%;height:100%;object-fit:cover;transform:scaleX(-1);z-index:0;opacity:0;transition:opacity 1s ease}
+  video#webcam.visible{opacity:.04}
+  canvas#scene{position:fixed;inset:0;width:100%;height:100%;z-index:2}
+
+  .landing-ui{position:fixed;z-index:10;pointer-events:none}
+  .landing-top-left{top:28px;left:32px;font-size:9px;letter-spacing:.25em;text-transform:uppercase;color:rgba(255,255,255,.15)}
+  .landing-nav{position:fixed;top:28px;left:32px;right:32px;z-index:10;display:flex;justify-content:space-between;opacity:0;animation:fi .8s ease .5s forwards}
+  .nav-item{font-size:20px;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.25);text-decoration:none;transition:color .3s ease;padding:6px 0;pointer-events:auto}
+  .nav-item:hover,.nav-item.pinch-hover{color:rgba(255,255,255,.6)}
+  .nav-item.active{color:rgba(255,255,255,.7)}
+
+  .landing-bottom-left{bottom:28px;left:32px;display:flex;align-items:center;gap:10px;font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:rgba(255,255,255,.2)}
+  .status-dot{width:5px;height:5px;border-radius:50%;background:rgba(255,255,255,.15);transition:all .5s ease}
+  .status-dot.active{background:var(--accent);box-shadow:0 0 8px var(--accent)}
+  .info-hint{font-size:12px;letter-spacing:.15em;text-transform:uppercase;color:rgba(255,255,255,.15);margin-top:8px;animation:hp 3s ease-in-out infinite}
+  @keyframes hp{0%,100%{opacity:.3}50%{opacity:.8}}
+
+  .gesture-guide{position:fixed;bottom:0;left:0;right:0;z-index:10;display:flex;align-items:center;justify-content:center;gap:28px;opacity:0;animation:fi .8s ease .8s forwards;pointer-events:none;padding-bottom:60px}
+  .gesture-item{display:flex;flex-direction:column;align-items:center;gap:6px}
+  .gesture-icon{color:rgba(255,255,255,.25)}
+  .gesture-label{font-size:10px;letter-spacing:.08em;color:rgba(255,255,255,.3)}
+  .gesture-desc{font-size:9px;letter-spacing:.15em;text-transform:uppercase;color:rgba(255,255,255,.15)}
+  .gesture-divider{width:1px;height:36px;background:rgba(255,255,255,.06)}
+
+  .landing-info{position:fixed;z-index:10;text-align:center;pointer-events:none;opacity:0;animation:fi .8s ease 1s forwards;left:0;right:0;display:flex;flex-direction:column;align-items:center}
+  .landing-info .info-text{font-size:15px;letter-spacing:.03em;color:rgba(255,255,255,.35);line-height:1.6}
+  .landing-info .info-sub{font-size:10px;letter-spacing:.03em;color:rgba(255,255,255,.2);margin-top:6px;line-height:1.6}
+  .mode-toggle{margin-top:16px;pointer-events:auto}
+  .gesture-mode-bottom{position:fixed;bottom:60px;left:0;right:0;z-index:10;display:flex;justify-content:center;pointer-events:auto}
+  .mouse-btn{padding:10px 24px;background:transparent;border:1px solid rgba(255,255,255,.12);color:rgba(255,255,255,.35);font-family:'Space Mono',monospace;font-size:13px;letter-spacing:.15em;cursor:pointer;transition:all .3s ease}
+  .mouse-btn:hover,.mouse-btn.pinch-hover{border-color:rgba(255,255,255,.3);color:rgba(255,255,255,.6)}
+  .mouse-btn.pinch-hover{border-color:rgba(192,255,0,.4);color:rgba(192,255,0,.6)}
+
+  .fade-in{animation:fi .8s ease forwards}
+  .fade-in-delay-1{animation:fi .8s ease .15s forwards;opacity:0}
+  .fade-in-delay-2{animation:fi .8s ease .3s forwards;opacity:0}
+  .fade-in-delay-3{animation:fi .8s ease .45s forwards;opacity:0}
+  .fade-in-delay-4{animation:fi .8s ease .6s forwards;opacity:0}
+  .fade-in-delay-5{animation:fi .8s ease .75s forwards;opacity:0}
+  @keyframes fi{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+</style>
+</head>
+<body>
+
+<div id="page-attention">
+  <div class="attention-container">
+    <div class="attention-icon fade-in">
+      <svg viewBox="0 0 24 24"><path d="M12 9v4m0 4h.01M5.07 19h13.86c1.54 0 2.5-1.67 1.73-3L13.73 4.99c-.77-1.33-2.69-1.33-3.46 0L3.34 16c-.77 1.33.19 3 1.73 3z"/></svg>
+    </div>
+    <div class="attention-title fade-in-delay-1">Attention</div>
+    <ul class="attention-items fade-in-delay-2">
+      <li><span class="marker"></span><span>This experience requires <strong>camera access</strong> to track your hand movements in real-time.</span></li>
+      <li><span class="marker"></span><span>This website is controlled entirely by <strong>hand gestures</strong>, not by mouse or keyboard.</span></li>
+      <li><span class="marker"></span><span>For the best experience, ensure your hand is <strong>clearly visible</strong> to the camera with good lighting.</span></li>
+    </ul>
+    <div class="attention-divider fade-in-delay-3"></div>
+    <div class="attention-privacy fade-in-delay-4">
+      Your camera feed is processed locally in your browser.<br>
+      No video data is recorded, stored, or transmitted to any server.<br>
+      No personal data is collected at any point during this experience.
+    </div>
+    <button class="start-btn fade-in-delay-5" id="startBtn">
+      <span>Start Experience</span><span class="arrow">→</span>
+    </button>
+  </div>
+</div>
+
+<div id="page-landing">
+  <video id="webcam" autoplay playsinline></video>
+  <canvas id="scene"></canvas>
+  <nav class="landing-nav">
+    <a href="#" class="nav-item" data-page="about">About</a>
+    <a href="#" class="nav-item" data-page="portfolio">Portfolio</a>
+    <a href="#" class="nav-item" data-page="labs">Labs</a>
+    <a href="#" class="nav-item" data-page="contact">Contact</a>
+  </nav>
+  <div class="landing-ui landing-bottom-left"><div class="status-dot" id="statusDot"></div><span id="statusText">Initializing</span></div>
+  <!-- Gesture Guide (above EDDIE) -->
+  <div class="gesture-guide" id="gestureGuide">
+    <div class="gesture-item">
+      <div class="gesture-icon">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="9" cy="12" r="3"/><circle cx="15" cy="12" r="3"/><path d="M9 12L15 12" opacity="0.3"/>
+        </svg>
+      </div>
+      <div class="gesture-label">핀치 (짧게)</div>
+      <div class="gesture-desc">클릭</div>
+    </div>
+    <div class="gesture-divider"></div>
+    <div class="gesture-item">
+      <div class="gesture-icon">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="8" r="2.5"/><path d="M12 11v6m0 0l-2-2m2 2l2-2"/>
+        </svg>
+      </div>
+      <div class="gesture-label">핀치 + 드래그</div>
+      <div class="gesture-desc">스크롤</div>
+    </div>
+    <div class="gesture-divider"></div>
+    <div class="gesture-item">
+      <div class="gesture-icon">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M5 12h14m0 0l-3-3m3 3l-3 3"/><path d="M12 6v0" opacity="0.3"/>
+        </svg>
+      </div>
+      <div class="gesture-label">손 움직임</div>
+      <div class="gesture-desc">인터랙션</div>
+    </div>
+    <div class="mode-toggle">
+      <button class="mouse-btn" id="mouseModeBtn">마우스 모드</button>
+    </div>
+  </div>
+
+  <!-- Gesture mode button (shown in mouse mode) -->
+  <div class="gesture-mode-bottom" id="gestureModeBtnBottom" style="display:none">
+    <button class="mouse-btn" id="gestureModeBtn">제스처 모드</button>
+  </div>
+
+  <!-- Info stack above EDDIE -->
+  <div class="landing-info" id="landingInfo">
+    <p class="info-text">이 웹사이트는 손을 사용하여 클릭, 드래그하여 작동합니다.</p>
+    <p class="info-hint" id="handHint">Move your hand to sweep the pins</p>
+  </div>
+
+</div>
+
+<div class="grain"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1675469240/hands.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils@0.3.1675466862/camera_utils.js"></script>
+<script>
+(() => {
+  const pageAttention = document.getElementById('page-attention');
+  const startBtn = document.getElementById('startBtn');
+  const pageLanding = document.getElementById('page-landing');
+  const video = document.getElementById('webcam');
+  const canvas = document.getElementById('scene');
+  const ctx = canvas.getContext('2d');
+  const statusDot = document.getElementById('statusDot');
+  const statusText = document.getElementById('statusText');
+  const handHint = document.getElementById('handHint');
+
+  let mouseMode = false;
+  let mediaStream = null;
+  let mediaCam = null;
+
+  let W, H;
+  function resize() {
+    W = canvas.width = window.innerWidth;
+    H = canvas.height = window.innerHeight;
+    initPins();
+  }
+
+  // === Hand State ===
+  let handPresent = false;
+  let handX = -1, handY = -1;
+  let prevHandX = -1, prevHandY = -1;
+  let handVelX = 0, handVelY = 0;
+
+  // Cursor (index finger tip)
+  let cursorX = -1, cursorY = -1;
+  let smoothCursorX = -1, smoothCursorY = -1;
+
+  // Pinch state
+  let isPinching = false;
+  let wasPinching = false;
+  let pinchDist = 1;
+  let pinchStartY = 0;
+  let pinchStartTime = 0;
+  let pinchMoved = false;
+  let prevCursorY = 0;
+
+  function onResults(results) {
+    if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
+      const lm = results.multiHandLandmarks[0];
+      handPresent = true;
+
+      // Palm center (mirrored) — for sweep
+      const indices = [0, 5, 9, 13, 17];
+      let cx = 0, cy = 0;
+      for (const i of indices) { cx += lm[i].x; cy += lm[i].y; }
+      const newX = (1 - cx / indices.length) * W;
+      const newY = (cy / indices.length) * H;
+
+      if (prevHandX >= 0) {
+        handVelX = newX - prevHandX;
+        handVelY = newY - prevHandY;
+      }
+      prevHandX = handX;
+      prevHandY = handY;
+      handX = newX;
+      handY = newY;
+
+      // Index finger tip (landmark 8) — cursor position
+      cursorX = (1 - lm[8].x) * W;
+      cursorY = lm[8].y * H;
+
+      // Pinch: thumb tip (4) to index tip (8)
+      const thumb = lm[4];
+      const index = lm[8];
+      pinchDist = Math.sqrt(
+        (thumb.x - index.x) ** 2 +
+        (thumb.y - index.y) ** 2 +
+        (thumb.z - index.z) ** 2
+      );
+      wasPinching = isPinching;
+      isPinching = pinchDist < 0.045;
+
+      // Pinch logic: click vs scroll
+      if (isPinching && !wasPinching) {
+        // Pinch just started — record start position
+        pinchStartY = cursorY;
+        pinchStartTime = Date.now();
+        pinchMoved = false;
+      }
+
+      if (isPinching && wasPinching) {
+        // Pinch held — check if dragging (scroll)
+        const dy = cursorY - pinchStartY;
+        if (Math.abs(dy) > 8) {
+          pinchMoved = true;
+          // Scroll: move the page based on drag distance
+          const scrollAmount = -(cursorY - prevCursorY) * 2.5;
+          window.scrollBy(0, scrollAmount);
+        }
+      }
+
+      if (!isPinching && wasPinching) {
+        // Pinch released
+        const holdDuration = Date.now() - pinchStartTime;
+        if (!pinchMoved && holdDuration < 400) {
+          // Short pinch without movement = click
+          handlePinchClick(cursorX, cursorY);
+        }
+        pinchMoved = false;
+      }
+
+      prevCursorY = cursorY;
+    } else {
+      handPresent = false;
+      handVelX *= 0.9;
+      handVelY *= 0.9;
+      isPinching = false;
+      wasPinching = false;
+    }
+  }
+
+  // === Pinch Click Handler ===
+  function handlePinchClick(x, y) {
+    // Find the element at cursor position and click it
+    // Temporarily hide the canvas so elementFromPoint can find UI elements
+    canvas.style.pointerEvents = 'none';
+    const el = document.elementFromPoint(x, y);
+    canvas.style.pointerEvents = '';
+
+    if (el && el.click) {
+      el.classList.add('pinch-hover');
+      el.click();
+      setTimeout(() => el.classList.remove('pinch-hover'), 300);
+    }
+  }
+
+  // === Pin Grid ===
+  const SPACING = 16;
+  const PIN_RADIUS = 2.5;
+  const ROD_LENGTH = 200; // visual length when fully tilted
+  const INFLUENCE_RADIUS = 250;
+  const SPRING = 0.008;    // very slow spring back — rods stay fallen
+  const DAMPING = 0.97;    // high inertia — rods carry momentum
+
+  // Vivid neon color palette
+  const NEON_COLORS = [
+    [57, 255, 20],     // neon green
+    [0, 255, 255],     // electric cyan
+    [255, 0, 255],     // hot magenta
+    [255, 165, 0],     // neon orange
+    [191, 0, 255],     // electric purple
+    [255, 255, 0],     // neon yellow
+    [255, 20, 147],    // deep pink
+    [0, 255, 150],     // spring green
+  ];
+
+  let pins = [];
+  let textMask = null; // ImageData for hit-testing text area
+
+  function buildTextMask() {
+    const off = document.createElement('canvas');
+    off.width = W;
+    off.height = H;
+    const octx = off.getContext('2d');
+
+    octx.fillStyle = '#000';
+    octx.fillRect(0, 0, W, H);
+
+    // Sans-serif bold "EDDIE"
+    octx.fillStyle = '#fff';
+    const fontSize = Math.floor(Math.min(W * 0.14, H * 0.35));
+    octx.font = `800 ${fontSize}px 'Syne', sans-serif`;
+    octx.textAlign = 'center';
+    octx.textBaseline = 'middle';
+    octx.fillText('EDDIE', W / 2, H / 2);
+
+    textMask = octx.getImageData(0, 0, W, H);
+
+    // Position info text 20px above EDDIE
+    const infoEl = document.getElementById('landingInfo');
+    if (infoEl) {
+      const eddieTop = H / 2 - fontSize / 2;
+      infoEl.style.top = (eddieTop - 50) + 'px';
+      infoEl.style.transform = 'translateY(-100%)';
+    }
+  }
+
+  function isInText(x, y) {
+    if (!textMask) return false;
+    const px = Math.round(x);
+    const py = Math.round(y);
+    if (px < 0 || px >= W || py < 0 || py >= H) return false;
+    return textMask.data[(py * W + px) * 4] > 128;
+  }
+
+  function initPins() {
+    pins = [];
+    buildTextMask();
+
+    const cols = Math.ceil(W / SPACING) + 1;
+    const rows = Math.ceil(H / SPACING) + 1;
+    const offsetX = (W - (cols - 1) * SPACING) / 2;
+    const offsetY = (H - (rows - 1) * SPACING) / 2;
+
+    for (let r = 0; r < rows; r++) {
+      for (let c = 0; c < cols; c++) {
+        const bx = offsetX + c * SPACING;
+        const by = offsetY + r * SPACING;
+
+        // Only place pins inside the "EDDIE" text
+        if (!isInText(bx, by)) continue;
+
+        pins.push({
+          bx, by,
+          tx: 0, ty: 0,
+          vx: 0, vy: 0,
+          neon: NEON_COLORS[Math.floor(Math.random() * NEON_COLORS.length)],
+        });
+      }
+    }
+  }
+
+  // === Update Pins ===
+  function updatePins() {
+    const handActive = handPresent && handX >= 0;
+
+    for (let i = 0; i < pins.length; i++) {
+      const p = pins[i];
+
+      if (handActive) {
+        const dx = p.bx - handX;
+        const dy = p.by - handY;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+
+        if (dist < INFLUENCE_RADIUS) {
+          const falloff = 1 - dist / INFLUENCE_RADIUS;
+          const strength = falloff * falloff;
+
+          // Hand velocity magnitude
+          const velMag = Math.sqrt(handVelX * handVelX + handVelY * handVelY);
+
+          // Sweeping: mostly follow hand movement direction (like pushing dominos)
+          // Plus a small "away from hand" force
+          const awayX = dist > 1 ? dx / dist : 0;
+          const awayY = dist > 1 ? dy / dist : 0;
+
+          // Velocity-dominant push — this is the "sweep"
+          const sweepX = handVelX * 0.15 * strength;
+          const sweepY = handVelY * 0.15 * strength;
+
+          // Radial push (away from hand center)
+          const radialX = awayX * 0.6 * strength * (1 + velMag * 0.02);
+          const radialY = awayY * 0.6 * strength * (1 + velMag * 0.02);
+
+          p.vx += sweepX + radialX;
+          p.vy += sweepY + radialY;
+        }
+      }
+
+      // Spring back to center
+      p.vx -= p.tx * SPRING;
+      p.vy -= p.ty * SPRING;
+
+      // Damping
+      p.vx *= DAMPING;
+      p.vy *= DAMPING;
+
+      // Update tilt
+      p.tx += p.vx;
+      p.ty += p.vy;
+
+      // Clamp max tilt
+      const tiltMag = Math.sqrt(p.tx * p.tx + p.ty * p.ty);
+      const maxTilt = ROD_LENGTH;
+      if (tiltMag > maxTilt) {
+        p.tx = (p.tx / tiltMag) * maxTilt;
+        p.ty = (p.ty / tiltMag) * maxTilt;
+      }
+    }
+  }
+
+  // === Draw ===
+  // Light direction (from upper-left)
+  const LIGHT_X = -0.5, LIGHT_Y = -0.7, LIGHT_Z = 0.5;
+  const lLen = Math.sqrt(LIGHT_X*LIGHT_X + LIGHT_Y*LIGHT_Y + LIGHT_Z*LIGHT_Z);
+  const lx = LIGHT_X/lLen, ly = LIGHT_Y/lLen, lz = LIGHT_Z/lLen;
+
+  const ROD_WIDTH = 4;        // width of the rod (cylinder diameter)
+  const ROD_COLOR_BASE = 55;  // base grey for rod body
+  const TOP_COLOR = 90;       // top circle brightness
+
+  function draw() {
+    ctx.fillStyle = '#191919';
+    ctx.fillRect(0, 0, W, H);
+
+    // Sort by tilt (draw upright pins last so they appear on top)
+    // Actually sort by Y position of top for depth — tilted down = drawn first
+    const sorted = pins.slice().sort((a, b) => {
+      const ay = a.by + a.ty;
+      const by2 = b.by + b.ty;
+      return ay - by2;
+    });
+
+    for (let i = 0; i < sorted.length; i++) {
+      const p = sorted[i];
+      const tiltMag = Math.sqrt(p.tx * p.tx + p.ty * p.ty);
+      const tiltNorm = Math.min(1, tiltMag / ROD_LENGTH);
+
+      const topX = p.bx + p.tx;
+      const topY = p.by + p.ty;
+
+      // === Rod normal (pointing along the rod from base to top, in 3D) ===
+      // When upright: rod points straight up (0, 0, 1)
+      // When tilted: rod points towards (tx, ty, remaining_z)
+      const rodZ = Math.sqrt(Math.max(0, 1 - tiltNorm * tiltNorm));
+      const rnx = tiltNorm > 0.001 ? p.tx / tiltMag * tiltNorm : 0;
+      const rny = tiltNorm > 0.001 ? p.ty / tiltMag * tiltNorm : 0;
+      const rnz = rodZ;
+
+      // Side normal (perpendicular to rod direction, facing light)
+      // For the visible side of the cylinder
+      const sideX = -rny;
+      const sideY = rnx;
+      const sideLen = Math.sqrt(sideX*sideX + sideY*sideY) || 1;
+
+      // Lighting on the rod surface
+      const rodDiffuse = Math.max(0, sideX/sideLen * lx + sideY/sideLen * ly) * 0.5 + 0.5;
+      // Lighting on the top face
+      const topDiffuse = Math.max(0, rnx * lx + rny * ly + rnz * lz) * 0.4 + 0.6;
+
+      if (tiltNorm > 0.03) {
+        // === Shadow on the ground ===
+        const shadowOffX = p.tx * 0.4;
+        const shadowOffY = p.ty * 0.4 + tiltNorm * 4;
+        ctx.beginPath();
+        ctx.ellipse(
+          p.bx + shadowOffX, p.by + shadowOffY,
+          ROD_WIDTH * 0.4 + tiltNorm * tiltMag * 0.15,
+          ROD_WIDTH * 0.25,
+          Math.atan2(p.ty, p.tx), 0, Math.PI * 2
+        );
+        ctx.fillStyle = `rgba(0,0,0,${tiltNorm * 0.25})`;
+        ctx.fill();
+
+        // === Rod body (cylinder seen from above = thick line from base to top) ===
+        const angle = Math.atan2(p.ty, p.tx);
+        const perpX = Math.cos(angle + Math.PI/2) * ROD_WIDTH * 0.5;
+        const perpY = Math.sin(angle + Math.PI/2) * ROD_WIDTH * 0.5;
+
+        // Rod body as a quadrilateral (trapezoid — wider at base)
+        const baseW = ROD_WIDTH * 0.5;
+        const topW = ROD_WIDTH * 0.45;
+        const bpx = Math.cos(angle + Math.PI/2);
+        const bpy = Math.sin(angle + Math.PI/2);
+
+        ctx.beginPath();
+        ctx.moveTo(p.bx + bpx * baseW, p.by + bpy * baseW);
+        ctx.lineTo(topX + bpx * topW, topY + bpy * topW);
+        ctx.lineTo(topX - bpx * topW, topY - bpy * topW);
+        ctx.lineTo(p.bx - bpx * baseW, p.by - bpy * baseW);
+        ctx.closePath();
+
+        // Rod color — vivid neon
+        const nc = p.neon;
+        const neonAmt = tiltNorm * 0.7;
+        const rodBright = ROD_COLOR_BASE * rodDiffuse;
+        const rodR = Math.round(rodBright * (1 - neonAmt) + nc[0] * neonAmt * 0.6);
+        const rodG = Math.round(rodBright * (1 - neonAmt) + nc[1] * neonAmt * 0.6);
+        const rodB = Math.round(rodBright * (1 - neonAmt) + nc[2] * neonAmt * 0.6);
+        ctx.fillStyle = `rgb(${Math.min(255,rodR)},${Math.min(255,rodG)},${Math.min(255,rodB)})`;
+        ctx.fill();
+
+        // Bright neon core stripe
+        ctx.beginPath();
+        ctx.moveTo(p.bx, p.by);
+        ctx.lineTo(topX, topY);
+        ctx.strokeStyle = `rgba(${nc[0]},${nc[1]},${nc[2]},${tiltNorm * 0.5})`;
+        ctx.lineWidth = ROD_WIDTH * 0.25;
+        ctx.stroke();
+
+        // Medium glow
+        if (tiltNorm > 0.1) {
+          ctx.beginPath();
+          ctx.moveTo(p.bx, p.by);
+          ctx.lineTo(topX, topY);
+          ctx.strokeStyle = `rgba(${nc[0]},${nc[1]},${nc[2]},${tiltNorm * 0.12})`;
+          ctx.lineWidth = ROD_WIDTH * 2;
+          ctx.stroke();
+        }
+
+        // Wide outer glow
+        if (tiltNorm > 0.2) {
+          ctx.beginPath();
+          ctx.moveTo(p.bx, p.by);
+          ctx.lineTo(topX, topY);
+          ctx.strokeStyle = `rgba(${nc[0]},${nc[1]},${nc[2]},${(tiltNorm - 0.2) * 0.05})`;
+          ctx.lineWidth = ROD_WIDTH * 5;
+          ctx.stroke();
+        }
+
+        // Dark edge on shadow side
+        ctx.beginPath();
+        ctx.moveTo(p.bx - bpx * baseW, p.by - bpy * baseW);
+        ctx.lineTo(topX - bpx * topW, topY - bpy * topW);
+        ctx.strokeStyle = `rgba(0,0,0,${tiltNorm * 0.2})`;
+        ctx.lineWidth = 0.5;
+        ctx.stroke();
+      }
+
+      // === Top cap (circle = top of the cylinder) ===
+      // When upright: full circle, bright
+      // When tilted: slightly elliptical, brightness based on angle to light
+      const capRadius = PIN_RADIUS * (1 - tiltNorm * 0.15);
+
+      // Ellipse when tilted (foreshortening)
+      const ellipseRatio = 1 - tiltNorm * 0.6; // squishes as it tilts
+      const tiltAngle = Math.atan2(p.ty, p.tx);
+
+      ctx.save();
+      ctx.translate(topX, topY);
+      ctx.rotate(tiltAngle);
+      ctx.scale(1, Math.max(0.3, ellipseRatio));
+
+      // Top face — vivid neon
+      const nc = p.neon;
+      const neonTop = tiltNorm * 0.6;
+      const topBright = TOP_COLOR * topDiffuse;
+      const capR = Math.min(255, Math.round(topBright * (1 - neonTop) + nc[0] * neonTop * 0.7));
+      const capG = Math.min(255, Math.round(topBright * (1 - neonTop) + nc[1] * neonTop * 0.7));
+      const capB = Math.min(255, Math.round(topBright * (1 - neonTop) + nc[2] * neonTop * 0.7));
+      ctx.beginPath();
+      ctx.arc(0, 0, capRadius, 0, Math.PI * 2);
+      ctx.fillStyle = `rgb(${capR},${capG},${capB})`;
+      ctx.fill();
+
+      // Wide neon glow halo
+      if (tiltNorm > 0.08) {
+        ctx.beginPath();
+        ctx.arc(0, 0, capRadius * 3.5, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(${nc[0]},${nc[1]},${nc[2]},${tiltNorm * 0.06})`;
+        ctx.fill();
+
+        ctx.beginPath();
+        ctx.arc(0, 0, capRadius * 2, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(${nc[0]},${nc[1]},${nc[2]},${tiltNorm * 0.1})`;
+        ctx.fill();
+      }
+
+      // Bright center highlight
+      ctx.beginPath();
+      ctx.arc(0, 0, capRadius * 0.5, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(${Math.min(255,nc[0]+80)},${Math.min(255,nc[1]+80)},${Math.min(255,nc[2]+80)},${tiltNorm * 0.35})`;
+      ctx.fill();
+
+      // Edge ring
+      ctx.beginPath();
+      ctx.arc(0, 0, capRadius, 0, Math.PI * 2);
+      ctx.strokeStyle = `rgba(255,255,255,${0.06 * (1 - tiltNorm * 0.5)})`;
+      ctx.lineWidth = 0.5;
+      ctx.stroke();
+
+      ctx.restore();
+
+      // === Base hole (where the rod sits) — dark circle at base ===
+      if (tiltNorm > 0.1) {
+        ctx.beginPath();
+        ctx.arc(p.bx, p.by, PIN_RADIUS * 0.5, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(10,10,10,${tiltNorm * 0.5})`;
+        ctx.fill();
+      }
+    }
+  }
+
+  // === Draw Cursor ===
+  function drawCursor() {
+    if (!handPresent || cursorX < 0) return;
+
+    // Smooth cursor
+    if (smoothCursorX < 0) { smoothCursorX = cursorX; smoothCursorY = cursorY; }
+    smoothCursorX += (cursorX - smoothCursorX) * 0.3;
+    smoothCursorY += (cursorY - smoothCursorY) * 0.3;
+
+    const x = smoothCursorX;
+    const y = smoothCursorY;
+    const pinching = isPinching;
+    const pinchNorm = Math.max(0, 1 - pinchDist / 0.08); // 0=far, 1=pinching
+
+    // Outer ring — gets smaller when pinching
+    const ringRadius = 14 - pinchNorm * 6;
+    ctx.beginPath();
+    ctx.arc(x, y, ringRadius, 0, Math.PI * 2);
+    ctx.strokeStyle = `rgba(255,255,255,${0.4 + pinchNorm * 0.3})`;
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+
+    // Inner dot — appears when close to pinch
+    if (pinchNorm > 0.2) {
+      const dotR = 2 + pinchNorm * 3;
+      ctx.beginPath();
+      ctx.arc(x, y, dotR, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(255,255,255,${pinchNorm * 0.7})`;
+      ctx.fill();
+    }
+
+    // Pinch state visuals
+    if (pinching) {
+      if (pinchMoved) {
+        // Scroll mode — show vertical drag indicator
+        ctx.beginPath();
+        ctx.moveTo(x, y - 12);
+        ctx.lineTo(x, y + 12);
+        ctx.strokeStyle = 'rgba(192,255,0,0.4)';
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+        // Arrows
+        ctx.beginPath();
+        ctx.moveTo(x - 4, y - 8); ctx.lineTo(x, y - 12); ctx.lineTo(x + 4, y - 8);
+        ctx.moveTo(x - 4, y + 8); ctx.lineTo(x, y + 12); ctx.lineTo(x + 4, y + 8);
+        ctx.strokeStyle = 'rgba(192,255,0,0.4)';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+      } else {
+        // Click flash
+        ctx.beginPath();
+        ctx.arc(x, y, 20, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(255,255,255,0.08)';
+        ctx.fill();
+      }
+    }
+
+    // Hover highlight: check element under cursor
+    canvas.style.pointerEvents = 'none';
+    const el = document.elementFromPoint(x, y);
+    canvas.style.pointerEvents = '';
+    if (el && (el.tagName === 'BUTTON' || el.tagName === 'A')) {
+      el.classList.add('pinch-hover');
+      // Draw hover indicator
+      ctx.beginPath();
+      ctx.arc(x, y, ringRadius + 4, 0, Math.PI * 2);
+      ctx.strokeStyle = 'rgba(192,255,0,0.3)';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+    }
+    // Clean up previous hover
+    document.querySelectorAll('.pinch-hover').forEach(e => {
+      if (e !== el) e.classList.remove('pinch-hover');
+    });
+  }
+
+  // === Animation Loop ===
+  function animate() {
+    requestAnimationFrame(animate);
+    updatePins();
+    draw();
+    if (!mouseMode) {
+      drawCursor();
+      if (handPresent) {
+        statusDot.classList.add('active');
+        statusText.textContent = 'Tracking';
+        handHint.style.display = 'none';
+      } else {
+        statusDot.classList.remove('active');
+        statusText.textContent = 'Searching';
+      }
+    }
+  }
+
+  // === MediaPipe Init ===
+  async function initCamera() {
+    if (typeof Hands === 'undefined' || typeof Camera === 'undefined') throw new Error('MediaPipe failed to load.');
+    const hands = new Hands({ locateFile: f => `https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1675469240/${f}` });
+    hands.setOptions({ maxNumHands: 1, modelComplexity: 1, minDetectionConfidence: 0.7, minTrackingConfidence: 0.5 });
+    hands.onResults(onResults);
+
+    mediaStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user', width: 1280, height: 720 } });
+    video.srcObject = mediaStream; await video.play(); video.classList.add('visible');
+
+    mediaCam = new Camera(video, { onFrame: async () => { await hands.send({ image: video }); }, width: 1280, height: 720 });
+    mediaCam.start();
+    statusText.textContent = 'Searching';
+  }
+
+  // === Start ===
+  startBtn.addEventListener('click', () => {
+    pageAttention.classList.add('exit');
+    setTimeout(() => {
+      pageAttention.style.display = 'none';
+      pageLanding.classList.add('active');
+      setTimeout(() => { pageLanding.style.opacity = '1'; }, 50);
+
+      document.fonts.ready.then(() => {
+        resize();
+        window.addEventListener('resize', resize);
+        requestAnimationFrame(animate);
+      });
+
+      initCamera().catch(err => {
+        console.error(err);
+        statusText.textContent = 'Error';
+        alert('Camera error: ' + err.message);
+      });
+    }, 600);
+  });
+
+  // === Mouse Mode ===
+  function switchToMouseMode() {
+    mouseMode = true;
+
+    // Stop camera
+    if (mediaCam) { mediaCam.stop(); mediaCam = null; }
+    if (mediaStream) {
+      mediaStream.getTracks().forEach(t => t.stop());
+      mediaStream = null;
+    }
+    video.srcObject = null;
+    video.classList.remove('visible');
+
+    // Update UI
+    statusDot.classList.remove('active');
+    statusText.textContent = 'Mouse mode';
+    document.getElementById('mouseModeBtn').style.display = 'none';
+    document.getElementById('gestureModeBtnBottom').style.display = '';
+    // Hide gesture guide items but keep container for layout
+    document.querySelectorAll('.gesture-item, .gesture-divider').forEach(el => el.style.display = 'none');
+    document.getElementById('gestureGuide').querySelector('.mode-toggle').style.display = 'none';
+    if (handHint) handHint.style.display = 'none';
+    document.body.style.cursor = 'default';
+
+    // Reset hand state
+    handPresent = false;
+    isPinching = false;
+  }
+
+  function switchToGestureMode() {
+    mouseMode = false;
+    handPresent = false;
+    prevHandX = -1; prevHandY = -1;
+
+    // Update UI
+    document.getElementById('gestureModeBtnBottom').style.display = 'none';
+    document.getElementById('mouseModeBtn').style.display = '';
+    document.querySelectorAll('.gesture-item, .gesture-divider').forEach(el => el.style.display = '');
+    document.getElementById('gestureGuide').querySelector('.mode-toggle').style.display = '';
+    document.body.style.cursor = 'none';
+    statusText.textContent = 'Searching';
+
+    // Restart camera
+    initCamera().catch(err => {
+      console.error(err);
+      statusText.textContent = 'Error';
+      alert('Camera error: ' + err.message);
+    });
+  }
+
+  document.getElementById('mouseModeBtn').addEventListener('click', switchToMouseMode);
+  document.getElementById('gestureModeBtn').addEventListener('click', switchToGestureMode);
+
+  // === Mouse Event Listeners ===
+  let mouseDown = false;
+
+  canvas.addEventListener('mousemove', (e) => {
+    if (!mouseMode) return;
+    handPresent = true;
+    const newX = e.clientX;
+    const newY = e.clientY;
+
+    if (prevHandX >= 0) {
+      handVelX = newX - prevHandX;
+      handVelY = newY - prevHandY;
+    }
+    prevHandX = handX;
+    prevHandY = handY;
+    handX = newX;
+    handY = newY;
+    cursorX = newX;
+    cursorY = newY;
+  });
+
+  canvas.addEventListener('mouseleave', () => {
+    if (!mouseMode) return;
+    handPresent = false;
+    handVelX *= 0.5;
+    handVelY *= 0.5;
+  });
+
+  canvas.addEventListener('mousedown', (e) => {
+    if (!mouseMode) return;
+    mouseDown = true;
+    // Click: check element under cursor
+    canvas.style.pointerEvents = 'none';
+    const el = document.elementFromPoint(e.clientX, e.clientY);
+    canvas.style.pointerEvents = '';
+    if (el && el.click && el !== canvas) el.click();
+  });
+
+  canvas.addEventListener('mouseup', () => {
+    if (!mouseMode) return;
+    mouseDown = false;
+  });
+})();
+</script>
+</body>
+</html>
