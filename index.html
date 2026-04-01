@@ -555,6 +555,11 @@
   let pinchMoved = false;
   let prevCursorY = 0;
 
+  // Hand rotation for DJ knobs
+  let handPinchAngle = 0;
+  let prevHandPinchAngle = 0;
+  let handPinchAngleValid = false;
+  let gestureKnobTarget = null; // which knob the hand is over when pinch starts
 
   function onResults(results) {
     if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
@@ -592,6 +597,60 @@
       wasPinching = isPinching;
       isPinching = pinchDist < 0.045;
 
+      // Track thumb-index angle for DJ knob rotation
+      handPinchAngle = Math.atan2(
+        (1 - thumb.y) - (1 - index.y),
+        (1 - thumb.x) - (1 - index.x)
+      );
+
+      // DJ knob gesture: pinch + wrist rotation over a knob
+      if (isPinching && !wasPinching) {
+        // Pinch just started — check if over a DJ knob
+        prevHandPinchAngle = handPinchAngle;
+        handPinchAngleValid = false;
+        gestureKnobTarget = null;
+        if (aboutActive && typeof djKnobs !== 'undefined') {
+          const cx2 = smoothCursorX >= 0 ? smoothCursorX : cursorX;
+          const cy2 = smoothCursorY >= 0 ? smoothCursorY : cursorY;
+          const elUnder = document.elementFromPoint(cx2, cy2);
+          if (elUnder && elUnder.classList.contains('cdj-knob')) {
+            const param = elUnder.dataset.param;
+            if (param && djKnobs[param]) {
+              gestureKnobTarget = param;
+              handPinchAngleValid = true;
+            }
+          }
+        }
+      }
+
+      if (isPinching && wasPinching && gestureKnobTarget) {
+        // Rotating over a knob — map angle delta to knob
+        let angleDelta = handPinchAngle - prevHandPinchAngle;
+        // Normalize to [-PI, PI]
+        if (angleDelta > Math.PI) angleDelta -= 2 * Math.PI;
+        if (angleDelta < -Math.PI) angleDelta += 2 * Math.PI;
+        prevHandPinchAngle = handPinchAngle;
+
+        if (Math.abs(angleDelta) > 0.01 && Math.abs(angleDelta) < 1) {
+          pinchMoved = true; // prevent click
+          const knob = djKnobs[gestureKnobTarget];
+          let newAngle = knob.angle + angleDelta * 2;
+          const minA = -Math.PI * 0.75;
+          const maxA = Math.PI * 0.75;
+          newAngle = Math.max(minA, Math.min(maxA, newAngle));
+          knob.angle = newAngle;
+          const dbValue = (newAngle / maxA) * 12;
+          knob.value = dbValue;
+          if (knob.filter) knob.filter.gain.value = dbValue;
+          if (typeof djDrawKnob === 'function') djDrawKnob(knob.el, newAngle);
+        }
+      }
+
+      if (!isPinching && wasPinching) {
+        gestureKnobTarget = null;
+        handPinchAngleValid = false;
+      }
+
       // Pinch logic: click vs scroll
       if (isPinching && !wasPinching) {
         // Pinch just started — record start position
@@ -603,7 +662,7 @@
       if (isPinching && wasPinching) {
         // Pinch held — check if dragging (scroll)
         const dy = cursorY - pinchStartY;
-        if (Math.abs(dy) > 8 && !labsActive) {
+        if (Math.abs(dy) > 8 && !labsActive && !gestureKnobTarget) {
           pinchMoved = true;
           // Scroll: move the page based on drag distance
           const scrollAmount = -(cursorY - prevCursorY) * 2.5;
