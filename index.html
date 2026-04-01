@@ -198,7 +198,7 @@
           <path d="M12 4v16m0-16l-2 2m2-2l2 2m-2 16l-2-2m2 2l2-2"/>
         </svg>
       </div>
-      <div class="gesture-label">중지만 펴고 ↕</div>
+      <div class="gesture-label">엄지 ↕</div>
       <div class="gesture-desc">스크롤</div>
     </div>
     <div class="gesture-divider"></div>
@@ -345,18 +345,14 @@
       wasPinching = isPinching;
       isPinching = pinchDist < 0.045;
 
-      // Middle finger (landmark 12) scroll — detect if middle finger is extended
-      const midTip = lm[12];   // middle finger tip
-      const midPip = lm[10];   // middle finger PIP joint
-      const ringTip = lm[16];  // ring finger tip
-      const ringPip = lm[14];  // ring finger PIP joint
-      // Middle finger is "extended" when tip is significantly above PIP (in y, lower = higher on screen)
-      const midExtended = midTip.y < midPip.y - 0.03;
-      // Other fingers (ring, pinky) should be curled for a clear "middle finger pointing" gesture
-      const ringCurled = ringTip.y > ringPip.y - 0.01;
+      // Thumb scroll — detect thumb extended up/down movement
+      const thumbTip = lm[4];    // thumb tip
+      const indexBase = lm[5];   // index finger MCP (base)
+      // Thumb is "extended" when tip is far from index base (spread out)
+      const thumbSpread = Math.abs(thumbTip.x - indexBase.x) > 0.08;
 
-      const newMidFingerY = midTip.y * H;
-      const midFingerActive = midExtended && ringCurled && !isPinching;
+      const newMidFingerY = thumbTip.y * H;
+      const midFingerActive = thumbSpread && !isPinching;
 
       if (midFingerActive) {
         if (midFingerScrolling && prevMidFingerY > 0) {
