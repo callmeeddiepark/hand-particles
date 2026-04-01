@@ -195,10 +195,10 @@
     <div class="gesture-item">
       <div class="gesture-icon">
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="12" cy="8" r="2.5"/><path d="M12 11v6m0 0l-2-2m2 2l2-2"/>
+          <path d="M12 4v16m0-16l-2 2m2-2l2 2m-2 16l-2-2m2 2l2-2"/>
         </svg>
       </div>
-      <div class="gesture-label">핀치 + 드래그</div>
+      <div class="gesture-label">중지 위아래</div>
       <div class="gesture-desc">스크롤</div>
     </div>
     <div class="gesture-divider"></div>
@@ -304,6 +304,11 @@
   let pinchMoved = false;
   let prevCursorY = 0;
 
+  // Middle finger scroll state
+  let midFingerY = 0;
+  let prevMidFingerY = 0;
+  let midFingerScrolling = false;
+
   function onResults(results) {
     if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
       const lm = results.multiHandLandmarks[0];
@@ -339,6 +344,36 @@
       );
       wasPinching = isPinching;
       isPinching = pinchDist < 0.045;
+
+      // Middle finger (landmark 12) scroll — detect if middle finger is extended
+      const midTip = lm[12];   // middle finger tip
+      const midPip = lm[10];   // middle finger PIP joint
+      const ringTip = lm[16];  // ring finger tip
+      const ringPip = lm[14];  // ring finger PIP joint
+      // Middle finger is "extended" when tip is significantly above PIP (in y, lower = higher on screen)
+      const midExtended = midTip.y < midPip.y - 0.03;
+      // Other fingers (ring, pinky) should be curled for a clear "middle finger pointing" gesture
+      const ringCurled = ringTip.y > ringPip.y - 0.01;
+
+      const newMidFingerY = midTip.y * H;
+      const midFingerActive = midExtended && ringCurled && !isPinching;
+
+      if (midFingerActive) {
+        if (midFingerScrolling && prevMidFingerY > 0) {
+          const scrollAmount = -(newMidFingerY - prevMidFingerY) * 3;
+          if (projectModal.classList.contains('active')) {
+            projectModal.querySelector('.project-modal').scrollBy(0, scrollAmount);
+          } else if (portfolioActive) {
+            portfolioPage.scrollBy(0, scrollAmount);
+          } else {
+            window.scrollBy(0, scrollAmount);
+          }
+        }
+        midFingerScrolling = true;
+      } else {
+        midFingerScrolling = false;
+      }
+      prevMidFingerY = newMidFingerY;
 
       // Pinch logic: click vs scroll
       if (isPinching && !wasPinching) {
@@ -382,6 +417,7 @@
       handVelY *= 0.9;
       isPinching = false;
       wasPinching = false;
+      midFingerScrolling = false;
     }
   }
 
