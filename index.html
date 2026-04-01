@@ -220,9 +220,10 @@
   <video id="webcam" autoplay playsinline></video>
   <canvas id="scene"></canvas>
   <nav class="landing-nav">
-    <a href="#" class="nav-item" data-page="about">About</a>
+    <a href="#" class="nav-item active" data-page="home">Home</a>
     <a href="#" class="nav-item" data-page="portfolio">Portfolio</a>
     <a href="#" class="nav-item" data-page="labs">Labs</a>
+    <a href="#" class="nav-item" data-page="about">About</a>
     <a href="#" class="nav-item" data-page="contact">Contact</a>
   </nav>
   <div class="landing-ui landing-bottom-left"><div class="status-dot" id="statusDot"></div><span id="statusText">Initializing</span></div>
@@ -271,9 +272,10 @@
   <canvas id="portfolioCanvas"></canvas>
   <div class="portfolio-light" id="portfolioLight"></div>
   <nav class="landing-nav">
-    <a href="#" class="nav-item" data-page="about">About</a>
+    <a href="#" class="nav-item" data-page="home">Home</a>
     <a href="#" class="nav-item active" data-page="portfolio">Portfolio</a>
     <a href="#" class="nav-item" data-page="labs">Labs</a>
+    <a href="#" class="nav-item" data-page="about">About</a>
     <a href="#" class="nav-item" data-page="contact">Contact</a>
   </nav>
   <div class="portfolio-inner">
@@ -285,9 +287,10 @@
   <canvas id="labsCanvas"></canvas>
   <div class="labs-light" id="labsLight"></div>
   <nav class="landing-nav">
-    <a href="#" class="nav-item" data-page="about">About</a>
+    <a href="#" class="nav-item" data-page="home">Home</a>
     <a href="#" class="nav-item" data-page="portfolio">Portfolio</a>
     <a href="#" class="nav-item active" data-page="labs">Labs</a>
+    <a href="#" class="nav-item" data-page="about">About</a>
     <a href="#" class="nav-item" data-page="contact">Contact</a>
   </nav>
   <div class="labs-inner" id="labsInner">
@@ -298,9 +301,10 @@
   <canvas id="contactCanvas"></canvas>
   <div class="contact-light" id="contactLight"></div>
   <nav class="landing-nav">
-    <a href="#" class="nav-item" data-page="about">About</a>
+    <a href="#" class="nav-item" data-page="home">Home</a>
     <a href="#" class="nav-item" data-page="portfolio">Portfolio</a>
     <a href="#" class="nav-item" data-page="labs">Labs</a>
+    <a href="#" class="nav-item" data-page="about">About</a>
     <a href="#" class="nav-item active" data-page="contact">Contact</a>
   </nav>
   <div class="contact-content">
@@ -1262,7 +1266,7 @@
       el.style.pointerEvents = '';
     });
     // Update nav active states in landing nav
-    pageLanding.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    pageLanding.querySelectorAll('.nav-item').forEach(n => n.classList.toggle('active', n.dataset.page === 'home'));
   }
 
   // Attach nav handlers to ALL nav items in landing, portfolio, and labs navs
