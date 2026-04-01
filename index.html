@@ -73,7 +73,7 @@
   .mouse-btn.pinch-hover{border-color:rgba(192,255,0,.4);color:rgba(192,255,0,.6)}
 
   /* Global mode toggle — fixed bottom-right on all pages */
-  #globalModeToggle{position:fixed;bottom:28px;right:10%;z-index:500;pointer-events:auto}
+  #globalModeToggle{position:fixed;bottom:28px;right:10%;z-index:500;pointer-events:auto;display:none}
 
   .fade-in{animation:fi .8s ease forwards}
   .fade-in-delay-1{animation:fi .8s ease .15s forwards;opacity:0}
@@ -901,6 +901,7 @@
     setTimeout(() => {
       pageAttention.style.display = 'none';
       pageLanding.classList.add('active');
+      document.getElementById('globalModeToggle').style.display = '';
       setTimeout(() => { pageLanding.style.opacity = '1'; }, 50);
 
       document.fonts.ready.then(() => {
