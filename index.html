@@ -224,6 +224,37 @@
   .skill-pill{display:inline-block;padding:8px 18px;border:1px solid rgba(192,255,0,0.2);border-radius:20px;font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.1em;color:rgba(192,255,0,0.7);text-transform:uppercase;cursor:default;transition:border-color .3s ease,transform .1s ease,box-shadow .3s ease;position:relative;user-select:none}
   .skill-pill:hover,.skill-pill.pinch-hover{border-color:rgba(192,255,0,0.5);box-shadow:0 0 16px rgba(192,255,0,0.08)}
   .resume-divider{width:60px;height:1px;background:rgba(255,255,255,0.06);margin:48px 0}
+
+  /* DJ SECTION */
+  .dj-container{display:flex;flex-direction:column;align-items:center;padding:120px 16px 80px;max-width:540px;margin:0 auto}
+  .dj-tracklist{width:100%;max-width:500px;margin-bottom:16px;border:1px solid rgba(255,255,255,0.06);border-radius:4px;overflow:hidden;background:rgba(0,0,0,0.2)}
+  .dj-tracklist-title{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.25em;text-transform:uppercase;color:rgba(255,255,255,0.2);padding:10px 12px;border-bottom:1px solid rgba(255,255,255,0.06)}
+  .dj-track{font-family:'Space Mono',monospace;font-size:11px;padding:8px 12px;color:rgba(255,255,255,0.35);cursor:pointer;transition:all .2s ease;border-left:2px solid transparent}
+  .dj-track:hover{color:rgba(255,255,255,0.6);background:rgba(255,255,255,0.02)}
+  .dj-track.active{color:var(--accent);border-left-color:var(--accent);background:rgba(192,255,0,0.03)}
+  .cdj-unit{background:#111;border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:24px;width:100%;max-width:500px;box-sizing:border-box}
+  .cdj-display{background:#0a0a0a;border-radius:4px;padding:12px;margin-bottom:20px}
+  .cdj-display-track{font-family:'Syne',sans-serif;font-size:14px;color:#fff;margin-bottom:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .cdj-waveform{width:100%;height:48px;display:block;border-radius:2px}
+  .cdj-display-time{font-family:'Space Mono',monospace;font-size:24px;color:var(--accent);text-align:right;margin-top:8px}
+  .cdj-jog-container{display:flex;flex-direction:column;align-items:center;margin:20px 0}
+  .cdj-jog{width:200px;height:200px;cursor:grab;border-radius:50%}
+  .cdj-jog:active{cursor:grabbing}
+  .cdj-jog-label{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.15em;color:rgba(255,255,255,0.3);text-transform:uppercase;margin-top:6px}
+  .cdj-transport{display:flex;flex-direction:row;gap:12px;justify-content:center;margin-bottom:20px}
+  .cdj-btn{font-family:'Space Mono',monospace;font-size:11px;padding:10px 24px;border:1px solid rgba(255,255,255,0.12);background:transparent;color:#fff;cursor:pointer;transition:all .2s ease;border-radius:2px}
+  .cdj-btn:hover{border-color:rgba(255,255,255,0.3)}
+  .cdj-play.playing{background:var(--accent);color:#191919;border-color:var(--accent)}
+  .cdj-cue:hover{border-color:var(--accent)}
+  .cdj-eq-row{display:flex;flex-direction:row;gap:24px;justify-content:center;align-items:flex-start;margin:20px 0}
+  .cdj-knob-group{display:flex;flex-direction:column;align-items:center;gap:6px}
+  .cdj-knob{width:60px;height:60px;cursor:ns-resize}
+  .cdj-knob-label{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.15em;color:rgba(255,255,255,0.3);text-transform:uppercase}
+  .cdj-fader-group{display:flex;flex-direction:column;align-items:center;gap:6px}
+  .cdj-fader{-webkit-appearance:none;appearance:none;width:6px;height:100px;background:rgba(255,255,255,0.08);border-radius:3px;outline:none;writing-mode:bt-lr;-webkit-writing-mode:vertical-lr;cursor:pointer}
+  .cdj-fader::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:18px;height:10px;background:var(--accent);border-radius:2px;cursor:pointer}
+  .cdj-fader::-moz-range-thumb{width:18px;height:10px;background:var(--accent);border:none;border-radius:2px;cursor:pointer}
+  .cdj-fader::-moz-range-track{background:rgba(255,255,255,0.08);border-radius:3px}
 </style>
 </head>
 <body>
@@ -415,8 +446,48 @@
         </div>
       </div>
     </div>
-    <div class="about-section coming-soon-section" id="section-dj">
-      <div class="coming-soon-text">Coming Soon</div>
+    <div class="about-section" id="section-dj">
+      <div class="dj-container">
+        <div class="dj-tracklist">
+          <div class="dj-tracklist-title">TRACKS</div>
+          <div class="dj-track" data-track="0">01. Midnight Drive</div>
+          <div class="dj-track" data-track="1">02. Neon Streets</div>
+          <div class="dj-track" data-track="2">03. After Hours</div>
+        </div>
+        <div class="cdj-unit">
+          <div class="cdj-display">
+            <div class="cdj-display-track" id="djTrackName">NO TRACK</div>
+            <canvas class="cdj-waveform" id="djWaveform"></canvas>
+            <div class="cdj-display-time" id="djTime">00:00</div>
+          </div>
+          <div class="cdj-jog-container">
+            <canvas class="cdj-jog" id="djJog"></canvas>
+            <div class="cdj-jog-label">JOG</div>
+          </div>
+          <div class="cdj-transport">
+            <button class="cdj-btn cdj-cue" id="djCue">CUE</button>
+            <button class="cdj-btn cdj-play" id="djPlay">&#9654;</button>
+          </div>
+          <div class="cdj-eq-row">
+            <div class="cdj-knob-group">
+              <canvas class="cdj-knob" id="knobHigh" data-param="high"></canvas>
+              <div class="cdj-knob-label">HIGH</div>
+            </div>
+            <div class="cdj-knob-group">
+              <canvas class="cdj-knob" id="knobMid" data-param="mid"></canvas>
+              <div class="cdj-knob-label">MID</div>
+            </div>
+            <div class="cdj-knob-group">
+              <canvas class="cdj-knob" id="knobBass" data-param="bass"></canvas>
+              <div class="cdj-knob-label">BASS</div>
+            </div>
+            <div class="cdj-fader-group">
+              <input type="range" class="cdj-fader" id="djVolume" min="0" max="100" value="80">
+              <div class="cdj-knob-label">VOL</div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
     <div class="about-section coming-soon-section" id="section-tattoo">
       <div class="coming-soon-text">Coming Soon</div>
@@ -2210,6 +2281,7 @@
       const target = tab.dataset.tab;
       aboutPage.querySelectorAll('.about-section').forEach(s => s.classList.remove('active'));
       document.getElementById('section-' + target).classList.add('active');
+      if (target === 'dj') djInitUI();
     });
   });
 
@@ -2265,6 +2337,486 @@
     setTimeout(() => glitchName(), 200);
     // Observe sections for reveal
     setTimeout(() => observeResumeSections(), 100);
+  }
+
+  // ===== DJ SECTION =====
+  const DJ_TRACKS = [
+    { title: 'Midnight Drive', file: '' },
+    { title: 'Neon Streets', file: '' },
+    { title: 'After Hours', file: '' },
+  ];
+
+  let djAudioCtx = null;
+  let djSourceNode = null;
+  let djGainNode = null;
+  let djHighEQ = null;
+  let djMidEQ = null;
+  let djBassEQ = null;
+  let djPlaying = false;
+  let djCurrentTrack = -1;
+  let djBuffer = null;
+  let djStartTime = 0;
+  let djPauseOffset = 0;
+  let djJogAngle = 0;
+  let djJogDragging = false;
+  let djJogLastAngle = 0;
+  let djWaveformData = null;
+  let djAnimId = null;
+  let djUIInited = false;
+
+  // Knob state
+  const djKnobs = {
+    high: { angle: 0, value: 0, el: null, filter: null },
+    mid:  { angle: 0, value: 0, el: null, filter: null },
+    bass: { angle: 0, value: 0, el: null, filter: null },
+  };
+  let djActiveKnob = null;
+  let djKnobStartY = 0;
+  let djKnobStartAngle = 0;
+
+  function djEnsureAudioCtx() {
+    if (djAudioCtx) return;
+    djAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    djHighEQ = djAudioCtx.createBiquadFilter();
+    djHighEQ.type = 'highshelf';
+    djHighEQ.frequency.value = 3200;
+    djHighEQ.gain.value = 0;
+    djMidEQ = djAudioCtx.createBiquadFilter();
+    djMidEQ.type = 'peaking';
+    djMidEQ.frequency.value = 1000;
+    djMidEQ.Q.value = 0.7;
+    djMidEQ.gain.value = 0;
+    djBassEQ = djAudioCtx.createBiquadFilter();
+    djBassEQ.type = 'lowshelf';
+    djBassEQ.frequency.value = 320;
+    djBassEQ.gain.value = 0;
+    djGainNode = djAudioCtx.createGain();
+    djGainNode.gain.value = 0.8;
+    djHighEQ.connect(djMidEQ);
+    djMidEQ.connect(djBassEQ);
+    djBassEQ.connect(djGainNode);
+    djGainNode.connect(djAudioCtx.destination);
+    djKnobs.high.filter = djHighEQ;
+    djKnobs.mid.filter = djMidEQ;
+    djKnobs.bass.filter = djBassEQ;
+  }
+
+  function djGenerateSynth(trackIndex) {
+    djEnsureAudioCtx();
+    const sr = djAudioCtx.sampleRate;
+    const dur = 30;
+    const len = sr * dur;
+    const buf = djAudioCtx.createBuffer(2, len, sr);
+    const L = buf.getChannelData(0);
+    const R = buf.getChannelData(1);
+
+    if (trackIndex === 0) {
+      // Kick drum pattern
+      for (let i = 0; i < len; i++) {
+        const t = i / sr;
+        const beat = t % 0.5;
+        const kick = beat < 0.15 ? Math.sin(2 * Math.PI * (160 - beat * 800) * beat) * Math.exp(-beat * 20) * 0.6 : 0;
+        const hat = (t % 0.25) < 0.02 ? (Math.random() - 0.5) * 0.15 * Math.exp(-(t % 0.25) * 200) : 0;
+        L[i] = R[i] = kick + hat;
+      }
+    } else if (trackIndex === 1) {
+      // Hi-hat / synth pattern
+      for (let i = 0; i < len; i++) {
+        const t = i / sr;
+        const hat = (t % 0.125) < 0.01 ? (Math.random() - 0.5) * 0.3 * Math.exp(-(t % 0.125) * 300) : 0;
+        const synth = Math.sin(2 * Math.PI * 440 * t) * 0.08 * ((Math.sin(2 * Math.PI * 0.5 * t) + 1) * 0.5);
+        const clap = (t % 1.0) > 0.49 && (t % 1.0) < 0.52 ? (Math.random() - 0.5) * 0.25 * Math.exp(-((t % 1.0) - 0.5) * 100) : 0;
+        L[i] = R[i] = hat + synth + clap;
+      }
+    } else {
+      // Bass line
+      const notes = [55, 65.41, 73.42, 55, 82.41, 73.42, 65.41, 55];
+      for (let i = 0; i < len; i++) {
+        const t = i / sr;
+        const noteIdx = Math.floor((t % 4) / 0.5) % notes.length;
+        const freq = notes[noteIdx];
+        const env = Math.min(1, (t % 0.5) * 20) * Math.exp(-(t % 0.5) * 3);
+        const bass = Math.sin(2 * Math.PI * freq * t) * env * 0.4;
+        const sub = Math.sin(2 * Math.PI * freq * 0.5 * t) * env * 0.2;
+        const kick = (t % 1.0) < 0.1 ? Math.sin(2 * Math.PI * 100 * (t % 1.0)) * Math.exp(-(t % 1.0) * 30) * 0.3 : 0;
+        L[i] = R[i] = bass + sub + kick;
+      }
+    }
+    return buf;
+  }
+
+  function djGenerateWaveform(buf) {
+    const data = buf.getChannelData(0);
+    const chunks = 300;
+    const chunkSize = Math.floor(data.length / chunks);
+    const wf = new Float32Array(chunks);
+    for (let i = 0; i < chunks; i++) {
+      let sum = 0;
+      const start = i * chunkSize;
+      for (let j = 0; j < chunkSize; j++) {
+        sum += Math.abs(data[start + j]);
+      }
+      wf[i] = sum / chunkSize;
+    }
+    // Normalize
+    let max = 0;
+    for (let i = 0; i < chunks; i++) if (wf[i] > max) max = wf[i];
+    if (max > 0) for (let i = 0; i < chunks; i++) wf[i] /= max;
+    return wf;
+  }
+
+  function djLoadTrack(idx) {
+    djEnsureAudioCtx();
+    if (djAudioCtx.state === 'suspended') djAudioCtx.resume();
+    if (djPlaying) djStop();
+    djCurrentTrack = idx;
+    djPauseOffset = 0;
+    djBuffer = djGenerateSynth(idx);
+    djWaveformData = djGenerateWaveform(djBuffer);
+    document.getElementById('djTrackName').textContent = DJ_TRACKS[idx].title;
+    document.getElementById('djTime').textContent = '00:00';
+    document.querySelectorAll('.dj-track').forEach((t, i) => t.classList.toggle('active', i === idx));
+    djDrawWaveform(0);
+    djDrawJog();
+  }
+
+  function djPlayPause() {
+    if (djCurrentTrack < 0) return;
+    djEnsureAudioCtx();
+    if (djAudioCtx.state === 'suspended') djAudioCtx.resume();
+    if (djPlaying) {
+      djStop();
+    } else {
+      djPlay();
+    }
+  }
+
+  function djPlay() {
+    if (!djBuffer) return;
+    if (djSourceNode) { try { djSourceNode.stop(); } catch(e){} }
+    djSourceNode = djAudioCtx.createBufferSource();
+    djSourceNode.buffer = djBuffer;
+    djSourceNode.connect(djHighEQ);
+    djSourceNode.loop = true;
+    djStartTime = djAudioCtx.currentTime - djPauseOffset;
+    djSourceNode.start(0, djPauseOffset);
+    djPlaying = true;
+    document.getElementById('djPlay').classList.add('playing');
+    if (!djAnimId) djAnimate();
+  }
+
+  function djStop() {
+    if (djSourceNode) { try { djSourceNode.stop(); } catch(e){} djSourceNode = null; }
+    djPauseOffset = (djAudioCtx.currentTime - djStartTime) % (djBuffer ? djBuffer.duration : 1);
+    djPlaying = false;
+    document.getElementById('djPlay').classList.remove('playing');
+  }
+
+  function djCue() {
+    if (djPlaying) djStop();
+    djPauseOffset = 0;
+    djStartTime = djAudioCtx ? djAudioCtx.currentTime : 0;
+    djJogAngle = 0;
+    document.getElementById('djTime').textContent = '00:00';
+    if (djWaveformData) djDrawWaveform(0);
+    djDrawJog();
+  }
+
+  function djGetCurrentTime() {
+    if (!djBuffer) return 0;
+    if (djPlaying) return (djAudioCtx.currentTime - djStartTime) % djBuffer.duration;
+    return djPauseOffset % (djBuffer ? djBuffer.duration : 1);
+  }
+
+  function djFormatTime(s) {
+    const m = Math.floor(s / 60);
+    const sec = Math.floor(s % 60);
+    return String(m).padStart(2, '0') + ':' + String(sec).padStart(2, '0');
+  }
+
+  // Waveform drawing
+  function djDrawWaveform(progress) {
+    const c = document.getElementById('djWaveform');
+    if (!c) return;
+    const ctx2 = c.getContext('2d');
+    const dpr = window.devicePixelRatio || 1;
+    const w = c.clientWidth;
+    const h = c.clientHeight;
+    if (c.width !== w * dpr || c.height !== h * dpr) {
+      c.width = w * dpr;
+      c.height = h * dpr;
+    }
+    ctx2.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx2.clearRect(0, 0, w, h);
+    if (!djWaveformData) {
+      ctx2.fillStyle = 'rgba(255,255,255,0.05)';
+      ctx2.fillRect(0, 0, w, h);
+      return;
+    }
+    const barW = w / djWaveformData.length;
+    const playheadX = progress * w;
+    for (let i = 0; i < djWaveformData.length; i++) {
+      const x = i * barW;
+      const barH = djWaveformData[i] * h * 0.85;
+      const isPast = x < playheadX;
+      ctx2.fillStyle = isPast ? 'rgba(192,255,0,0.7)' : 'rgba(192,255,0,0.2)';
+      ctx2.fillRect(x, (h - barH) / 2, Math.max(barW - 0.5, 0.5), barH);
+    }
+    // Playhead line
+    ctx2.fillStyle = '#fff';
+    ctx2.fillRect(playheadX - 0.5, 0, 1, h);
+  }
+
+  // Jog wheel drawing
+  function djDrawJog() {
+    const c = document.getElementById('djJog');
+    if (!c) return;
+    const ctx2 = c.getContext('2d');
+    const dpr = window.devicePixelRatio || 1;
+    const size = 200;
+    if (c.width !== size * dpr) { c.width = size * dpr; c.height = size * dpr; }
+    ctx2.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx2.clearRect(0, 0, size, size);
+    const cx2 = size / 2, cy2 = size / 2, r = 90;
+
+    // Outer ring
+    ctx2.beginPath();
+    ctx2.arc(cx2, cy2, r, 0, Math.PI * 2);
+    ctx2.fillStyle = '#1a1a1a';
+    ctx2.fill();
+    ctx2.strokeStyle = 'rgba(255,255,255,0.06)';
+    ctx2.lineWidth = 1;
+    ctx2.stroke();
+
+    // Concentric grooves
+    for (let i = 1; i <= 6; i++) {
+      ctx2.beginPath();
+      ctx2.arc(cx2, cy2, r * (i / 7), 0, Math.PI * 2);
+      ctx2.strokeStyle = 'rgba(255,255,255,0.03)';
+      ctx2.lineWidth = 0.5;
+      ctx2.stroke();
+    }
+
+    // Center circle
+    ctx2.beginPath();
+    ctx2.arc(cx2, cy2, 16, 0, Math.PI * 2);
+    ctx2.fillStyle = '#111';
+    ctx2.fill();
+    ctx2.strokeStyle = 'rgba(255,255,255,0.08)';
+    ctx2.lineWidth = 1;
+    ctx2.stroke();
+
+    // Marker dot
+    const markerR = r - 12;
+    const mx = cx2 + Math.cos(djJogAngle) * markerR;
+    const my = cy2 + Math.sin(djJogAngle) * markerR;
+    ctx2.beginPath();
+    ctx2.arc(mx, my, 5, 0, Math.PI * 2);
+    ctx2.fillStyle = '#c0ff00';
+    ctx2.fill();
+    ctx2.shadowColor = '#c0ff00';
+    ctx2.shadowBlur = 8;
+    ctx2.fill();
+    ctx2.shadowBlur = 0;
+
+    // Subtle highlight
+    const grad = ctx2.createRadialGradient(cx2 - 20, cy2 - 20, 0, cx2, cy2, r);
+    grad.addColorStop(0, 'rgba(255,255,255,0.04)');
+    grad.addColorStop(1, 'transparent');
+    ctx2.beginPath();
+    ctx2.arc(cx2, cy2, r, 0, Math.PI * 2);
+    ctx2.fillStyle = grad;
+    ctx2.fill();
+  }
+
+  // Knob drawing
+  function djDrawKnob(canvasEl, angle) {
+    const ctx2 = canvasEl.getContext('2d');
+    const dpr = window.devicePixelRatio || 1;
+    const size = 60;
+    if (canvasEl.width !== size * dpr) { canvasEl.width = size * dpr; canvasEl.height = size * dpr; }
+    ctx2.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx2.clearRect(0, 0, size, size);
+    const cx2 = size / 2, cy2 = size / 2, r = 24;
+
+    // Body
+    ctx2.beginPath();
+    ctx2.arc(cx2, cy2, r, 0, Math.PI * 2);
+    ctx2.fillStyle = '#222';
+    ctx2.fill();
+
+    // Outer ring
+    ctx2.beginPath();
+    ctx2.arc(cx2, cy2, r, 0, Math.PI * 2);
+    ctx2.strokeStyle = 'rgba(255,255,255,0.12)';
+    ctx2.lineWidth = 1;
+    ctx2.stroke();
+
+    // Indicator line — angle: -150deg (min, 7 o'clock) to +150deg (max, 5 o'clock)
+    // Map knob angle (rad) to visual angle: 0 = noon (pointing up = -PI/2)
+    // Range: -150deg to +150deg from top
+    const minA = (-150) * Math.PI / 180 - Math.PI / 2;
+    const maxA = (150) * Math.PI / 180 - Math.PI / 2;
+    const visualAngle = minA + ((angle + Math.PI * 5 / 6) / (Math.PI * 5 / 3)) * (maxA - minA);
+    const lx = cx2 + Math.cos(visualAngle) * (r - 4);
+    const ly = cy2 + Math.sin(visualAngle) * (r - 4);
+    const lx2 = cx2 + Math.cos(visualAngle) * (r * 0.35);
+    const ly2 = cy2 + Math.sin(visualAngle) * (r * 0.35);
+    ctx2.beginPath();
+    ctx2.moveTo(lx2, ly2);
+    ctx2.lineTo(lx, ly);
+    ctx2.strokeStyle = '#c0ff00';
+    ctx2.lineWidth = 2;
+    ctx2.lineCap = 'round';
+    ctx2.stroke();
+  }
+
+  function djInitUI() {
+    if (djUIInited) return;
+    djUIInited = true;
+
+    // Draw initial knobs
+    ['knobHigh', 'knobMid', 'knobBass'].forEach(id => {
+      const el = document.getElementById(id);
+      const param = el.dataset.param;
+      djKnobs[param].el = el;
+      djDrawKnob(el, 0);
+    });
+
+    // Draw initial jog
+    djDrawJog();
+    // Draw initial waveform (empty)
+    djDrawWaveform(0);
+
+    // Track list clicks
+    document.querySelectorAll('.dj-track').forEach(t => {
+      t.addEventListener('click', () => djLoadTrack(parseInt(t.dataset.track)));
+    });
+
+    // Play/Pause
+    document.getElementById('djPlay').addEventListener('click', djPlayPause);
+    // Cue
+    document.getElementById('djCue').addEventListener('click', djCue);
+
+    // Volume fader
+    const volFader = document.getElementById('djVolume');
+    volFader.addEventListener('input', () => {
+      if (djGainNode) djGainNode.gain.value = volFader.value / 100;
+    });
+
+    // Knob interactions
+    function knobPointerDown(e) {
+      const el = e.currentTarget;
+      const param = el.dataset.param;
+      djActiveKnob = param;
+      djKnobStartY = e.clientY || (e.touches && e.touches[0].clientY) || 0;
+      djKnobStartAngle = djKnobs[param].angle;
+      e.preventDefault();
+    }
+
+    ['knobHigh', 'knobMid', 'knobBass'].forEach(id => {
+      const el = document.getElementById(id);
+      el.addEventListener('mousedown', knobPointerDown);
+      el.addEventListener('touchstart', knobPointerDown, { passive: false });
+    });
+
+    function knobPointerMove(e) {
+      if (!djActiveKnob) return;
+      const clientY = e.clientY || (e.touches && e.touches[0].clientY) || 0;
+      const dy = djKnobStartY - clientY;
+      const sensitivity = 0.008;
+      const minAngle = -Math.PI * 5 / 6; // -150 deg
+      const maxAngle = Math.PI * 5 / 6;  // +150 deg
+      let newAngle = djKnobStartAngle + dy * sensitivity;
+      newAngle = Math.max(minAngle, Math.min(maxAngle, newAngle));
+      djKnobs[djActiveKnob].angle = newAngle;
+      // Map angle to dB: -12 to +12
+      const dbValue = (newAngle / maxAngle) * 12;
+      djKnobs[djActiveKnob].value = dbValue;
+      if (djKnobs[djActiveKnob].filter) {
+        djKnobs[djActiveKnob].filter.gain.value = dbValue;
+      }
+      djDrawKnob(djKnobs[djActiveKnob].el, newAngle);
+    }
+
+    function knobPointerUp() {
+      djActiveKnob = null;
+    }
+
+    document.addEventListener('mousemove', knobPointerMove);
+    document.addEventListener('touchmove', knobPointerMove, { passive: false });
+    document.addEventListener('mouseup', knobPointerUp);
+    document.addEventListener('touchend', knobPointerUp);
+
+    // Jog wheel interaction
+    const jogCanvas = document.getElementById('djJog');
+    function jogGetAngle(e, canvas) {
+      const rect = canvas.getBoundingClientRect();
+      const cx2 = rect.left + rect.width / 2;
+      const cy2 = rect.top + rect.height / 2;
+      const x = (e.clientX || (e.touches && e.touches[0].clientX) || 0) - cx2;
+      const y = (e.clientY || (e.touches && e.touches[0].clientY) || 0) - cy2;
+      return Math.atan2(y, x);
+    }
+
+    jogCanvas.addEventListener('mousedown', (e) => {
+      djJogDragging = true;
+      djJogLastAngle = jogGetAngle(e, jogCanvas);
+      e.preventDefault();
+    });
+    jogCanvas.addEventListener('touchstart', (e) => {
+      djJogDragging = true;
+      djJogLastAngle = jogGetAngle(e, jogCanvas);
+      e.preventDefault();
+    }, { passive: false });
+
+    function jogMove(e) {
+      if (!djJogDragging) return;
+      const a = jogGetAngle(e, jogCanvas);
+      let delta = a - djJogLastAngle;
+      // Normalize delta to avoid jumps at +-PI
+      if (delta > Math.PI) delta -= Math.PI * 2;
+      if (delta < -Math.PI) delta += Math.PI * 2;
+      djJogAngle += delta;
+      djJogLastAngle = a;
+      // Scratch: adjust playback offset
+      if (djBuffer) {
+        const timeShift = (delta / (Math.PI * 2)) * 2; // 1 full rotation = 2 seconds
+        djPauseOffset += timeShift;
+        if (djPauseOffset < 0) djPauseOffset += djBuffer.duration;
+        djPauseOffset = djPauseOffset % djBuffer.duration;
+        if (djPlaying) {
+          djStartTime -= timeShift;
+        }
+      }
+      djDrawJog();
+    }
+
+    document.addEventListener('mousemove', jogMove);
+    document.addEventListener('touchmove', jogMove, { passive: false });
+    document.addEventListener('mouseup', () => { djJogDragging = false; });
+    document.addEventListener('touchend', () => { djJogDragging = false; });
+
+    // Gesture mode support: check for hand cursor position over knobs/jog
+    // This is handled by the existing pinch-click system which dispatches click events
+  }
+
+  function djAnimate() {
+    if (!djPlaying && !document.getElementById('section-dj').classList.contains('active')) {
+      djAnimId = null;
+      return;
+    }
+    djAnimId = requestAnimationFrame(djAnimate);
+
+    if (djPlaying && djBuffer) {
+      const t = djGetCurrentTime();
+      const progress = t / djBuffer.duration;
+      djDrawWaveform(progress);
+      document.getElementById('djTime').textContent = djFormatTime(t);
+      // Rotate jog wheel proportional to time
+      djJogAngle = (t / djBuffer.duration) * Math.PI * 2 * 10; // 10 rotations per track
+      djDrawJog();
+    }
   }
 
 })();
