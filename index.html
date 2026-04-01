@@ -1188,6 +1188,8 @@
     initPortfolioParticles();
     if (!pBgAnimId) animatePortfolioBg();
     if (!thumbAnimId) animateThumbs();
+    // Ensure cursor matches current mode
+    document.body.style.cursor = mouseMode ? 'default' : 'none';
     // Observe cards for entrance animation
     setTimeout(() => observeCards(), 100);
   }
@@ -1622,6 +1624,8 @@
     requestAnimationFrame(() => { labsPage.style.opacity = '1'; });
     // Update nav active states
     labsPage.querySelectorAll('.nav-item').forEach(n => n.classList.toggle('active', n.dataset.page === 'labs'));
+    // Ensure cursor matches current mode
+    document.body.style.cursor = mouseMode ? 'default' : 'none';
     // Init and start
     initLabsCanvas();
     buildLabCards();
