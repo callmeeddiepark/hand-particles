@@ -79,6 +79,70 @@
   .fade-in-delay-4{animation:fi .8s ease .6s forwards;opacity:0}
   .fade-in-delay-5{animation:fi .8s ease .75s forwards;opacity:0}
   @keyframes fi{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+  /* PORTFOLIO PAGE */
+  #page-portfolio{position:fixed;inset:0;z-index:60;display:none;opacity:0;transition:opacity .6s ease;background:var(--bg);overflow-y:auto;overflow-x:hidden}
+  #page-portfolio.active{display:block;opacity:1}
+  canvas#portfolioCanvas{position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none}
+  .portfolio-inner{position:relative;z-index:1;max-width:960px;margin:0 auto;padding:100px 32px 80px}
+  .portfolio-title{font-family:'Syne',sans-serif;font-weight:800;font-size:clamp(32px,6vw,56px);letter-spacing:.12em;text-transform:uppercase;color:var(--fg);margin-bottom:12px;position:relative}
+  .portfolio-subtitle{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.3em;text-transform:uppercase;color:rgba(255,255,255,.2);margin-bottom:56px}
+  .portfolio-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:28px}
+  @media(max-width:700px){.portfolio-grid{grid-template-columns:1fr}}
+
+  /* Card with media art styling */
+  .project-card{background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);border-radius:4px;overflow:hidden;cursor:pointer;transition:border-color .4s ease,transform .4s cubic-bezier(.16,1,.3,1),box-shadow .4s ease;opacity:0;transform:translateY(40px);position:relative}
+  .project-card.visible{opacity:1;transform:translateY(0)}
+  .project-card:hover,.project-card.pinch-hover{border-color:rgba(192,255,0,0.35);transform:translateY(-4px) scale(1.01);box-shadow:0 0 40px rgba(192,255,0,0.06),inset 0 0 30px rgba(192,255,0,0.02)}
+  .project-card::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(192,255,0,0.03) 0%,transparent 50%,rgba(0,255,255,0.02) 100%);opacity:0;transition:opacity .4s ease;z-index:1;pointer-events:none}
+  .project-card:hover::before,.project-card.pinch-hover::before{opacity:1}
+
+  /* Generative thumb canvas */
+  .card-thumb{position:relative;width:100%;padding-top:56.25%;background:#0a0a0a;overflow:hidden}
+  .card-thumb canvas{position:absolute;inset:0;width:100%;height:100%}
+  .card-thumb .play-icon{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:48px;height:48px;border:1.5px solid rgba(255,255,255,0.12);border-radius:50%;display:flex;align-items:center;justify-content:center;transition:all .4s ease;z-index:2;backdrop-filter:blur(4px);background:rgba(0,0,0,0.3)}
+  .project-card:hover .play-icon,.project-card.pinch-hover .play-icon{border-color:rgba(192,255,0,0.4);box-shadow:0 0 20px rgba(192,255,0,0.15)}
+  .play-icon svg{width:18px;height:18px;fill:rgba(255,255,255,0.35);margin-left:3px;transition:fill .3s ease}
+  .project-card:hover .play-icon svg,.project-card.pinch-hover .play-icon svg{fill:rgba(192,255,0,0.7)}
+  .card-index{position:absolute;top:12px;left:14px;font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.2em;color:rgba(255,255,255,.12);z-index:2}
+  .card-body{padding:18px 20px 20px;position:relative;z-index:2}
+  .card-title{font-family:'Syne',sans-serif;font-weight:700;font-size:16px;color:var(--fg);margin-bottom:8px;letter-spacing:.03em;transition:color .3s ease}
+  .project-card:hover .card-title,.project-card.pinch-hover .card-title{color:var(--accent)}
+  .card-desc{font-family:'Space Mono',monospace;font-size:11px;line-height:1.7;color:rgba(255,255,255,0.35);margin-bottom:14px}
+  .card-role{display:inline-block;padding:4px 14px;border:1px solid rgba(192,255,0,0.2);border-radius:2px;font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.12em;color:rgba(192,255,0,.7);text-transform:uppercase;transition:all .3s ease}
+  .project-card:hover .card-role,.project-card.pinch-hover .card-role{border-color:rgba(192,255,0,0.5);background:rgba(192,255,0,0.05)}
+
+  /* Scan line effect on cards */
+  .card-scanline{position:absolute;inset:0;z-index:3;pointer-events:none;overflow:hidden;opacity:0;transition:opacity .4s ease}
+  .project-card:hover .card-scanline,.project-card.pinch-hover .card-scanline{opacity:1}
+  .card-scanline::after{content:'';position:absolute;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,rgba(192,255,0,0.15),transparent);animation:scanDown 2s linear infinite}
+  @keyframes scanDown{0%{top:-2px}100%{top:100%}}
+
+  /* Light trail that follows cursor */
+  .portfolio-light{position:fixed;width:300px;height:300px;border-radius:50%;background:radial-gradient(circle,rgba(192,255,0,0.04) 0%,transparent 70%);pointer-events:none;z-index:1;transform:translate(-50%,-50%);transition:left .1s linear,top .1s linear;display:none}
+
+  /* PROJECT MODAL */
+  .project-modal-overlay{position:fixed;inset:0;z-index:200;background:rgba(0,0,0,0.9);backdrop-filter:blur(8px);display:none;align-items:center;justify-content:center;opacity:0;transition:opacity .4s ease}
+  .project-modal-overlay.active{display:flex;opacity:1}
+  .project-modal{width:90%;max-width:800px;max-height:90vh;overflow-y:auto;background:#111;border:1px solid rgba(255,255,255,0.06);border-radius:4px;position:relative;transform:scale(0.95) translateY(20px);transition:transform .4s cubic-bezier(.16,1,.3,1)}
+  .project-modal-overlay.active .project-modal{transform:scale(1) translateY(0)}
+  .modal-close{position:absolute;top:16px;right:16px;width:36px;height:36px;border:1px solid rgba(255,255,255,0.1);border-radius:2px;background:rgba(0,0,0,0.5);color:var(--fg);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .3s ease;z-index:5;font-family:'Space Mono',monospace;backdrop-filter:blur(4px)}
+  .modal-close:hover,.modal-close.pinch-hover{border-color:rgba(192,255,0,0.5);color:var(--accent);background:rgba(192,255,0,0.05)}
+  .modal-video{width:100%;aspect-ratio:16/9;background:#080808;overflow:hidden;display:flex;align-items:center;justify-content:center;position:relative}
+  .modal-video iframe,.modal-video video{width:100%;height:100%;border:none}
+  .modal-video .placeholder-text{font-family:'Space Mono',monospace;font-size:11px;color:rgba(255,255,255,0.12);letter-spacing:.15em;text-transform:uppercase}
+  .modal-body{padding:28px 32px 36px}
+  .modal-title{font-family:'Syne',sans-serif;font-weight:700;font-size:24px;color:var(--fg);margin-bottom:10px;letter-spacing:.02em}
+  .modal-role{display:inline-block;padding:5px 14px;border:1px solid rgba(192,255,0,0.25);border-radius:2px;font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.12em;color:rgba(192,255,0,.7);text-transform:uppercase;margin-bottom:20px}
+  .modal-desc{font-family:'Space Mono',monospace;font-size:12px;line-height:1.9;color:rgba(255,255,255,0.4)}
+
+  /* Gesture cursor overlay for portfolio/modal */
+  #gestureCursor{position:fixed;z-index:500;pointer-events:none;display:none}
+  #gestureCursor .gc-ring{width:28px;height:28px;border:1.5px solid rgba(255,255,255,0.4);border-radius:50%;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);transition:width .15s ease,height .15s ease,border-color .15s ease}
+  #gestureCursor.pinching .gc-ring{width:16px;height:16px;border-color:rgba(192,255,0,0.6)}
+  #gestureCursor .gc-dot{width:0;height:0;border-radius:50%;background:rgba(255,255,255,0.6);position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);transition:width .15s ease,height .15s ease}
+  #gestureCursor.pinching .gc-dot{width:8px;height:8px}
+  #gestureCursor.hovering .gc-ring{border-color:rgba(192,255,0,0.5)}
 </style>
 </head>
 <body>
@@ -165,6 +229,35 @@
 
 </div>
 
+<div id="page-portfolio">
+  <canvas id="portfolioCanvas"></canvas>
+  <div class="portfolio-light" id="portfolioLight"></div>
+  <nav class="landing-nav">
+    <a href="#" class="nav-item" data-page="about">About</a>
+    <a href="#" class="nav-item active" data-page="portfolio">Portfolio</a>
+    <a href="#" class="nav-item" data-page="labs">Labs</a>
+    <a href="#" class="nav-item" data-page="contact">Contact</a>
+  </nav>
+  <div class="portfolio-inner">
+    <div class="portfolio-title">Portfolio</div>
+    <div class="portfolio-subtitle">Selected Works</div>
+    <div class="portfolio-grid" id="portfolioGrid"></div>
+  </div>
+</div>
+
+<div class="project-modal-overlay" id="projectModal">
+  <div class="project-modal">
+    <button class="modal-close" id="modalClose">&times;</button>
+    <div class="modal-video" id="modalVideo"></div>
+    <div class="modal-body">
+      <div class="modal-title" id="modalTitle"></div>
+      <div class="modal-role" id="modalRole"></div>
+      <div class="modal-desc" id="modalDesc"></div>
+    </div>
+  </div>
+</div>
+
+<div id="gestureCursor"><div class="gc-ring"></div><div class="gc-dot"></div></div>
 <div class="grain"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1675469240/hands.js"></script>
@@ -262,7 +355,13 @@
           pinchMoved = true;
           // Scroll: move the page based on drag distance
           const scrollAmount = -(cursorY - prevCursorY) * 2.5;
-          window.scrollBy(0, scrollAmount);
+          if (projectModal.classList.contains('active')) {
+            projectModal.querySelector('.project-modal').scrollBy(0, scrollAmount);
+          } else if (portfolioActive) {
+            portfolioPage.scrollBy(0, scrollAmount);
+          } else {
+            window.scrollBy(0, scrollAmount);
+          }
         }
       }
 
@@ -291,13 +390,15 @@
     // Find the element at cursor position and click it
     // Temporarily hide the canvas so elementFromPoint can find UI elements
     canvas.style.pointerEvents = 'none';
-    const el = document.elementFromPoint(x, y);
+    let el = document.elementFromPoint(x, y);
     canvas.style.pointerEvents = '';
 
-    if (el && el.click) {
-      el.classList.add('pinch-hover');
-      el.click();
-      setTimeout(() => el.classList.remove('pinch-hover'), 300);
+    if (el) {
+      // Walk up to find clickable ancestor (project-card, nav-item, button, a)
+      const clickable = el.closest('.project-card, .nav-item, .modal-close, button, a') || el;
+      clickable.classList.add('pinch-hover');
+      clickable.click();
+      setTimeout(() => clickable.classList.remove('pinch-hover'), 300);
     }
   }
 
@@ -717,10 +818,20 @@
   // === Animation Loop ===
   function animate() {
     requestAnimationFrame(animate);
-    updatePins();
-    draw();
+    if (!portfolioActive) {
+      updatePins();
+      draw();
+    }
     if (!mouseMode) {
-      drawCursor();
+      if (portfolioActive) {
+        // Still draw cursor on the portfolio page via overlay behavior
+        // The cursor drawing happens on the canvas which is hidden,
+        // so we rely on elementFromPoint hover logic in onResults instead
+      }
+      if (!portfolioActive) {
+        drawCursor();
+      }
+      updateGestureCursor();
       if (handPresent) {
         statusDot.classList.add('active');
         statusText.textContent = 'Tracking';
@@ -821,6 +932,294 @@
 
   document.getElementById('mouseModeBtn').addEventListener('click', switchToMouseMode);
   document.getElementById('gestureModeBtn').addEventListener('click', switchToGestureMode);
+
+  // === Portfolio Data & Logic ===
+  const PROJECTS = [
+    { id:1, title:'Neon Drift', desc:'A short film exploring urban nightscapes through experimental color grading and long exposure techniques.', role:'Director / Editor', videoType:'youtube', videoSrc:'' },
+    { id:2, title:'Pulse', desc:'Music video for an electronic artist featuring real-time generative visuals synced to audio frequencies.', role:'Director', videoType:'youtube', videoSrc:'' },
+    { id:3, title:'Mono', desc:'Minimalist documentary about the craft of black-and-white film photography in the digital age.', role:'Director / Producer', videoType:'direct', videoSrc:'' },
+    { id:4, title:'Waveform', desc:'Interactive installation piece capturing the movement of sound waves translated into physical sculpture.', role:'Creative Director', videoType:'youtube', videoSrc:'' },
+    { id:5, title:'After Hours', desc:'A cinematic portrait of Seoul\'s hidden late-night culture, shot entirely between midnight and dawn.', role:'Director / Editor', videoType:'direct', videoSrc:'' },
+    { id:6, title:'Fragment', desc:'Experimental short combining analog glitch art with modern motion graphics techniques.', role:'Editor', videoType:'youtube', videoSrc:'' },
+    { id:7, title:'Bloom', desc:'Commercial campaign for a luxury skincare brand, emphasizing texture and organic movement.', role:'Producer', videoType:'direct', videoSrc:'' },
+    { id:8, title:'Echo Chamber', desc:'Podcast visual series translating long-form audio conversations into abstract motion design.', role:'Motion Designer', videoType:'youtube', videoSrc:'' },
+    { id:9, title:'Static', desc:'A meditation on digital noise — generative art piece exhibited at Seoul Digital Art Festival.', role:'Artist / Developer', videoType:'direct', videoSrc:'' },
+    { id:10, title:'Daybreak', desc:'Brand film for a tech startup, capturing the energy of building something new from nothing.', role:'Director / Editor', videoType:'youtube', videoSrc:'' },
+  ];
+
+  const portfolioPage = document.getElementById('page-portfolio');
+  const portfolioGrid = document.getElementById('portfolioGrid');
+  const projectModal = document.getElementById('projectModal');
+  const portfolioCanvas = document.getElementById('portfolioCanvas');
+  const pCtx = portfolioCanvas.getContext('2d');
+  const portfolioLight = document.getElementById('portfolioLight');
+  let portfolioActive = false;
+  let pMouseX = 0, pMouseY = 0;
+
+  // === Generative thumb patterns ===
+  const THUMB_PATTERNS = [
+    // Each fn receives (ctx, w, h, t, seed) and draws a generative pattern
+    (ctx,w,h,t,s)=>{/* flow field */ctx.fillStyle='#0a0a0a';ctx.fillRect(0,0,w,h);for(let i=0;i<120;i++){const x=(((s*73+i*37)%w));const y=(((s*91+i*53)%h));const a=Math.sin(x*0.02+t+s)*Math.cos(y*0.02+t)*Math.PI;const len=15+Math.sin(i+t*2)*8;ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+Math.cos(a)*len,y+Math.sin(a)*len);ctx.strokeStyle=`rgba(192,255,0,${0.08+Math.sin(i*0.5+t)*0.04})`;ctx.lineWidth=1;ctx.stroke();}},
+    (ctx,w,h,t,s)=>{/* circles */ctx.fillStyle='#0a0a0a';ctx.fillRect(0,0,w,h);for(let i=0;i<8;i++){const r=20+i*18+Math.sin(t+i+s)*10;ctx.beginPath();ctx.arc(w/2+Math.sin(t*0.7+i+s)*30,h/2+Math.cos(t*0.5+i+s)*20,r,0,Math.PI*2);ctx.strokeStyle=`rgba(0,255,255,${0.06+i*0.01})`;ctx.lineWidth=0.8;ctx.stroke();}},
+    (ctx,w,h,t,s)=>{/* grid warp */ctx.fillStyle='#0a0a0a';ctx.fillRect(0,0,w,h);const g=20;for(let x=0;x<w;x+=g){for(let y=0;y<h;y+=g){const ox=Math.sin(y*0.03+t+s)*6;const oy=Math.cos(x*0.03+t+s)*6;ctx.fillStyle=`rgba(255,0,255,${0.04+Math.sin(x*0.05+y*0.05+t)*0.03})`;ctx.fillRect(x+ox,y+oy,2,2);}}},
+    (ctx,w,h,t,s)=>{/* wave */ctx.fillStyle='#0a0a0a';ctx.fillRect(0,0,w,h);for(let i=0;i<5;i++){ctx.beginPath();for(let x=0;x<w;x+=2){const y=h/2+Math.sin(x*0.015+t+i*0.8+s)*((h/4)-i*8)+Math.sin(x*0.04+t*2)*5;if(x===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);}ctx.strokeStyle=`rgba(192,255,0,${0.05+i*0.015})`;ctx.lineWidth=1.2;ctx.stroke();}},
+    (ctx,w,h,t,s)=>{/* noise dots */ctx.fillStyle='#0a0a0a';ctx.fillRect(0,0,w,h);for(let i=0;i<200;i++){const x=((s*31+i*97+Math.sin(t+i)*20)%w+w)%w;const y=((s*47+i*63+Math.cos(t+i*0.7)*20)%h+h)%h;const sz=1+Math.sin(i+t*3)*1;const c=i%3===0?'192,255,0':i%3===1?'0,255,255':'255,0,255';ctx.fillStyle=`rgba(${c},${0.1+Math.sin(i+t)*0.06})`;ctx.fillRect(x,y,sz,sz);}},
+  ];
+
+  // Build cards with generative thumbnails
+  function buildPortfolioCards() {
+    portfolioGrid.innerHTML = '';
+    PROJECTS.forEach((p, idx) => {
+      const card = document.createElement('div');
+      card.className = 'project-card';
+      card.dataset.projectId = p.id;
+      card.style.transitionDelay = (idx * 0.08) + 's';
+      const patIdx = idx % THUMB_PATTERNS.length;
+      card.innerHTML = `<div class="card-thumb"><canvas data-pattern="${patIdx}" data-seed="${p.id}"></canvas><div class="play-icon"><svg viewBox="0 0 24 24"><polygon points="9,6 18,12 9,18"/></svg></div><span class="card-index">${String(idx+1).padStart(2,'0')}</span></div><div class="card-body"><div class="card-title">${p.title}</div><div class="card-desc">${p.desc}</div><div class="card-role">${p.role}</div></div><div class="card-scanline"></div>`;
+      card.addEventListener('click', () => openProjectModal(p));
+      portfolioGrid.appendChild(card);
+    });
+  }
+  buildPortfolioCards();
+
+  // Animate thumb canvases
+  let thumbAnimId = null;
+  function animateThumbs() {
+    if (!portfolioActive) { thumbAnimId = null; return; }
+    const t = performance.now() * 0.001;
+    portfolioGrid.querySelectorAll('.card-thumb canvas').forEach(c => {
+      if (!c._ready) {
+        const rect = c.parentElement.getBoundingClientRect();
+        c.width = Math.max(1, Math.floor(rect.width * 0.5));
+        c.height = Math.max(1, Math.floor(rect.height * 0.5));
+        c._ctx = c.getContext('2d');
+        c._ready = true;
+      }
+      const pIdx = parseInt(c.dataset.pattern);
+      const seed = parseInt(c.dataset.seed);
+      THUMB_PATTERNS[pIdx](c._ctx, c.width, c.height, t, seed);
+    });
+    thumbAnimId = requestAnimationFrame(animateThumbs);
+  }
+
+  // Intersection observer for card entrance animation
+  function observeCards() {
+    const obs = new IntersectionObserver((entries) => {
+      entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+    }, { threshold: 0.1, root: portfolioPage });
+    portfolioGrid.querySelectorAll('.project-card').forEach(c => obs.observe(c));
+  }
+
+  // Portfolio background canvas - floating particles
+  let pParticles = [];
+  function initPortfolioParticles() {
+    pParticles = [];
+    const pw = portfolioCanvas.width = window.innerWidth;
+    const ph = portfolioCanvas.height = window.innerHeight;
+    for (let i = 0; i < 60; i++) {
+      pParticles.push({
+        x: Math.random() * pw, y: Math.random() * ph,
+        vx: (Math.random() - 0.5) * 0.3, vy: (Math.random() - 0.5) * 0.3,
+        r: 1 + Math.random() * 1.5,
+        color: ['192,255,0','0,255,255','255,0,255'][i % 3],
+        alpha: 0.03 + Math.random() * 0.04
+      });
+    }
+  }
+
+  let pBgAnimId = null;
+  function animatePortfolioBg() {
+    if (!portfolioActive) { pBgAnimId = null; return; }
+    const pw = portfolioCanvas.width;
+    const ph = portfolioCanvas.height;
+    pCtx.fillStyle = 'rgba(25,25,25,0.15)';
+    pCtx.fillRect(0, 0, pw, ph);
+
+    for (const p of pParticles) {
+      // Gentle drift toward mouse/hand
+      const dx = pMouseX - p.x;
+      const dy = pMouseY - p.y;
+      const dist = Math.sqrt(dx*dx + dy*dy) || 1;
+      if (dist < 300) {
+        p.vx += dx / dist * 0.02;
+        p.vy += dy / dist * 0.02;
+      }
+      p.vx *= 0.99; p.vy *= 0.99;
+      p.x += p.vx; p.y += p.vy;
+      if (p.x < 0) p.x = pw; if (p.x > pw) p.x = 0;
+      if (p.y < 0) p.y = ph; if (p.y > ph) p.y = 0;
+
+      pCtx.beginPath();
+      pCtx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      pCtx.fillStyle = `rgba(${p.color},${p.alpha})`;
+      pCtx.fill();
+    }
+
+    // Draw connection lines between nearby particles
+    for (let i = 0; i < pParticles.length; i++) {
+      for (let j = i + 1; j < pParticles.length; j++) {
+        const a = pParticles[i], b = pParticles[j];
+        const d = Math.sqrt((a.x-b.x)**2 + (a.y-b.y)**2);
+        if (d < 120) {
+          pCtx.beginPath();
+          pCtx.moveTo(a.x, a.y);
+          pCtx.lineTo(b.x, b.y);
+          pCtx.strokeStyle = `rgba(192,255,0,${0.015 * (1 - d/120)})`;
+          pCtx.lineWidth = 0.5;
+          pCtx.stroke();
+        }
+      }
+    }
+    pBgAnimId = requestAnimationFrame(animatePortfolioBg);
+  }
+
+  // Portfolio mouse/hand tracking for light trail
+  portfolioPage.addEventListener('mousemove', (e) => {
+    pMouseX = e.clientX; pMouseY = e.clientY;
+    portfolioLight.style.display = 'block';
+    portfolioLight.style.left = e.clientX + 'px';
+    portfolioLight.style.top = e.clientY + 'px';
+  });
+  portfolioPage.addEventListener('mouseleave', () => {
+    portfolioLight.style.display = 'none';
+  });
+
+  // Modal
+  function openProjectModal(p) {
+    const modalVideo = document.getElementById('modalVideo');
+    document.getElementById('modalTitle').textContent = p.title;
+    document.getElementById('modalRole').textContent = p.role;
+    document.getElementById('modalDesc').textContent = p.desc;
+    if (p.videoSrc) {
+      if (p.videoType === 'youtube') {
+        modalVideo.innerHTML = `<iframe src="${p.videoSrc}" allowfullscreen></iframe>`;
+      } else {
+        modalVideo.innerHTML = `<video src="${p.videoSrc}" controls></video>`;
+      }
+    } else {
+      modalVideo.innerHTML = '<div class="placeholder-text">Video Coming Soon</div>';
+    }
+    projectModal.style.display = 'flex';
+    requestAnimationFrame(() => projectModal.classList.add('active'));
+  }
+
+  function closeProjectModal() {
+    projectModal.classList.remove('active');
+    setTimeout(() => {
+      projectModal.style.display = 'none';
+      const modalVideo = document.getElementById('modalVideo');
+      modalVideo.innerHTML = '';
+    }, 300);
+  }
+
+  document.getElementById('modalClose').addEventListener('click', closeProjectModal);
+  projectModal.addEventListener('click', (e) => {
+    if (e.target === projectModal) closeProjectModal();
+  });
+
+  // === Page Navigation ===
+  function showPortfolio() {
+    portfolioActive = true;
+    // Hide landing content (keep page-landing mounted for canvas/camera)
+    document.querySelectorAll('.landing-nav, .landing-ui, .gesture-guide, .landing-info, #gestureModeBtnBottom').forEach(el => {
+      if (el.closest('#page-portfolio')) return;
+      el.style.opacity = '0';
+      el.style.pointerEvents = 'none';
+    });
+    canvas.style.display = 'none';
+    video.style.display = 'none';
+    // Show portfolio
+    portfolioPage.style.display = 'block';
+    requestAnimationFrame(() => { portfolioPage.style.opacity = '1'; });
+    portfolioPage.scrollTop = 0;
+    // Update nav active states in portfolio nav
+    portfolioPage.querySelectorAll('.nav-item').forEach(n => n.classList.toggle('active', n.dataset.page === 'portfolio'));
+    // Reset card visibility for stagger animation
+    portfolioGrid.querySelectorAll('.project-card').forEach(c => { c.classList.remove('visible'); c._ready && (c._ready = false); });
+    // Start generative animations
+    initPortfolioParticles();
+    if (!pBgAnimId) animatePortfolioBg();
+    if (!thumbAnimId) animateThumbs();
+    // Observe cards for entrance animation
+    setTimeout(() => observeCards(), 100);
+  }
+
+  function showLanding() {
+    portfolioActive = false;
+    closeProjectModal();
+    // Stop portfolio animations
+    if (thumbAnimId) { cancelAnimationFrame(thumbAnimId); thumbAnimId = null; }
+    if (pBgAnimId) { cancelAnimationFrame(pBgAnimId); pBgAnimId = null; }
+    // Reset thumb canvases
+    portfolioGrid.querySelectorAll('.card-thumb canvas').forEach(c => { c._ready = false; });
+    // Hide portfolio
+    portfolioPage.style.opacity = '0';
+    setTimeout(() => { portfolioPage.style.display = 'none'; }, 600);
+    // Restore landing content
+    canvas.style.display = '';
+    video.style.display = '';
+    document.querySelectorAll('.landing-nav, .landing-ui, .gesture-guide, .landing-info').forEach(el => {
+      if (el.closest('#page-portfolio')) return;
+      el.style.opacity = '';
+      el.style.pointerEvents = '';
+    });
+    // gestureModeBtnBottom visibility depends on mode
+    const gmb = document.getElementById('gestureModeBtnBottom');
+    gmb.style.opacity = '';
+    gmb.style.pointerEvents = '';
+    gmb.style.display = mouseMode ? '' : 'none';
+    // Update nav active states in landing nav
+    pageLanding.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  }
+
+  // Attach nav handlers to ALL nav items in both landing and portfolio navs
+  document.querySelectorAll('.nav-item').forEach(item => {
+    item.addEventListener('click', (e) => {
+      e.preventDefault();
+      const page = item.dataset.page;
+      if (page === 'portfolio') {
+        showPortfolio();
+      } else {
+        showLanding();
+      }
+    });
+  });
+
+  // === Gesture Cursor for Portfolio ===
+  const gestureCursorEl = document.getElementById('gestureCursor');
+  let prevHoverEl = null;
+
+  function updateGestureCursor() {
+    if (mouseMode || !portfolioActive || !handPresent || cursorX < 0) {
+      gestureCursorEl.style.display = 'none';
+      return;
+    }
+    gestureCursorEl.style.display = 'block';
+    // Smooth position
+    if (smoothCursorX < 0) { smoothCursorX = cursorX; smoothCursorY = cursorY; }
+    smoothCursorX += (cursorX - smoothCursorX) * 0.3;
+    smoothCursorY += (cursorY - smoothCursorY) * 0.3;
+    gestureCursorEl.style.left = smoothCursorX + 'px';
+    gestureCursorEl.style.top = smoothCursorY + 'px';
+    gestureCursorEl.classList.toggle('pinching', isPinching);
+
+    // Update light trail and particle attraction for gesture mode
+    pMouseX = smoothCursorX;
+    pMouseY = smoothCursorY;
+    portfolioLight.style.display = 'block';
+    portfolioLight.style.left = smoothCursorX + 'px';
+    portfolioLight.style.top = smoothCursorY + 'px';
+
+    // Hover detection
+    const el = document.elementFromPoint(smoothCursorX, smoothCursorY);
+    const hoverable = el ? el.closest('.project-card, .nav-item, .modal-close, button, a') : null;
+    if (hoverable !== prevHoverEl) {
+      if (prevHoverEl) prevHoverEl.classList.remove('pinch-hover');
+      if (hoverable) hoverable.classList.add('pinch-hover');
+      prevHoverEl = hoverable;
+    }
+    gestureCursorEl.classList.toggle('hovering', !!hoverable);
+  }
 
   // === Mouse Event Listeners ===
   let mouseDown = false;
