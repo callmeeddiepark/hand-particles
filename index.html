@@ -72,6 +72,9 @@
   .mouse-btn:hover,.mouse-btn.pinch-hover{border-color:rgba(255,255,255,.3);color:rgba(255,255,255,.6)}
   .mouse-btn.pinch-hover{border-color:rgba(192,255,0,.4);color:rgba(192,255,0,.6)}
 
+  /* Global mode toggle — fixed bottom-right on all pages */
+  #globalModeToggle{position:fixed;bottom:28px;right:32px;z-index:500;pointer-events:auto}
+
   .fade-in{animation:fi .8s ease forwards}
   .fade-in-delay-1{animation:fi .8s ease .15s forwards;opacity:0}
   .fade-in-delay-2{animation:fi .8s ease .3s forwards;opacity:0}
@@ -243,14 +246,6 @@
       <div class="gesture-label">손 움직임</div>
       <div class="gesture-desc">인터랙션</div>
     </div>
-    <div class="mode-toggle">
-      <button class="mouse-btn" id="mouseModeBtn">마우스 모드</button>
-    </div>
-  </div>
-
-  <!-- Gesture mode button (shown in mouse mode) -->
-  <div class="gesture-mode-bottom" id="gestureModeBtnBottom" style="display:none">
-    <button class="mouse-btn" id="gestureModeBtn">제스처 모드</button>
   </div>
 
   <!-- Info stack above EDDIE -->
@@ -303,6 +298,7 @@
 </div>
 
 <div id="gestureCursor"><div class="gc-ring"></div><div class="gc-dot"></div></div>
+<div id="globalModeToggle"><button class="mouse-btn" id="globalModeBtn">마우스 모드</button></div>
 <div class="grain"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1675469240/hands.js"></script>
@@ -922,6 +918,8 @@
   });
 
   // === Mouse Mode ===
+  const globalModeBtn = document.getElementById('globalModeBtn');
+
   function switchToMouseMode() {
     mouseMode = true;
 
@@ -937,11 +935,9 @@
     // Update UI
     statusDot.classList.remove('active');
     statusText.textContent = 'Mouse mode';
-    document.getElementById('mouseModeBtn').style.display = 'none';
-    document.getElementById('gestureModeBtnBottom').style.display = '';
+    globalModeBtn.textContent = '제스처 모드';
     // Hide gesture guide items but keep container for layout
     document.querySelectorAll('.gesture-item, .gesture-divider').forEach(el => el.style.display = 'none');
-    document.getElementById('gestureGuide').querySelector('.mode-toggle').style.display = 'none';
     if (handHint) handHint.style.display = 'none';
     document.body.style.cursor = 'default';
 
@@ -956,10 +952,8 @@
     prevHandX = -1; prevHandY = -1;
 
     // Update UI
-    document.getElementById('gestureModeBtnBottom').style.display = 'none';
-    document.getElementById('mouseModeBtn').style.display = '';
+    globalModeBtn.textContent = '마우스 모드';
     document.querySelectorAll('.gesture-item, .gesture-divider').forEach(el => el.style.display = '');
-    document.getElementById('gestureGuide').querySelector('.mode-toggle').style.display = '';
     document.body.style.cursor = 'none';
     statusText.textContent = 'Searching';
 
@@ -971,8 +965,10 @@
     });
   }
 
-  document.getElementById('mouseModeBtn').addEventListener('click', switchToMouseMode);
-  document.getElementById('gestureModeBtn').addEventListener('click', switchToGestureMode);
+  globalModeBtn.addEventListener('click', () => {
+    if (mouseMode) switchToGestureMode();
+    else switchToMouseMode();
+  });
 
   // === Portfolio Data & Logic ===
   const PROJECTS = [
@@ -1173,7 +1169,7 @@
     labsPage.style.opacity = '0';
     setTimeout(() => { labsPage.style.display = 'none'; }, 600);
     // Hide landing content (keep page-landing mounted for canvas/camera)
-    document.querySelectorAll('.landing-nav, .landing-ui, .gesture-guide, .landing-info, #gestureModeBtnBottom').forEach(el => {
+    document.querySelectorAll('.landing-nav, .landing-ui, .gesture-guide, .landing-info').forEach(el => {
       if (el.closest('#page-portfolio') || el.closest('#page-labs')) return;
       el.style.opacity = '0';
       el.style.pointerEvents = 'none';
@@ -1221,11 +1217,6 @@
       el.style.opacity = '';
       el.style.pointerEvents = '';
     });
-    // gestureModeBtnBottom visibility depends on mode
-    const gmb = document.getElementById('gestureModeBtnBottom');
-    gmb.style.opacity = '';
-    gmb.style.pointerEvents = '';
-    gmb.style.display = mouseMode ? '' : 'none';
     // Update nav active states in landing nav
     pageLanding.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   }
@@ -1619,7 +1610,7 @@
     portfolioPage.style.opacity = '0';
     setTimeout(() => { portfolioPage.style.display = 'none'; }, 600);
     // Hide landing content
-    document.querySelectorAll('.landing-nav, .landing-ui, .gesture-guide, .landing-info, #gestureModeBtnBottom').forEach(el => {
+    document.querySelectorAll('.landing-nav, .landing-ui, .gesture-guide, .landing-info').forEach(el => {
       if (el.closest('#page-portfolio') || el.closest('#page-labs')) return;
       el.style.opacity = '0';
       el.style.pointerEvents = 'none';
