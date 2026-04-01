@@ -171,6 +171,17 @@
   /* Labs light trail */
   .labs-light{position:fixed;width:300px;height:300px;border-radius:50%;background:radial-gradient(circle,rgba(192,255,0,0.04) 0%,transparent 70%);pointer-events:none;z-index:1;transform:translate(-50%,-50%);transition:left .1s linear,top .1s linear;display:none}
 
+  /* CONTACT PAGE */
+  #page-contact{position:fixed;inset:0;z-index:60;display:none;opacity:0;transition:opacity .6s ease;background:var(--bg);overflow:hidden}
+  .contact-content{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:1;text-align:center}
+  .contact-info{display:flex;flex-direction:column;align-items:center}
+  .contact-label{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.3em;text-transform:uppercase;color:var(--accent);margin-bottom:8px}
+  .contact-value{font-family:'Syne',sans-serif;font-size:24px;color:#fff;text-decoration:none;display:block;margin-bottom:40px;transition:color .3s ease;letter-spacing:.02em}
+  .contact-value:hover{color:var(--accent)}
+  @media(max-width:700px){.contact-value{font-size:16px}}
+  canvas#contactCanvas{position:fixed;inset:0;width:100%;height:100%;z-index:2}
+  .contact-light{position:fixed;width:300px;height:300px;border-radius:50%;background:radial-gradient(circle,rgba(192,255,0,0.04) 0%,transparent 70%);pointer-events:none;z-index:0;transform:translate(-50%,-50%);transition:left .1s linear,top .1s linear;display:none}
+
   /* Gesture cursor overlay for portfolio/modal */
   #gestureCursor{position:fixed;z-index:500;pointer-events:none;display:none}
   #gestureCursor .gc-ring{width:28px;height:28px;border:1.5px solid rgba(255,255,255,0.4);border-radius:50%;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);transition:width .15s ease,height .15s ease,border-color .15s ease}
@@ -280,6 +291,25 @@
     <a href="#" class="nav-item" data-page="contact">Contact</a>
   </nav>
   <div class="labs-inner" id="labsInner">
+  </div>
+</div>
+
+<div id="page-contact">
+  <canvas id="contactCanvas"></canvas>
+  <div class="contact-light" id="contactLight"></div>
+  <nav class="landing-nav">
+    <a href="#" class="nav-item" data-page="about">About</a>
+    <a href="#" class="nav-item" data-page="portfolio">Portfolio</a>
+    <a href="#" class="nav-item" data-page="labs">Labs</a>
+    <a href="#" class="nav-item active" data-page="contact">Contact</a>
+  </nav>
+  <div class="contact-content">
+    <div class="contact-info">
+      <div class="contact-label">EMAIL</div>
+      <a href="mailto:callmeeddiepark@gmail.com" class="contact-value">callmeeddiepark@gmail.com</a>
+      <div class="contact-label">PHONE</div>
+      <a href="tel:+821051184965" class="contact-value">+82-10-5118-4965</a>
+    </div>
   </div>
 </div>
 
@@ -858,12 +888,12 @@
   // === Animation Loop ===
   function animate() {
     requestAnimationFrame(animate);
-    if (!portfolioActive && !labsActive) {
+    if (!portfolioActive && !labsActive && !contactActive) {
       updatePins();
       draw();
     }
     if (!mouseMode) {
-      if (!portfolioActive && !labsActive) {
+      if (!portfolioActive && !labsActive && !contactActive) {
         drawCursor();
       }
       updateGestureCursor();
@@ -991,6 +1021,7 @@
   const portfolioLight = document.getElementById('portfolioLight');
   let portfolioActive = false;
   let labsActive = false;
+  let contactActive = false;
   let labsAnimId = null;
   let lMouseX = -1, lMouseY = -1;
   const labsPage = document.getElementById('page-labs');
@@ -1162,14 +1193,20 @@
   function showPortfolio() {
     portfolioActive = true;
     labsActive = false;
+    contactActive = false;
     // Stop labs animations
     if (labsAnimId) { cancelAnimationFrame(labsAnimId); labsAnimId = null; }
+    // Stop contact animations
+    if (contactAnimId) { cancelAnimationFrame(contactAnimId); contactAnimId = null; }
     // Hide labs
     labsPage.style.opacity = '0';
     setTimeout(() => { labsPage.style.display = 'none'; }, 600);
+    // Hide contact
+    contactPage.style.opacity = '0';
+    setTimeout(() => { contactPage.style.display = 'none'; }, 600);
     // Hide landing content (keep page-landing mounted for canvas/camera)
     document.querySelectorAll('.landing-nav, .landing-ui, .gesture-guide, .landing-info').forEach(el => {
-      if (el.closest('#page-portfolio') || el.closest('#page-labs')) return;
+      if (el.closest('#page-portfolio') || el.closest('#page-labs') || el.closest('#page-contact')) return;
       el.style.opacity = '0';
       el.style.pointerEvents = 'none';
     });
@@ -1196,7 +1233,13 @@
   function showLanding() {
     portfolioActive = false;
     labsActive = false;
+    contactActive = false;
     closeProjectModal();
+    // Stop contact animations
+    if (contactAnimId) { cancelAnimationFrame(contactAnimId); contactAnimId = null; }
+    // Hide contact
+    contactPage.style.opacity = '0';
+    setTimeout(() => { contactPage.style.display = 'none'; }, 600);
     // Stop portfolio animations
     if (thumbAnimId) { cancelAnimationFrame(thumbAnimId); thumbAnimId = null; }
     if (pBgAnimId) { cancelAnimationFrame(pBgAnimId); pBgAnimId = null; }
@@ -1231,6 +1274,8 @@
         showPortfolio();
       } else if (page === 'labs') {
         showLabs();
+      } else if (page === 'contact') {
+        showContact();
       } else {
         showLanding();
       }
@@ -1242,7 +1287,7 @@
   let prevHoverEl = null;
 
   function updateGestureCursor() {
-    if (mouseMode || (!portfolioActive && !labsActive) || !handPresent || cursorX < 0) {
+    if (mouseMode || (!portfolioActive && !labsActive && !contactActive) || !handPresent || cursorX < 0) {
       gestureCursorEl.style.display = 'none';
       return;
     }
@@ -1271,6 +1316,14 @@
       labsLight.style.display = 'block';
       labsLight.style.left = smoothCursorX + 'px';
       labsLight.style.top = smoothCursorY + 'px';
+    }
+
+    if (contactActive) {
+      // Scratch with hand movement (no pinch needed)
+      contactLight.style.display = 'block';
+      contactLight.style.left = smoothCursorX + 'px';
+      contactLight.style.top = smoothCursorY + 'px';
+      scratchAt(smoothCursorX, smoothCursorY, 60);
     }
 
     // Hover detection
@@ -1598,21 +1651,261 @@
     labsLight.style.display = 'none';
   });
 
-  // === Show Labs ===
-  function showLabs() {
-    labsActive = true;
+  // === CONTACT PAGE ===
+  const contactPage = document.getElementById('page-contact');
+  const contactCanvas = document.getElementById('contactCanvas');
+  const contactCtx = contactCanvas.getContext('2d');
+  const contactLight = document.getElementById('contactLight');
+  let contactAnimId = null;
+  let contactScratchParticles = [];
+  let contactRevealed = false;
+  let contactRevealStart = 0;
+  let contactMouseDown = false;
+  let contactLastScratchX = -1, contactLastScratchY = -1;
+
+  function initContactCanvas() {
+    contactCanvas.width = window.innerWidth;
+    contactCanvas.height = window.innerHeight;
+    contactRevealed = false;
+    contactRevealStart = 0;
+    contactScratchParticles = [];
+    contactCanvas.style.opacity = '1';
+    contactCanvas.style.pointerEvents = 'auto';
+
+    const w = contactCanvas.width;
+    const h = contactCanvas.height;
+
+    // Draw scratch coating: gradient base
+    const grad = contactCtx.createLinearGradient(0, 0, w, h);
+    grad.addColorStop(0, '#2a2a2a');
+    grad.addColorStop(1, '#1f1f1f');
+    contactCtx.fillStyle = grad;
+    contactCtx.fillRect(0, 0, w, h);
+
+    // Add noise/grain texture
+    const imageData = contactCtx.getImageData(0, 0, w, h);
+    const data = imageData.data;
+    for (let i = 0; i < data.length; i += 4) {
+      const noise = (Math.random() - 0.5) * 18;
+      data[i] = Math.max(0, Math.min(255, data[i] + noise));
+      data[i+1] = Math.max(0, Math.min(255, data[i+1] + noise));
+      data[i+2] = Math.max(0, Math.min(255, data[i+2] + noise));
+    }
+    contactCtx.putImageData(imageData, 0, 0);
+
+    // Draw "SCRATCH TO REVEAL" hint text on the coating
+    contactCtx.save();
+    contactCtx.font = "700 clamp(14px, 3vw, 24px) 'Syne', sans-serif";
+    contactCtx.font = `700 ${Math.min(24, Math.max(14, w * 0.03))}px 'Syne', sans-serif`;
+    contactCtx.textAlign = 'center';
+    contactCtx.textBaseline = 'middle';
+    contactCtx.letterSpacing = '0.3em';
+    contactCtx.fillStyle = 'rgba(255,255,255,0.12)';
+    contactCtx.fillText('SCRATCH TO REVEAL', w / 2, h / 2);
+    contactCtx.restore();
+  }
+
+  function scratchAt(x, y, radius) {
+    if (contactRevealed) return;
+    contactCtx.save();
+    contactCtx.globalCompositeOperation = 'destination-out';
+    contactCtx.beginPath();
+    contactCtx.arc(x, y, radius, 0, Math.PI * 2);
+    contactCtx.fill();
+    // Also draw a connecting line from last scratch position for smooth strokes
+    if (contactLastScratchX >= 0) {
+      contactCtx.lineWidth = radius * 2;
+      contactCtx.lineCap = 'round';
+      contactCtx.beginPath();
+      contactCtx.moveTo(contactLastScratchX, contactLastScratchY);
+      contactCtx.lineTo(x, y);
+      contactCtx.stroke();
+    }
+    contactCtx.restore();
+    contactLastScratchX = x;
+    contactLastScratchY = y;
+
+    // Spawn scratch particles
+    for (let i = 0; i < 4; i++) {
+      const angle = Math.random() * Math.PI * 2;
+      const speed = 1 + Math.random() * 3;
+      contactScratchParticles.push({
+        x: x,
+        y: y,
+        vx: Math.cos(angle) * speed,
+        vy: Math.sin(angle) * speed,
+        size: 1 + Math.random() * 2,
+        alpha: 0.6 + Math.random() * 0.4,
+        color: Math.random() > 0.5 ? '200,200,200' : '255,255,255'
+      });
+    }
+  }
+
+  function getScratchPercentage() {
+    const w = contactCanvas.width;
+    const h = contactCanvas.height;
+    // Sample a grid of pixels for performance
+    const step = 20;
+    let transparent = 0;
+    let total = 0;
+    const imageData = contactCtx.getImageData(0, 0, w, h);
+    const data = imageData.data;
+    for (let y = 0; y < h; y += step) {
+      for (let x = 0; x < w; x += step) {
+        const idx = (y * w + x) * 4;
+        if (data[idx + 3] < 128) transparent++;
+        total++;
+      }
+    }
+    return transparent / total;
+  }
+
+  function animateContact() {
+    if (!contactActive) { contactAnimId = null; return; }
+
+    // Draw particles on a separate pass (on top of the contact canvas)
+    // We need to draw particles without affecting the scratch coating
+    // Use a temporary approach: draw particles using destination-over won't work
+    // Instead, we just let particles live as DOM-less visual on the canvas
+    // Actually particles should appear ON TOP of the coating, so we draw them normally
+    const w = contactCanvas.width;
+    const h = contactCanvas.height;
+
+    // Update and draw scratch particles on the contact canvas
+    // We draw particles in 'source-over' mode on top
+    contactCtx.save();
+    contactCtx.globalCompositeOperation = 'source-over';
+    for (let i = contactScratchParticles.length - 1; i >= 0; i--) {
+      const p = contactScratchParticles[i];
+      p.x += p.vx;
+      p.y += p.vy;
+      p.vy += 0.05; // gravity
+      p.alpha -= 0.02;
+      if (p.alpha <= 0) {
+        contactScratchParticles.splice(i, 1);
+        continue;
+      }
+      contactCtx.beginPath();
+      contactCtx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+      contactCtx.fillStyle = `rgba(${p.color},${p.alpha})`;
+      contactCtx.fill();
+    }
+    contactCtx.restore();
+
+    // Animate hint text pulse - redraw hint if not too much scratched
+    // (Skip this since redrawing would cover scratched areas)
+
+    // Check scratch percentage periodically
+    if (!contactRevealed && Math.random() < 0.05) {
+      const pct = getScratchPercentage();
+      if (pct > 0.5) {
+        contactRevealed = true;
+        contactRevealStart = performance.now();
+      }
+    }
+
+    // Auto-reveal fade
+    if (contactRevealed) {
+      const elapsed = performance.now() - contactRevealStart;
+      const progress = Math.min(1, elapsed / 1000);
+      contactCanvas.style.opacity = String(1 - progress);
+      if (progress >= 1) {
+        contactCanvas.style.pointerEvents = 'none';
+      }
+    }
+
+    contactAnimId = requestAnimationFrame(animateContact);
+  }
+
+  // Mouse events for contact scratch
+  contactCanvas.addEventListener('mousedown', (e) => {
+    if (!contactActive || !mouseMode) return;
+    contactMouseDown = true;
+    contactLastScratchX = -1;
+    contactLastScratchY = -1;
+    scratchAt(e.clientX, e.clientY, 40);
+  });
+  contactCanvas.addEventListener('mousemove', (e) => {
+    if (!contactActive) return;
+    // Light trail
+    contactLight.style.display = 'block';
+    contactLight.style.left = e.clientX + 'px';
+    contactLight.style.top = e.clientY + 'px';
+    if (!mouseMode || !contactMouseDown) return;
+    scratchAt(e.clientX, e.clientY, 40);
+  });
+  contactCanvas.addEventListener('mouseup', () => {
+    contactMouseDown = false;
+    contactLastScratchX = -1;
+    contactLastScratchY = -1;
+  });
+  contactCanvas.addEventListener('mouseleave', () => {
+    contactMouseDown = false;
+    contactLastScratchX = -1;
+    contactLastScratchY = -1;
+    contactLight.style.display = 'none';
+  });
+
+  function showContact() {
+    contactActive = true;
     portfolioActive = false;
+    labsActive = false;
     closeProjectModal();
     // Stop portfolio animations
     if (thumbAnimId) { cancelAnimationFrame(thumbAnimId); thumbAnimId = null; }
     if (pBgAnimId) { cancelAnimationFrame(pBgAnimId); pBgAnimId = null; }
     portfolioGrid.querySelectorAll('.card-thumb canvas').forEach(c => { c._ready = false; });
+    // Stop labs animations
+    if (labsAnimId) { cancelAnimationFrame(labsAnimId); labsAnimId = null; }
     // Hide portfolio
     portfolioPage.style.opacity = '0';
     setTimeout(() => { portfolioPage.style.display = 'none'; }, 600);
+    // Hide labs
+    labsPage.style.opacity = '0';
+    setTimeout(() => { labsPage.style.display = 'none'; }, 600);
     // Hide landing content
     document.querySelectorAll('.landing-nav, .landing-ui, .gesture-guide, .landing-info').forEach(el => {
-      if (el.closest('#page-portfolio') || el.closest('#page-labs')) return;
+      if (el.closest('#page-portfolio') || el.closest('#page-labs') || el.closest('#page-contact')) return;
+      el.style.opacity = '0';
+      el.style.pointerEvents = 'none';
+    });
+    canvas.style.display = 'none';
+    video.style.display = 'none';
+    // Show contact
+    contactPage.style.display = 'block';
+    requestAnimationFrame(() => { contactPage.style.opacity = '1'; });
+    // Update nav active states
+    contactPage.querySelectorAll('.nav-item').forEach(n => n.classList.toggle('active', n.dataset.page === 'contact'));
+    // Ensure cursor matches current mode
+    document.body.style.cursor = mouseMode ? 'default' : 'none';
+    // Init scratch canvas
+    initContactCanvas();
+    contactLastScratchX = -1;
+    contactLastScratchY = -1;
+    if (!contactAnimId) animateContact();
+  }
+
+  // === Show Labs ===
+  function showLabs() {
+    labsActive = true;
+    portfolioActive = false;
+    contactActive = false;
+    closeProjectModal();
+    // Stop portfolio animations
+    if (thumbAnimId) { cancelAnimationFrame(thumbAnimId); thumbAnimId = null; }
+    if (pBgAnimId) { cancelAnimationFrame(pBgAnimId); pBgAnimId = null; }
+    portfolioGrid.querySelectorAll('.card-thumb canvas').forEach(c => { c._ready = false; });
+    // Stop contact animations
+    if (contactAnimId) { cancelAnimationFrame(contactAnimId); contactAnimId = null; }
+    // Hide portfolio
+    portfolioPage.style.opacity = '0';
+    setTimeout(() => { portfolioPage.style.display = 'none'; }, 600);
+    // Hide contact
+    contactPage.style.opacity = '0';
+    setTimeout(() => { contactPage.style.display = 'none'; }, 600);
+    // Hide landing content
+    document.querySelectorAll('.landing-nav, .landing-ui, .gesture-guide, .landing-info').forEach(el => {
+      if (el.closest('#page-portfolio') || el.closest('#page-labs') || el.closest('#page-contact')) return;
       el.style.opacity = '0';
       el.style.pointerEvents = 'none';
     });
