@@ -648,7 +648,8 @@
       if (isPinching && wasPinching) {
         // Pinch held — check if dragging (scroll)
         const dy = cursorY - pinchStartY;
-        if (Math.abs(dy) > 8 && !labsActive && !gestureKnobTarget) {
+        const djTabActive = aboutActive && document.getElementById('section-dj').classList.contains('active');
+        if (Math.abs(dy) > 8 && !labsActive && !gestureKnobTarget && !djTabActive) {
           pinchMoved = true;
           // Scroll: move the page based on drag distance
           const scrollAmount = -(cursorY - prevCursorY) * 2.5;
