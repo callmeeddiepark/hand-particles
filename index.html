@@ -136,6 +136,38 @@
   .modal-role{display:inline-block;padding:5px 14px;border:1px solid rgba(192,255,0,0.25);border-radius:2px;font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.12em;color:rgba(192,255,0,.7);text-transform:uppercase;margin-bottom:20px}
   .modal-desc{font-family:'Space Mono',monospace;font-size:12px;line-height:1.9;color:rgba(255,255,255,0.4)}
 
+  /* LABS PAGE */
+  #page-labs{position:fixed;inset:0;z-index:60;display:none;opacity:0;transition:opacity .6s ease;background:var(--bg);overflow:hidden}
+  #page-labs.active{display:block;opacity:1}
+  canvas#labsCanvas{position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none}
+  .labs-inner{position:relative;z-index:1;width:100%;height:100%}
+  .labs-title{font-family:'Syne',sans-serif;font-weight:800;font-size:clamp(32px,6vw,56px);letter-spacing:.12em;text-transform:uppercase;color:var(--fg);position:fixed;top:90px;left:50%;transform:translateX(-50%);z-index:2;pointer-events:none}
+
+  /* Floating lab card */
+  .lab-card{position:absolute;width:210px;padding:16px 18px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:4px;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);cursor:pointer;transition:border-color .3s ease,box-shadow .3s ease;z-index:3;user-select:none;will-change:transform}
+  .lab-card:hover,.lab-card.pinch-hover,.lab-card.card-hover{border-color:rgba(192,255,0,0.4);box-shadow:0 0 24px rgba(192,255,0,0.06)}
+  .lab-card .type-badge{display:inline-block;padding:2px 8px;border-radius:10px;font-family:'Space Mono',monospace;font-size:8px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:8px;border:1px solid}
+  .lab-card .type-badge.type-app{color:var(--accent);border-color:rgba(192,255,0,0.3)}
+  .lab-card .type-badge.type-web{color:#00e5ff;border-color:rgba(0,229,255,0.3)}
+  .lab-card .type-badge.type-experiment{color:#ff00ff;border-color:rgba(255,0,255,0.3)}
+  .lab-card .card-name{font-family:'Syne',sans-serif;font-weight:700;font-size:14px;color:var(--fg);margin-bottom:6px;letter-spacing:.02em}
+  .lab-card .card-one-liner{font-family:'Space Mono',monospace;font-size:10px;line-height:1.5;color:rgba(255,255,255,0.3);margin-bottom:10px}
+  .lab-card .card-status{display:flex;align-items:center;gap:6px;font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.08em;text-transform:uppercase}
+  .lab-card .status-indicator{width:5px;height:5px;border-radius:50%}
+  .lab-card .status-indicator.live{background:var(--accent);box-shadow:0 0 6px var(--accent)}
+  .lab-card .status-indicator.in-progress{background:#ffb300;box-shadow:0 0 6px rgba(255,179,0,0.4)}
+  .lab-card .status-indicator.concept{background:rgba(255,255,255,0.3)}
+  .lab-card .status-text.live{color:rgba(192,255,0,0.7)}
+  .lab-card .status-text.in-progress{color:rgba(255,179,0,0.7)}
+  .lab-card .status-text.concept{color:rgba(255,255,255,0.3)}
+  .lab-card .card-link-icon{position:absolute;top:14px;right:14px;width:16px;height:16px;color:rgba(255,255,255,0.15);transition:color .3s ease}
+  .lab-card:hover .card-link-icon,.lab-card.card-hover .card-link-icon{color:rgba(192,255,0,0.5)}
+  .lab-card .coming-soon-flash{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.7);border-radius:4px;font-family:'Space Mono',monospace;font-size:11px;letter-spacing:.15em;color:var(--accent);text-transform:uppercase;opacity:0;pointer-events:none;transition:opacity .2s ease}
+  .lab-card .coming-soon-flash.show{opacity:1}
+
+  /* Labs light trail */
+  .labs-light{position:fixed;width:300px;height:300px;border-radius:50%;background:radial-gradient(circle,rgba(192,255,0,0.04) 0%,transparent 70%);pointer-events:none;z-index:1;transform:translate(-50%,-50%);transition:left .1s linear,top .1s linear;display:none}
+
   /* Gesture cursor overlay for portfolio/modal */
   #gestureCursor{position:fixed;z-index:500;pointer-events:none;display:none}
   #gestureCursor .gc-ring{width:28px;height:28px;border:1.5px solid rgba(255,255,255,0.4);border-radius:50%;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);transition:width .15s ease,height .15s ease,border-color .15s ease}
@@ -195,10 +227,10 @@
     <div class="gesture-item">
       <div class="gesture-icon">
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M12 4v16m0-16l-2 2m2-2l2 2m-2 16l-2-2m2 2l2-2"/>
+          <circle cx="12" cy="8" r="2.5"/><path d="M12 11v6m0 0l-2-2m2 2l2-2"/>
         </svg>
       </div>
-      <div class="gesture-label">엄지 ↕</div>
+      <div class="gesture-label">핀치 + 드래그</div>
       <div class="gesture-desc">스크롤</div>
     </div>
     <div class="gesture-divider"></div>
@@ -242,6 +274,20 @@
     <div class="portfolio-title">Portfolio</div>
     <div class="portfolio-subtitle">Selected Works</div>
     <div class="portfolio-grid" id="portfolioGrid"></div>
+  </div>
+</div>
+
+<div id="page-labs">
+  <canvas id="labsCanvas"></canvas>
+  <div class="labs-light" id="labsLight"></div>
+  <nav class="landing-nav">
+    <a href="#" class="nav-item" data-page="about">About</a>
+    <a href="#" class="nav-item" data-page="portfolio">Portfolio</a>
+    <a href="#" class="nav-item active" data-page="labs">Labs</a>
+    <a href="#" class="nav-item" data-page="contact">Contact</a>
+  </nav>
+  <div class="labs-inner" id="labsInner">
+    <div class="labs-title">Labs</div>
   </div>
 </div>
 
@@ -304,10 +350,6 @@
   let pinchMoved = false;
   let prevCursorY = 0;
 
-  // Middle finger scroll state
-  let midFingerY = 0;
-  let prevMidFingerY = 0;
-  let midFingerScrolling = false;
 
   function onResults(results) {
     if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
@@ -345,32 +387,6 @@
       wasPinching = isPinching;
       isPinching = pinchDist < 0.045;
 
-      // Thumb scroll — detect thumb extended up/down movement
-      const thumbTip = lm[4];    // thumb tip
-      const indexBase = lm[5];   // index finger MCP (base)
-      // Thumb is "extended" when tip is far from index base (spread out)
-      const thumbSpread = Math.abs(thumbTip.x - indexBase.x) > 0.08;
-
-      const newMidFingerY = thumbTip.y * H;
-      const midFingerActive = thumbSpread && !isPinching;
-
-      if (midFingerActive) {
-        if (midFingerScrolling && prevMidFingerY > 0) {
-          const scrollAmount = -(newMidFingerY - prevMidFingerY) * 3;
-          if (projectModal.classList.contains('active')) {
-            projectModal.querySelector('.project-modal').scrollBy(0, scrollAmount);
-          } else if (portfolioActive) {
-            portfolioPage.scrollBy(0, scrollAmount);
-          } else {
-            window.scrollBy(0, scrollAmount);
-          }
-        }
-        midFingerScrolling = true;
-      } else {
-        midFingerScrolling = false;
-      }
-      prevMidFingerY = newMidFingerY;
-
       // Pinch logic: click vs scroll
       if (isPinching && !wasPinching) {
         // Pinch just started — record start position
@@ -382,7 +398,7 @@
       if (isPinching && wasPinching) {
         // Pinch held — check if dragging (scroll)
         const dy = cursorY - pinchStartY;
-        if (Math.abs(dy) > 8) {
+        if (Math.abs(dy) > 8 && !labsActive) {
           pinchMoved = true;
           // Scroll: move the page based on drag distance
           const scrollAmount = -(cursorY - prevCursorY) * 2.5;
@@ -413,7 +429,6 @@
       handVelY *= 0.9;
       isPinching = false;
       wasPinching = false;
-      midFingerScrolling = false;
     }
   }
 
@@ -850,17 +865,12 @@
   // === Animation Loop ===
   function animate() {
     requestAnimationFrame(animate);
-    if (!portfolioActive) {
+    if (!portfolioActive && !labsActive) {
       updatePins();
       draw();
     }
     if (!mouseMode) {
-      if (portfolioActive) {
-        // Still draw cursor on the portfolio page via overlay behavior
-        // The cursor drawing happens on the canvas which is hidden,
-        // so we rely on elementFromPoint hover logic in onResults instead
-      }
-      if (!portfolioActive) {
+      if (!portfolioActive && !labsActive) {
         drawCursor();
       }
       updateGestureCursor();
@@ -986,6 +996,11 @@
   const pCtx = portfolioCanvas.getContext('2d');
   const portfolioLight = document.getElementById('portfolioLight');
   let portfolioActive = false;
+  let labsActive = false;
+  let labsAnimId = null;
+  let lMouseX = -1, lMouseY = -1;
+  const labsPage = document.getElementById('page-labs');
+  const labsLight = document.getElementById('labsLight');
   let pMouseX = 0, pMouseY = 0;
 
   // === Generative thumb patterns ===
@@ -1152,9 +1167,15 @@
   // === Page Navigation ===
   function showPortfolio() {
     portfolioActive = true;
+    labsActive = false;
+    // Stop labs animations
+    if (labsAnimId) { cancelAnimationFrame(labsAnimId); labsAnimId = null; }
+    // Hide labs
+    labsPage.style.opacity = '0';
+    setTimeout(() => { labsPage.style.display = 'none'; }, 600);
     // Hide landing content (keep page-landing mounted for canvas/camera)
     document.querySelectorAll('.landing-nav, .landing-ui, .gesture-guide, .landing-info, #gestureModeBtnBottom').forEach(el => {
-      if (el.closest('#page-portfolio')) return;
+      if (el.closest('#page-portfolio') || el.closest('#page-labs')) return;
       el.style.opacity = '0';
       el.style.pointerEvents = 'none';
     });
@@ -1178,20 +1199,26 @@
 
   function showLanding() {
     portfolioActive = false;
+    labsActive = false;
     closeProjectModal();
     // Stop portfolio animations
     if (thumbAnimId) { cancelAnimationFrame(thumbAnimId); thumbAnimId = null; }
     if (pBgAnimId) { cancelAnimationFrame(pBgAnimId); pBgAnimId = null; }
+    // Stop labs animations
+    if (labsAnimId) { cancelAnimationFrame(labsAnimId); labsAnimId = null; }
     // Reset thumb canvases
     portfolioGrid.querySelectorAll('.card-thumb canvas').forEach(c => { c._ready = false; });
     // Hide portfolio
     portfolioPage.style.opacity = '0';
     setTimeout(() => { portfolioPage.style.display = 'none'; }, 600);
+    // Hide labs
+    labsPage.style.opacity = '0';
+    setTimeout(() => { labsPage.style.display = 'none'; }, 600);
     // Restore landing content
     canvas.style.display = '';
     video.style.display = '';
     document.querySelectorAll('.landing-nav, .landing-ui, .gesture-guide, .landing-info').forEach(el => {
-      if (el.closest('#page-portfolio')) return;
+      if (el.closest('#page-portfolio') || el.closest('#page-labs')) return;
       el.style.opacity = '';
       el.style.pointerEvents = '';
     });
@@ -1204,13 +1231,15 @@
     pageLanding.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   }
 
-  // Attach nav handlers to ALL nav items in both landing and portfolio navs
+  // Attach nav handlers to ALL nav items in landing, portfolio, and labs navs
   document.querySelectorAll('.nav-item').forEach(item => {
     item.addEventListener('click', (e) => {
       e.preventDefault();
       const page = item.dataset.page;
       if (page === 'portfolio') {
         showPortfolio();
+      } else if (page === 'labs') {
+        showLabs();
       } else {
         showLanding();
       }
@@ -1222,7 +1251,7 @@
   let prevHoverEl = null;
 
   function updateGestureCursor() {
-    if (mouseMode || !portfolioActive || !handPresent || cursorX < 0) {
+    if (mouseMode || (!portfolioActive && !labsActive) || !handPresent || cursorX < 0) {
       gestureCursorEl.style.display = 'none';
       return;
     }
@@ -1235,16 +1264,27 @@
     gestureCursorEl.style.top = smoothCursorY + 'px';
     gestureCursorEl.classList.toggle('pinching', isPinching);
 
-    // Update light trail and particle attraction for gesture mode
-    pMouseX = smoothCursorX;
-    pMouseY = smoothCursorY;
-    portfolioLight.style.display = 'block';
-    portfolioLight.style.left = smoothCursorX + 'px';
-    portfolioLight.style.top = smoothCursorY + 'px';
+    if (portfolioActive) {
+      // Update light trail and particle attraction for gesture mode
+      pMouseX = smoothCursorX;
+      pMouseY = smoothCursorY;
+      portfolioLight.style.display = 'block';
+      portfolioLight.style.left = smoothCursorX + 'px';
+      portfolioLight.style.top = smoothCursorY + 'px';
+    }
+
+    if (labsActive) {
+      // Update labs cursor position for card physics
+      lMouseX = smoothCursorX;
+      lMouseY = smoothCursorY;
+      labsLight.style.display = 'block';
+      labsLight.style.left = smoothCursorX + 'px';
+      labsLight.style.top = smoothCursorY + 'px';
+    }
 
     // Hover detection
     const el = document.elementFromPoint(smoothCursorX, smoothCursorY);
-    const hoverable = el ? el.closest('.project-card, .nav-item, .modal-close, button, a') : null;
+    const hoverable = el ? el.closest('.project-card, .lab-card, .nav-item, .modal-close, button, a') : null;
     if (hoverable !== prevHoverEl) {
       if (prevHoverEl) prevHoverEl.classList.remove('pinch-hover');
       if (hoverable) hoverable.classList.add('pinch-hover');
@@ -1295,6 +1335,308 @@
     if (!mouseMode) return;
     mouseDown = false;
   });
+
+  // === LABS PAGE ===
+  const LAB_PROJECTS = [
+    { title: 'AutoTrader', type: 'APP', desc: 'AI-powered crypto trading bot', status: 'IN PROGRESS', link: '' },
+    { title: 'Hand Particles', type: 'WEB', desc: 'Gesture-controlled interactive portfolio', status: 'LIVE', link: 'https://callmeeddiepark.github.io/hand-particles/' },
+    { title: 'Vibe Studio', type: 'APP', desc: 'AI music visualization engine', status: 'CONCEPT', link: '' },
+    { title: 'Neural Canvas', type: 'EXPERIMENT', desc: 'Generative art with neural networks', status: 'CONCEPT', link: '' },
+    { title: 'Ad Generator', type: 'APP', desc: 'AI-driven ad creative platform', status: 'IN PROGRESS', link: '' },
+    { title: 'Motion Detect', type: 'EXPERIMENT', desc: 'Real-time body tracking experiments', status: 'LIVE', link: '' },
+    { title: 'Code Rain', type: 'EXPERIMENT', desc: 'Matrix-style generative typography', status: 'LIVE', link: '' },
+    { title: 'ChatBot UI', type: 'WEB', desc: 'Conversational AI interface kit', status: 'IN PROGRESS', link: '' },
+    { title: 'Pixel Morph', type: 'EXPERIMENT', desc: 'Image-to-particle transformation', status: 'CONCEPT', link: '' },
+    { title: 'Daily Brief', type: 'APP', desc: 'AI morning news summarizer', status: 'CONCEPT', link: '' },
+  ];
+
+  const labsInner = document.getElementById('labsInner');
+  const labsCanvas = document.getElementById('labsCanvas');
+  const labsCtx = labsCanvas.getContext('2d');
+  let labCards = [];
+
+  // Matrix rain columns
+  let matrixColumns = [];
+  const MATRIX_CHARS = '01{}[]<>//=:;+-*&|~^!?@#$%abcdef0123456789';
+
+  function initLabsCanvas() {
+    labsCanvas.width = window.innerWidth;
+    labsCanvas.height = window.innerHeight;
+    // Init matrix columns
+    const cols = Math.floor(labsCanvas.width / 14);
+    matrixColumns = [];
+    for (let i = 0; i < cols; i++) {
+      matrixColumns.push({
+        x: i * 14,
+        y: Math.random() * labsCanvas.height,
+        speed: 0.5 + Math.random() * 1.5,
+        baseSpeed: 0.5 + Math.random() * 1.5,
+        chars: []
+      });
+      // Pre-fill chars
+      const numChars = Math.floor(5 + Math.random() * 15);
+      for (let j = 0; j < numChars; j++) {
+        matrixColumns[i].chars.push(MATRIX_CHARS[Math.floor(Math.random() * MATRIX_CHARS.length)]);
+      }
+    }
+  }
+
+  function buildLabCards() {
+    // Remove existing cards
+    labsInner.querySelectorAll('.lab-card').forEach(c => c.remove());
+    labCards = [];
+    const margin = 40;
+    const cw = 210, ch = 140;
+
+    LAB_PROJECTS.forEach((p, idx) => {
+      const card = document.createElement('div');
+      card.className = 'lab-card';
+
+      const typeClass = 'type-' + p.type.toLowerCase();
+      const statusClass = p.status === 'LIVE' ? 'live' : p.status === 'IN PROGRESS' ? 'in-progress' : 'concept';
+      const statusLabel = p.status;
+
+      let linkIcon = '';
+      if (p.link) {
+        linkIcon = '<svg class="card-link-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17L17 7M17 7H7M17 7v10"/></svg>';
+      }
+
+      card.innerHTML = `
+        <span class="type-badge ${typeClass}">${p.type}</span>
+        ${linkIcon}
+        <div class="card-name">${p.title}</div>
+        <div class="card-one-liner">${p.desc}</div>
+        <div class="card-status">
+          <span class="status-indicator ${statusClass}"></span>
+          <span class="status-text ${statusClass}">${statusLabel}</span>
+        </div>
+        <div class="coming-soon-flash">Coming Soon</div>
+      `;
+
+      // Random position avoiding edges
+      const x = margin + Math.random() * (window.innerWidth - cw - margin * 2);
+      const y = 140 + Math.random() * (window.innerHeight - ch - 180);
+
+      card.style.left = x + 'px';
+      card.style.top = y + 'px';
+
+      // Click handler
+      card.addEventListener('click', () => {
+        if (p.link) {
+          window.open(p.link, '_blank');
+        } else {
+          const flash = card.querySelector('.coming-soon-flash');
+          flash.classList.add('show');
+          setTimeout(() => flash.classList.remove('show'), 800);
+        }
+      });
+
+      labsInner.appendChild(card);
+
+      labCards.push({
+        el: card,
+        x: x,
+        y: y,
+        w: cw,
+        h: ch,
+        vx: (Math.random() - 0.5) * 0.6,
+        vy: (Math.random() - 0.5) * 0.6,
+        data: p
+      });
+    });
+  }
+
+  function updateLabCards() {
+    const friction = 0.995;
+    const bounce = 0.7;
+    const margin = 10;
+    const maxX = window.innerWidth;
+    const maxY = window.innerHeight;
+    const repelRadius = 160;
+    const repelStrength = 0.8;
+
+    for (let i = 0; i < labCards.length; i++) {
+      const c = labCards[i];
+
+      // Repulsion from cursor
+      if (lMouseX > 0) {
+        const cx = c.x + c.w / 2;
+        const cy = c.y + c.h / 2;
+        const dx = cx - lMouseX;
+        const dy = cy - lMouseY;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist < repelRadius && dist > 1) {
+          const force = (1 - dist / repelRadius) * repelStrength;
+          c.vx += (dx / dist) * force;
+          c.vy += (dy / dist) * force;
+        }
+
+        // Hover detection
+        if (lMouseX >= c.x && lMouseX <= c.x + c.w && lMouseY >= c.y && lMouseY <= c.y + c.h) {
+          c.el.classList.add('card-hover');
+        } else {
+          c.el.classList.remove('card-hover');
+        }
+      }
+
+      // Card-to-card collision (simple push apart)
+      for (let j = i + 1; j < labCards.length; j++) {
+        const o = labCards[j];
+        const overlapX = (c.w / 2 + o.w / 2) - Math.abs((c.x + c.w / 2) - (o.x + o.w / 2));
+        const overlapY = (c.h / 2 + o.h / 2) - Math.abs((c.y + c.h / 2) - (o.y + o.h / 2));
+        if (overlapX > 0 && overlapY > 0) {
+          const dx = (c.x + c.w / 2) - (o.x + o.w / 2);
+          const dy = (c.y + c.h / 2) - (o.y + o.h / 2);
+          const dist = Math.sqrt(dx * dx + dy * dy) || 1;
+          const push = 0.3;
+          c.vx += (dx / dist) * push;
+          c.vy += (dy / dist) * push;
+          o.vx -= (dx / dist) * push;
+          o.vy -= (dy / dist) * push;
+        }
+      }
+
+      // Friction
+      c.vx *= friction;
+      c.vy *= friction;
+
+      // Clamp velocity
+      const maxVel = 3;
+      const vel = Math.sqrt(c.vx * c.vx + c.vy * c.vy);
+      if (vel > maxVel) {
+        c.vx = (c.vx / vel) * maxVel;
+        c.vy = (c.vy / vel) * maxVel;
+      }
+
+      // Update position
+      c.x += c.vx;
+      c.y += c.vy;
+
+      // Bounce off edges
+      if (c.x < margin) { c.x = margin; c.vx = Math.abs(c.vx) * bounce; }
+      if (c.x + c.w > maxX - margin) { c.x = maxX - margin - c.w; c.vx = -Math.abs(c.vx) * bounce; }
+      if (c.y < 80) { c.y = 80; c.vy = Math.abs(c.vy) * bounce; }
+      if (c.y + c.h > maxY - margin) { c.y = maxY - margin - c.h; c.vy = -Math.abs(c.vy) * bounce; }
+
+      // Rotation based on velocity
+      const rot = c.vx * 0.8;
+
+      c.el.style.left = c.x + 'px';
+      c.el.style.top = c.y + 'px';
+      c.el.style.transform = `rotate(${rot}deg) scale(${c.el.classList.contains('card-hover') ? 1.04 : 1})`;
+    }
+  }
+
+  function drawLabsMatrix() {
+    const w = labsCanvas.width;
+    const h = labsCanvas.height;
+    // Fade
+    labsCtx.fillStyle = 'rgba(25,25,25,0.12)';
+    labsCtx.fillRect(0, 0, w, h);
+
+    labsCtx.font = '12px "Space Mono", monospace';
+    for (const col of matrixColumns) {
+      // Speed up near cursor
+      if (lMouseX > 0) {
+        const dx = col.x - lMouseX;
+        const dist = Math.abs(dx);
+        if (dist < 100) {
+          col.speed = col.baseSpeed * (2 + (1 - dist / 100) * 3);
+        } else {
+          col.speed += (col.baseSpeed - col.speed) * 0.05;
+        }
+      }
+
+      col.y += col.speed;
+      if (col.y > h) {
+        col.y = -Math.random() * 200;
+        // Randomize chars
+        for (let j = 0; j < col.chars.length; j++) {
+          col.chars[j] = MATRIX_CHARS[Math.floor(Math.random() * MATRIX_CHARS.length)];
+        }
+      }
+
+      for (let j = 0; j < col.chars.length; j++) {
+        const cy = col.y - j * 16;
+        if (cy < -16 || cy > h) continue;
+        const fade = j / col.chars.length;
+        const alpha = (1 - fade) * 0.06;
+        labsCtx.fillStyle = `rgba(192,255,0,${alpha})`;
+        labsCtx.fillText(col.chars[j], col.x, cy);
+      }
+    }
+  }
+
+  function drawLabsConnections() {
+    for (let i = 0; i < labCards.length; i++) {
+      for (let j = i + 1; j < labCards.length; j++) {
+        const a = labCards[i], b = labCards[j];
+        const ax = a.x + a.w / 2, ay = a.y + a.h / 2;
+        const bx = b.x + b.w / 2, by = b.y + b.h / 2;
+        const d = Math.sqrt((ax - bx) ** 2 + (ay - by) ** 2);
+        if (d < 200) {
+          labsCtx.beginPath();
+          labsCtx.moveTo(ax, ay);
+          labsCtx.lineTo(bx, by);
+          labsCtx.strokeStyle = `rgba(192,255,0,${0.04 * (1 - d / 200)})`;
+          labsCtx.lineWidth = 0.5;
+          labsCtx.stroke();
+        }
+      }
+    }
+  }
+
+  function animateLabs() {
+    if (!labsActive) { labsAnimId = null; return; }
+    drawLabsMatrix();
+    drawLabsConnections();
+    updateLabCards();
+    labsAnimId = requestAnimationFrame(animateLabs);
+  }
+
+  // Mouse events on labs page
+  labsPage.addEventListener('mousemove', (e) => {
+    if (!labsActive) return;
+    lMouseX = e.clientX;
+    lMouseY = e.clientY;
+    labsLight.style.display = 'block';
+    labsLight.style.left = e.clientX + 'px';
+    labsLight.style.top = e.clientY + 'px';
+  });
+  labsPage.addEventListener('mouseleave', () => {
+    labsLight.style.display = 'none';
+  });
+
+  // === Show Labs ===
+  function showLabs() {
+    labsActive = true;
+    portfolioActive = false;
+    closeProjectModal();
+    // Stop portfolio animations
+    if (thumbAnimId) { cancelAnimationFrame(thumbAnimId); thumbAnimId = null; }
+    if (pBgAnimId) { cancelAnimationFrame(pBgAnimId); pBgAnimId = null; }
+    portfolioGrid.querySelectorAll('.card-thumb canvas').forEach(c => { c._ready = false; });
+    // Hide portfolio
+    portfolioPage.style.opacity = '0';
+    setTimeout(() => { portfolioPage.style.display = 'none'; }, 600);
+    // Hide landing content
+    document.querySelectorAll('.landing-nav, .landing-ui, .gesture-guide, .landing-info, #gestureModeBtnBottom').forEach(el => {
+      if (el.closest('#page-portfolio') || el.closest('#page-labs')) return;
+      el.style.opacity = '0';
+      el.style.pointerEvents = 'none';
+    });
+    canvas.style.display = 'none';
+    video.style.display = 'none';
+    // Show labs
+    labsPage.style.display = 'block';
+    requestAnimationFrame(() => { labsPage.style.opacity = '1'; });
+    // Update nav active states
+    labsPage.querySelectorAll('.nav-item').forEach(n => n.classList.toggle('active', n.dataset.page === 'labs'));
+    // Init and start
+    initLabsCanvas();
+    buildLabCards();
+    if (!labsAnimId) animateLabs();
+  }
 })();
 </script>
 </body>
