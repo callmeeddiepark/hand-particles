@@ -252,29 +252,32 @@
   .dj-track{font-family:'Space Mono',monospace;font-size:11px;padding:8px 12px;color:rgba(255,255,255,0.35);cursor:pointer;transition:all .2s ease;border-left:2px solid transparent}
   .dj-track:hover{color:rgba(255,255,255,0.6);background:rgba(255,255,255,0.02)}
   .dj-track.active{color:var(--accent);border-left-color:var(--accent);background:rgba(192,255,0,0.03)}
-  .cdj-unit{background:#111;border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:24px;width:100%;max-width:500px;box-sizing:border-box}
-  .cdj-display{background:#0a0a0a;border-radius:4px;padding:12px;margin-bottom:20px}
-  .cdj-display-track{font-family:'Syne',sans-serif;font-size:14px;color:#fff;margin-bottom:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .cdj-waveform{width:100%;height:48px;display:block;border-radius:2px}
-  .cdj-display-time{font-family:'Space Mono',monospace;font-size:24px;color:var(--accent);text-align:right;margin-top:8px}
-  .cdj-jog-container{display:flex;flex-direction:column;align-items:center;margin:20px 0}
-  .cdj-jog{width:200px;height:200px;cursor:grab;border-radius:50%}
+  .cdj-unit{background:linear-gradient(180deg, #1a1a1a 0%, #111 50%, #0a0a0a 100%);border:1px solid #2a2a2a;border-radius:12px;box-shadow:0 8px 40px rgba(0,0,0,0.8), inset 0 1px 0 rgba(255,255,255,0.05);max-width:480px;width:100%;padding:20px;position:relative;box-sizing:border-box}
+  .cdj-display{background:#000;border:2px solid #222;border-radius:6px;padding:14px 16px;margin-bottom:16px;box-shadow:inset 0 2px 8px rgba(0,0,0,0.8), 0 0 1px rgba(255,255,255,0.1)}
+  .cdj-display-track{font-family:'Space Mono',monospace;font-size:13px;color:#00d4ff;margin-bottom:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:.03em}
+  .cdj-waveform{width:100%;height:48px;display:block;border-radius:2px;background:#050510}
+  .cdj-display-time{font-family:'Space Mono',monospace;font-size:28px;font-weight:bold;color:#00d4ff;text-align:right;margin-top:8px;text-shadow:0 0 10px rgba(0,212,255,0.3)}
+  .cdj-controls-row{display:flex;flex-direction:row;gap:16px;justify-content:center;align-items:flex-end;margin-bottom:16px;padding:12px 8px;background:rgba(0,0,0,0.2);border-radius:6px;border:1px solid rgba(255,255,255,0.04)}
+  .cdj-jog-container{display:flex;flex-direction:column;align-items:center;margin:16px 0 20px}
+  .cdj-jog{width:240px;height:240px;cursor:grab;border-radius:50%;border:3px solid #444;box-shadow:0 0 0 4px #222, 0 0 0 8px #1a1a1a, 0 0 30px rgba(0,0,0,0.5), inset 0 0 20px rgba(0,0,0,0.3)}
   .cdj-jog:active{cursor:grabbing}
-  .cdj-jog-label{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.15em;color:rgba(255,255,255,0.3);text-transform:uppercase;margin-top:6px}
-  .cdj-transport{display:flex;flex-direction:row;gap:12px;justify-content:center;margin-bottom:20px}
-  .cdj-btn{font-family:'Space Mono',monospace;font-size:11px;padding:10px 24px;border:1px solid rgba(255,255,255,0.12);background:transparent;color:#fff;cursor:pointer;transition:all .2s ease;border-radius:2px}
-  .cdj-btn:hover{border-color:rgba(255,255,255,0.3)}
-  .cdj-play.playing{background:var(--accent);color:#191919;border-color:var(--accent)}
-  .cdj-cue:hover{border-color:var(--accent)}
-  .cdj-eq-row{display:flex;flex-direction:row;gap:24px;justify-content:center;align-items:flex-start;margin:20px 0}
-  .cdj-knob-group{display:flex;flex-direction:column;align-items:center;gap:6px}
+  .cdj-transport{display:flex;flex-direction:row;gap:16px;justify-content:center;margin-bottom:16px}
+  .cdj-btn{font-family:'Space Mono',monospace;font-size:12px;padding:12px 32px;border:1px solid #555;background:#333;color:#fff;cursor:pointer;transition:all .2s ease;border-radius:4px;text-transform:uppercase;letter-spacing:.15em}
+  .cdj-btn:hover{border-color:rgba(255,255,255,0.4);background:#3a3a3a}
+  .cdj-play.playing{background:#00d4ff;color:#000;border-color:#00d4ff;box-shadow:0 0 16px rgba(0,212,255,0.4)}
+  .cdj-cue:hover{border-color:#00d4ff;color:#00d4ff}
+  .cdj-eq-row{display:flex;flex-direction:row;gap:24px;justify-content:center;align-items:flex-start}
+  .cdj-knob-group{display:flex;flex-direction:column;align-items:center;gap:6px;position:relative}
+  .cdj-knob-group::before{content:'';position:absolute;top:4px;width:52px;height:52px;border-radius:50%;border:1px dashed rgba(255,255,255,0.06);pointer-events:none}
   .cdj-knob{width:60px;height:60px;cursor:ns-resize}
-  .cdj-knob-label{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.15em;color:rgba(255,255,255,0.3);text-transform:uppercase}
+  .cdj-knob-label{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.15em;color:#555;text-transform:uppercase}
   .cdj-fader-group{display:flex;flex-direction:column;align-items:center;gap:6px}
-  .cdj-fader{-webkit-appearance:none;appearance:none;width:6px;height:100px;background:rgba(255,255,255,0.08);border-radius:3px;outline:none;writing-mode:vertical-lr;direction:rtl;cursor:pointer}
-  .cdj-fader::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:18px;height:10px;background:var(--accent);border-radius:2px;cursor:pointer}
-  .cdj-fader::-moz-range-thumb{width:18px;height:10px;background:var(--accent);border:none;border-radius:2px;cursor:pointer}
-  .cdj-fader::-moz-range-track{background:rgba(255,255,255,0.08);border-radius:3px}
+  .cdj-fader{-webkit-appearance:none;appearance:none;width:6px;height:100px;background:rgba(255,255,255,0.04);border-radius:3px;outline:none;writing-mode:vertical-lr;direction:rtl;cursor:pointer;border:1px solid rgba(255,255,255,0.06)}
+  .cdj-fader::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:20px;height:10px;background:linear-gradient(180deg,#666,#444);border-radius:2px;cursor:pointer;border:1px solid #555;box-shadow:0 1px 3px rgba(0,0,0,0.4)}
+  .cdj-fader::-moz-range-thumb{width:20px;height:10px;background:linear-gradient(180deg,#666,#444);border:1px solid #555;border-radius:2px;cursor:pointer;box-shadow:0 1px 3px rgba(0,0,0,0.4)}
+  .cdj-fader::-moz-range-track{background:rgba(255,255,255,0.04);border-radius:3px}
+  .cdj-branding{display:flex;justify-content:space-between;align-items:center;margin-top:12px;padding:0 4px}
+  .cdj-branding span{font-family:'Space Mono',monospace;font-size:10px;color:#333;letter-spacing:.1em;text-transform:uppercase}
 
   /* TATTOO SECTION */
   .tattoo-container{display:flex;flex-direction:column;align-items:center;padding:130px 0 40px}
@@ -556,31 +559,36 @@
             <canvas class="cdj-waveform" id="djWaveform"></canvas>
             <div class="cdj-display-time" id="djTime">00:00</div>
           </div>
-          <div class="cdj-jog-container">
-            <canvas class="cdj-jog" id="djJog"></canvas>
-            <div class="cdj-jog-label">JOG</div>
-          </div>
-          <div class="cdj-transport">
-            <button class="cdj-btn cdj-cue" id="djCue">CUE</button>
-            <button class="cdj-btn cdj-play" id="djPlay">&#9654;</button>
-          </div>
-          <div class="cdj-eq-row">
-            <div class="cdj-knob-group">
-              <canvas class="cdj-knob" id="knobHigh" data-param="high"></canvas>
-              <div class="cdj-knob-label">HIGH</div>
-            </div>
-            <div class="cdj-knob-group">
-              <canvas class="cdj-knob" id="knobMid" data-param="mid"></canvas>
-              <div class="cdj-knob-label">MID</div>
-            </div>
-            <div class="cdj-knob-group">
-              <canvas class="cdj-knob" id="knobBass" data-param="bass"></canvas>
-              <div class="cdj-knob-label">BASS</div>
+          <div class="cdj-controls-row">
+            <div class="cdj-eq-row">
+              <div class="cdj-knob-group">
+                <canvas class="cdj-knob" id="knobHigh" data-param="high"></canvas>
+                <div class="cdj-knob-label">HIGH</div>
+              </div>
+              <div class="cdj-knob-group">
+                <canvas class="cdj-knob" id="knobMid" data-param="mid"></canvas>
+                <div class="cdj-knob-label">MID</div>
+              </div>
+              <div class="cdj-knob-group">
+                <canvas class="cdj-knob" id="knobBass" data-param="bass"></canvas>
+                <div class="cdj-knob-label">BASS</div>
+              </div>
             </div>
             <div class="cdj-fader-group">
               <input type="range" class="cdj-fader" id="djVolume" min="0" max="100" value="80">
               <div class="cdj-knob-label">VOL</div>
             </div>
+          </div>
+          <div class="cdj-jog-container">
+            <canvas class="cdj-jog" id="djJog" width="240" height="240"></canvas>
+          </div>
+          <div class="cdj-transport">
+            <button class="cdj-btn cdj-cue" id="djCue">CUE</button>
+            <button class="cdj-btn cdj-play" id="djPlay">&#9654; PLAY</button>
+          </div>
+          <div class="cdj-branding">
+            <span>Pioneer DJ</span>
+            <span>CDJ-3000</span>
           </div>
         </div>
       </div>
@@ -2791,19 +2799,23 @@
     if (!c) return;
     const ctx2 = c.getContext('2d');
     const dpr = window.devicePixelRatio || 1;
-    const size = 200;
+    const size = 240;
     if (c.width !== size * dpr) { c.width = size * dpr; c.height = size * dpr; }
     ctx2.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx2.clearRect(0, 0, size, size);
-    const cx2 = size / 2, cy2 = size / 2, r = 90;
+    const cx2 = size / 2, cy2 = size / 2, r = 110;
 
-    // Outer ring
+    // Outer ring (metallic platter)
+    const platGrad = ctx2.createRadialGradient(cx2, cy2, r * 0.3, cx2, cy2, r);
+    platGrad.addColorStop(0, '#1e1e1e');
+    platGrad.addColorStop(0.7, '#181818');
+    platGrad.addColorStop(1, '#111');
     ctx2.beginPath();
     ctx2.arc(cx2, cy2, r, 0, Math.PI * 2);
-    ctx2.fillStyle = '#1a1a1a';
+    ctx2.fillStyle = platGrad;
     ctx2.fill();
-    ctx2.strokeStyle = 'rgba(255,255,255,0.06)';
-    ctx2.lineWidth = 1;
+    ctx2.strokeStyle = 'rgba(255,255,255,0.08)';
+    ctx2.lineWidth = 1.5;
     ctx2.stroke();
 
     // Concentric grooves
@@ -2815,21 +2827,27 @@
       ctx2.stroke();
     }
 
-    // Center circle
+    // Center circle with Pioneer logo feel
     ctx2.beginPath();
-    ctx2.arc(cx2, cy2, 16, 0, Math.PI * 2);
-    ctx2.fillStyle = '#111';
+    ctx2.arc(cx2, cy2, 22, 0, Math.PI * 2);
+    ctx2.fillStyle = '#151515';
     ctx2.fill();
-    ctx2.strokeStyle = 'rgba(255,255,255,0.08)';
-    ctx2.lineWidth = 1;
+    ctx2.strokeStyle = 'rgba(255,255,255,0.1)';
+    ctx2.lineWidth = 1.5;
     ctx2.stroke();
+    // Center text
+    ctx2.fillStyle = 'rgba(255,255,255,0.12)';
+    ctx2.font = '7px sans-serif';
+    ctx2.textAlign = 'center';
+    ctx2.textBaseline = 'middle';
+    ctx2.fillText('pioneer', cx2, cy2);
 
     // Marker dot
-    const markerR = r - 12;
+    const markerR = r - 14;
     const mx = cx2 + Math.cos(djJogAngle) * markerR;
     const my = cy2 + Math.sin(djJogAngle) * markerR;
     ctx2.beginPath();
-    ctx2.arc(mx, my, 5, 0, Math.PI * 2);
+    ctx2.arc(mx, my, 6, 0, Math.PI * 2);
     ctx2.fillStyle = '#c0ff00';
     ctx2.fill();
     ctx2.shadowColor = '#c0ff00';
