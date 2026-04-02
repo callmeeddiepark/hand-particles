@@ -669,10 +669,14 @@
   // Tattoo gesture: thumb+index+middle together, ring+pinky curled
   let tattooGestureActive = false;
 
+  // Store raw hand landmarks for hand outline rendering
+  let handLandmarks = null;
+
   function onResults(results) {
     if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
       const lm = results.multiHandLandmarks[0];
       handPresent = true;
+      handLandmarks = lm;
 
       // Palm center (mirrored) — for sweep
       const indices = [0, 5, 9, 13, 17];
@@ -804,6 +808,7 @@
       prevCursorY = cursorY;
     } else {
       handPresent = false;
+      handLandmarks = null;
       handVelX *= 0.9;
       handVelY *= 0.9;
       isPinching = false;
@@ -3090,6 +3095,49 @@
     if (bassEnergy > 0.6) {
       djClubCtx.fillStyle = `rgba(255,255,255,${(bassEnergy - 0.6) * 0.15})`;
       djClubCtx.fillRect(0, 0, w, h);
+    }
+
+    // Draw hand skeleton outline on DJ tab
+    if (!mouseMode && handPresent && handLandmarks) {
+      const connections = [
+        [0,1],[1,2],[2,3],[3,4],       // thumb
+        [0,5],[5,6],[6,7],[7,8],       // index
+        [5,9],[9,10],[10,11],[11,12],   // middle
+        [9,13],[13,14],[14,15],[15,16], // ring
+        [13,17],[17,18],[18,19],[19,20],// pinky
+        [0,17]                          // palm base
+      ];
+      const lm = handLandmarks;
+      // Get section-dj position for coordinate mapping
+      const djSection = document.getElementById('section-dj');
+      const djRect = djSection.getBoundingClientRect();
+
+      djClubCtx.strokeStyle = `rgba(192,255,0,${0.4 + bassEnergy * 0.3})`;
+      djClubCtx.lineWidth = 1.5;
+      djClubCtx.shadowColor = 'rgba(192,255,0,0.5)';
+      djClubCtx.shadowBlur = 8;
+
+      for (const [a, b] of connections) {
+        const ax = (1 - lm[a].x) * window.innerWidth - djRect.left;
+        const ay = lm[a].y * window.innerHeight - djRect.top + djSection.scrollTop;
+        const bx = (1 - lm[b].x) * window.innerWidth - djRect.left;
+        const by = lm[b].y * window.innerHeight - djRect.top + djSection.scrollTop;
+        djClubCtx.beginPath();
+        djClubCtx.moveTo(ax, ay);
+        djClubCtx.lineTo(bx, by);
+        djClubCtx.stroke();
+      }
+
+      // Draw joints
+      djClubCtx.fillStyle = `rgba(192,255,0,${0.5 + bassEnergy * 0.3})`;
+      for (let i = 0; i < 21; i++) {
+        const x = (1 - lm[i].x) * window.innerWidth - djRect.left;
+        const y = lm[i].y * window.innerHeight - djRect.top + djSection.scrollTop;
+        djClubCtx.beginPath();
+        djClubCtx.arc(x, y, 3, 0, Math.PI * 2);
+        djClubCtx.fill();
+      }
+      djClubCtx.shadowBlur = 0;
     }
   }
 
