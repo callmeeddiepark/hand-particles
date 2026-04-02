@@ -274,7 +274,7 @@
 
   /* TATTOO SECTION */
   .tattoo-container{display:flex;flex-direction:column;align-items:center;padding:80px 0 40px}
-  .tattoo-toolbar{display:flex;flex-direction:row;gap:8px;margin-bottom:20px}
+  .tattoo-toolbar{display:flex;flex-direction:row;gap:8px;margin-top:20px}
   .tattoo-tool-btn{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.2em;text-transform:uppercase;padding:8px 20px;border:1px solid rgba(255,255,255,0.08);background:transparent;color:rgba(255,255,255,0.3);cursor:pointer;border-radius:2px;transition:all .3s ease}
   .tattoo-tool-btn.active{border-color:var(--accent);color:var(--accent)}
   .tattoo-tool-btn:hover{border-color:rgba(255,255,255,0.2)}
@@ -581,15 +581,15 @@
     </div>
     <div class="about-section" id="section-tattoo">
       <div class="tattoo-container">
+        <div class="tattoo-canvas-wrap">
+          <canvas id="tattooCanvas"></canvas>
+          <div class="tattoo-needle" id="tattooNeedle"></div>
+        </div>
         <div class="tattoo-toolbar">
           <button class="tattoo-tool-btn active" data-size="2">FINE</button>
           <button class="tattoo-tool-btn" data-size="4">MEDIUM</button>
           <button class="tattoo-tool-btn" data-size="6">BOLD</button>
           <button class="tattoo-tool-btn tattoo-clear-btn">CLEAR</button>
-        </div>
-        <div class="tattoo-canvas-wrap">
-          <canvas id="tattooCanvas"></canvas>
-          <div class="tattoo-needle" id="tattooNeedle"></div>
         </div>
       </div>
     </div>
