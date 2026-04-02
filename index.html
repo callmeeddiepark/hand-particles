@@ -245,13 +245,14 @@
   .dj-club-overlay{position:absolute;inset:0;background:rgba(0,0,0,0.85);z-index:4;pointer-events:none;transition:opacity 1s ease}
   .dj-club-overlay.playing{background:rgba(0,0,0,0.6)}
   #djClubCanvas{position:absolute;inset:0;width:100%;height:100%;z-index:3;pointer-events:none}
+  #djHandCanvas{position:absolute;inset:0;width:100%;height:100%;z-index:6;pointer-events:none}
   #section-dj{position:relative;overflow:hidden}
   .dj-container{display:flex;flex-direction:column;align-items:center;padding:120px 16px 80px;max-width:540px;margin:0 auto;position:relative;z-index:5}
-  .dj-tracklist{width:100%;max-width:500px;margin-bottom:16px;border:1px solid rgba(255,255,255,0.06);border-radius:4px;overflow:hidden;background:rgba(0,0,0,0.2)}
-  .dj-tracklist-title{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.25em;text-transform:uppercase;color:rgba(255,255,255,0.2);padding:10px 12px;border-bottom:1px solid rgba(255,255,255,0.06)}
-  .dj-track{font-family:'Space Mono',monospace;font-size:11px;padding:8px 12px;color:rgba(255,255,255,0.35);cursor:pointer;transition:all .2s ease;border-left:2px solid transparent}
-  .dj-track:hover{color:rgba(255,255,255,0.6);background:rgba(255,255,255,0.02)}
-  .dj-track.active{color:var(--accent);border-left-color:var(--accent);background:rgba(192,255,0,0.03)}
+  .dj-tracklist{width:100%;overflow:hidden;margin-bottom:10px;border-top:1px solid rgba(0,212,255,0.1)}
+  .dj-tracklist-title{font-family:'Space Mono',monospace;font-size:8px;letter-spacing:.25em;text-transform:uppercase;color:rgba(0,212,255,0.3);padding:6px 0 4px}
+  .dj-track{font-family:'Space Mono',monospace;font-size:10px;padding:4px 6px;color:rgba(0,212,255,0.35);cursor:pointer;transition:all .2s ease;border-left:2px solid transparent}
+  .dj-track:hover{color:rgba(0,212,255,0.7);background:rgba(0,212,255,0.05)}
+  .dj-track.active{color:#00d4ff;border-left-color:#00d4ff;background:rgba(0,212,255,0.08)}
   .cdj-unit{background:linear-gradient(180deg, #1a1a1a 0%, #111 50%, #0a0a0a 100%);border:1px solid #2a2a2a;border-radius:12px;box-shadow:0 8px 40px rgba(0,0,0,0.8), inset 0 1px 0 rgba(255,255,255,0.05);max-width:480px;width:100%;padding:20px;position:relative;box-sizing:border-box}
   .cdj-display{background:#000;border:2px solid #222;border-radius:6px;padding:14px 16px;margin-bottom:16px;box-shadow:inset 0 2px 8px rgba(0,0,0,0.8), 0 0 1px rgba(255,255,255,0.1)}
   .cdj-display-track{font-family:'Space Mono',monospace;font-size:13px;color:#00d4ff;margin-bottom:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:.03em}
@@ -262,7 +263,7 @@
   .cdj-jog{width:240px;height:240px;cursor:grab;border-radius:50%;border:3px solid #444;box-shadow:0 0 0 4px #222, 0 0 0 8px #1a1a1a, 0 0 30px rgba(0,0,0,0.5), inset 0 0 20px rgba(0,0,0,0.3)}
   .cdj-jog:active{cursor:grabbing}
   .cdj-transport{display:flex;flex-direction:row;gap:16px;justify-content:center;margin-bottom:16px}
-  .cdj-btn{font-family:'Space Mono',monospace;font-size:12px;padding:12px 32px;border:1px solid #555;background:#333;color:#fff;cursor:pointer;transition:all .2s ease;border-radius:4px;text-transform:uppercase;letter-spacing:.15em}
+  .cdj-btn{font-family:'Space Mono',monospace;font-size:12px;width:56px;height:56px;border-radius:50%;padding:0;display:flex;align-items:center;justify-content:center;border:1px solid #555;background:#333;color:#fff;cursor:pointer;transition:all .2s ease;text-transform:uppercase;letter-spacing:.15em}
   .cdj-btn:hover{border-color:rgba(255,255,255,0.4);background:#3a3a3a}
   .cdj-play.playing{background:#00d4ff;color:#000;border-color:#00d4ff;box-shadow:0 0 16px rgba(0,212,255,0.4)}
   .cdj-cue:hover{border-color:#00d4ff;color:#00d4ff}
@@ -546,18 +547,19 @@
     <div class="about-section" id="section-dj">
       <div class="dj-club-overlay" id="djClubOverlay"></div>
       <canvas id="djClubCanvas"></canvas>
+      <canvas id="djHandCanvas"></canvas>
       <div class="dj-container">
-        <div class="dj-tracklist">
-          <div class="dj-tracklist-title">TRACKS</div>
-          <div class="dj-track" data-track="0">01. Midnight Drive</div>
-          <div class="dj-track" data-track="1">02. Neon Streets</div>
-          <div class="dj-track" data-track="2">03. After Hours</div>
-        </div>
         <div class="cdj-unit">
           <div class="cdj-display">
             <div class="cdj-display-track" id="djTrackName">NO TRACK</div>
             <canvas class="cdj-waveform" id="djWaveform"></canvas>
             <div class="cdj-display-time" id="djTime">00:00</div>
+            <div class="dj-tracklist">
+              <div class="dj-tracklist-title">TRACKS</div>
+              <div class="dj-track" data-track="0">01. Midnight Drive</div>
+              <div class="dj-track" data-track="1">02. Neon Streets</div>
+              <div class="dj-track" data-track="2">03. After Hours</div>
+            </div>
           </div>
           <div class="cdj-controls-row">
             <div class="cdj-eq-row">
@@ -584,7 +586,7 @@
           </div>
           <div class="cdj-transport">
             <button class="cdj-btn cdj-cue" id="djCue">CUE</button>
-            <button class="cdj-btn cdj-play" id="djPlay">&#9654; PLAY</button>
+            <button class="cdj-btn cdj-play" id="djPlay">&#9654;</button>
           </div>
           <div class="cdj-branding">
             <span>Pioneer DJ</span>
@@ -673,6 +675,7 @@
   // Gesture DJ knob control
   let gestureKnobTarget = null;
   let gestureKnobStartY = 0;
+  let gestureVolumeFader = false;
 
   // Tattoo gesture: thumb+index+middle together, ring+pinky curled
   let tattooGestureActive = false;
@@ -733,10 +736,11 @@
       const pinkyCurled = pinkyTip.y > pinkyPip.y;
       tattooGestureActive = threeClose && ringCurled && pinkyCurled;
 
-      // DJ knob gesture: pinch + drag up/down over a knob
+      // DJ knob/fader gesture: pinch + drag up/down over a knob or volume fader
       if (isPinching && !wasPinching) {
-        // Pinch just started — check if over a DJ knob
+        // Pinch just started — check if over a DJ knob or volume fader
         gestureKnobTarget = null;
+        gestureVolumeFader = false;
         if (aboutActive && typeof djKnobs !== 'undefined') {
           const cx2 = smoothCursorX >= 0 ? smoothCursorX : cursorX;
           const cy2 = smoothCursorY >= 0 ? smoothCursorY : cursorY;
@@ -747,6 +751,9 @@
               gestureKnobTarget = param;
               gestureKnobStartY = cursorY;
             }
+          } else if (elUnder && elUnder.id === 'djVolume') {
+            gestureVolumeFader = true;
+            gestureKnobStartY = cursorY;
           }
         }
       }
@@ -771,8 +778,25 @@
         }
       }
 
+      if (isPinching && wasPinching && gestureVolumeFader) {
+        // Dragging up/down over volume fader
+        const dy = gestureKnobStartY - cursorY; // up = positive = louder
+        if (Math.abs(dy) > 2) {
+          pinchMoved = true;
+          const volFader = document.getElementById('djVolume');
+          if (volFader) {
+            let newVal = parseFloat(volFader.value) + dy * 0.5;
+            newVal = Math.max(0, Math.min(100, newVal));
+            volFader.value = newVal;
+            if (djGainNode) djGainNode.gain.value = newVal / 100;
+          }
+          gestureKnobStartY = cursorY;
+        }
+      }
+
       if (!isPinching && wasPinching) {
         gestureKnobTarget = null;
+        gestureVolumeFader = false;
       }
 
       // Pinch logic: click vs scroll
@@ -787,7 +811,7 @@
         // Pinch held — check if dragging (scroll)
         const dy = cursorY - pinchStartY;
         const djTabActive = aboutActive && document.getElementById('section-dj').classList.contains('active');
-        if (Math.abs(dy) > 8 && !labsActive && !gestureKnobTarget && !djTabActive) {
+        if (Math.abs(dy) > 8 && !labsActive && !gestureKnobTarget && !gestureVolumeFader && !djTabActive) {
           pinchMoved = true;
           // Scroll: move the page based on drag distance
           const scrollAmount = -(cursorY - prevCursorY) * 2.5;
@@ -3040,6 +3064,8 @@
   // Club lighting
   const djClubCanvas = document.getElementById('djClubCanvas');
   const djClubCtx = djClubCanvas ? djClubCanvas.getContext('2d') : null;
+  const djHandCanvas = document.getElementById('djHandCanvas');
+  const djHandCtx = djHandCanvas ? djHandCanvas.getContext('2d') : null;
   const djClubOverlay = document.getElementById('djClubOverlay');
   // Club blob lights (chaotic club style)
   const clubPalette = [
@@ -3223,8 +3249,25 @@
       djClubCtx.fillRect(0, 0, w, h);
     }
 
-    // Draw hand skeleton outline on DJ tab
+    djClubCtx.globalCompositeOperation = 'source-over';
+  }
+
+  function djDrawHand() {
+    if (!djHandCtx || !djHandCanvas) return;
+    const w = djHandCanvas.width = djHandCanvas.parentElement.clientWidth;
+    const h = djHandCanvas.height = djHandCanvas.parentElement.clientHeight;
+    djHandCtx.clearRect(0, 0, w, h);
+
     if (!mouseMode && handPresent && handLandmarks) {
+      // Get bass energy for brightness
+      let bassEnergy = 0;
+      if (djPlaying && djAnalyser) {
+        const dataArray = new Uint8Array(djAnalyser.frequencyBinCount);
+        djAnalyser.getByteFrequencyData(dataArray);
+        for (let i = 0; i < 8; i++) bassEnergy += dataArray[i];
+        bassEnergy = bassEnergy / (8 * 255);
+      }
+
       const connections = [
         [0,1],[1,2],[2,3],[3,4],       // thumb
         [0,5],[5,6],[6,7],[7,8],       // index
@@ -3234,36 +3277,35 @@
         [0,17]                          // palm base
       ];
       const lm = handLandmarks;
-      // Get section-dj position for coordinate mapping
       const djSection = document.getElementById('section-dj');
       const djRect = djSection.getBoundingClientRect();
 
-      djClubCtx.strokeStyle = `rgba(192,255,0,${0.4 + bassEnergy * 0.3})`;
-      djClubCtx.lineWidth = 1.5;
-      djClubCtx.shadowColor = 'rgba(192,255,0,0.5)';
-      djClubCtx.shadowBlur = 8;
+      djHandCtx.strokeStyle = `rgba(192,255,0,${0.4 + bassEnergy * 0.3})`;
+      djHandCtx.lineWidth = 1.5;
+      djHandCtx.shadowColor = 'rgba(192,255,0,0.5)';
+      djHandCtx.shadowBlur = 8;
 
       for (const [a, b] of connections) {
         const ax = (1 - lm[a].x) * window.innerWidth - djRect.left;
         const ay = lm[a].y * window.innerHeight - djRect.top + djSection.scrollTop;
         const bx = (1 - lm[b].x) * window.innerWidth - djRect.left;
         const by = lm[b].y * window.innerHeight - djRect.top + djSection.scrollTop;
-        djClubCtx.beginPath();
-        djClubCtx.moveTo(ax, ay);
-        djClubCtx.lineTo(bx, by);
-        djClubCtx.stroke();
+        djHandCtx.beginPath();
+        djHandCtx.moveTo(ax, ay);
+        djHandCtx.lineTo(bx, by);
+        djHandCtx.stroke();
       }
 
       // Draw joints
-      djClubCtx.fillStyle = `rgba(192,255,0,${0.5 + bassEnergy * 0.3})`;
+      djHandCtx.fillStyle = `rgba(192,255,0,${0.5 + bassEnergy * 0.3})`;
       for (let i = 0; i < 21; i++) {
         const x = (1 - lm[i].x) * window.innerWidth - djRect.left;
         const y = lm[i].y * window.innerHeight - djRect.top + djSection.scrollTop;
-        djClubCtx.beginPath();
-        djClubCtx.arc(x, y, 3, 0, Math.PI * 2);
-        djClubCtx.fill();
+        djHandCtx.beginPath();
+        djHandCtx.arc(x, y, 3, 0, Math.PI * 2);
+        djHandCtx.fill();
       }
-      djClubCtx.shadowBlur = 0;
+      djHandCtx.shadowBlur = 0;
     }
   }
 
@@ -3274,6 +3316,7 @@
     }
     djAnimId = requestAnimationFrame(djAnimate);
     djDrawClubLights();
+    djDrawHand();
 
     if (djPlaying && djBuffer) {
       const t = djGetCurrentTime();
