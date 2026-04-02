@@ -3023,14 +3023,36 @@
   const djClubCanvas = document.getElementById('djClubCanvas');
   const djClubCtx = djClubCanvas ? djClubCanvas.getContext('2d') : null;
   const djClubOverlay = document.getElementById('djClubOverlay');
-  // Club blob lights (sabum.kr style)
-  const clubBlobs = [
-    { x: 0.3, y: 0.4, r: 200, color: [0, 40, 255], phase: 0, speedX: 0.003, speedY: 0.002 },
-    { x: 0.7, y: 0.5, r: 250, color: [255, 0, 60], phase: 1.5, speedX: -0.002, speedY: 0.003 },
-    { x: 0.5, y: 0.6, r: 180, color: [180, 0, 255], phase: 3, speedX: 0.004, speedY: -0.002 },
-    { x: 0.4, y: 0.3, r: 220, color: [0, 80, 255], phase: 4.5, speedX: -0.003, speedY: 0.004 },
+  // Club blob lights (chaotic club style)
+  const clubPalette = [
+    [255,0,60],[0,40,255],[180,0,255],[255,0,200],[0,200,255],
+    [255,100,0],[0,255,80],[255,255,0],[100,0,255],[255,0,120]
   ];
+  let clubBlobs = [];
   let clubTime = 0;
+  let lastBeatTime = 0;
+  let beatCount = 0;
+
+  function randomClubColor() { return clubPalette[Math.floor(Math.random() * clubPalette.length)]; }
+
+  function spawnClubBlobs() {
+    clubBlobs = [];
+    for (let i = 0; i < 8; i++) {
+      clubBlobs.push({
+        x: Math.random(), y: Math.random(),
+        vx: (Math.random() - 0.5) * 0.02,
+        vy: (Math.random() - 0.5) * 0.02,
+        r: 120 + Math.random() * 200,
+        color: randomClubColor(),
+        alpha: 0,
+        targetAlpha: 0.2 + Math.random() * 0.3,
+        on: Math.random() > 0.3,
+        nextToggle: Math.random() * 60,
+        life: 0
+      });
+    }
+  }
+  spawnClubBlobs();
 
   function djDrawClubLights() {
     if (!djClubCtx || !djClubCanvas) return;
@@ -3056,22 +3078,61 @@
     for (let i = 8; i < 40; i++) midEnergy += dataArray[i];
     midEnergy = midEnergy / (32 * 255);
 
-    clubTime += 0.016;
+    clubTime++;
+
+    // Detect beats for color/position changes
+    const isBeat = bassEnergy > 0.5;
+    if (isBeat && clubTime - lastBeatTime > 8) {
+      lastBeatTime = clubTime;
+      beatCount++;
+      // On beat: randomize some blobs
+      for (const blob of clubBlobs) {
+        if (Math.random() > 0.4) {
+          blob.color = randomClubColor();
+          blob.vx = (Math.random() - 0.5) * 0.04;
+          blob.vy = (Math.random() - 0.5) * 0.04;
+        }
+        if (Math.random() > 0.5) blob.on = !blob.on;
+      }
+    }
+
+    // Every ~30 frames, randomly toggle some blobs on/off
+    for (const blob of clubBlobs) {
+      blob.life++;
+      if (blob.life > blob.nextToggle) {
+        blob.on = !blob.on;
+        blob.nextToggle = blob.life + 15 + Math.random() * 50;
+        if (blob.on) blob.color = randomClubColor();
+      }
+      // Move chaotically
+      blob.vx += (Math.random() - 0.5) * 0.003;
+      blob.vy += (Math.random() - 0.5) * 0.003;
+      blob.vx *= 0.98;
+      blob.vy *= 0.98;
+      blob.x += blob.vx + bassEnergy * (Math.random() - 0.5) * 0.03;
+      blob.y += blob.vy + bassEnergy * (Math.random() - 0.5) * 0.03;
+      if (blob.x < -0.2) blob.x = 1.2;
+      if (blob.x > 1.2) blob.x = -0.2;
+      if (blob.y < -0.2) blob.y = 1.2;
+      if (blob.y > 1.2) blob.y = -0.2;
+      // Smooth alpha toward target
+      const target = blob.on ? (blob.targetAlpha + bassEnergy * 0.3) : 0;
+      blob.alpha += (target - blob.alpha) * 0.15;
+    }
 
     // Draw glowing blobs
     djClubCtx.globalCompositeOperation = 'lighter';
     for (const blob of clubBlobs) {
-      blob.phase += 0.02 + bassEnergy * 0.05;
-      const cx = w * blob.x + Math.sin(blob.phase * blob.speedX * 100 + blob.phase) * w * 0.15;
-      const cy = h * blob.y + Math.cos(blob.phase * blob.speedY * 100 + blob.phase * 0.7) * h * 0.15;
-      const r = blob.r * (0.8 + bassEnergy * 0.8 + midEnergy * 0.3);
+      if (blob.alpha < 0.01) continue;
+      const cx = w * blob.x;
+      const cy = h * blob.y;
+      const r = blob.r * (0.7 + bassEnergy * 1.0);
       const c = blob.color;
-      const intensity = 0.15 + bassEnergy * 0.35;
 
       const grad = djClubCtx.createRadialGradient(cx, cy, 0, cx, cy, r);
-      grad.addColorStop(0, `rgba(${c[0]},${c[1]},${c[2]},${intensity})`);
-      grad.addColorStop(0.3, `rgba(${c[0]},${c[1]},${c[2]},${intensity * 0.6})`);
-      grad.addColorStop(0.7, `rgba(${c[0]},${c[1]},${c[2]},${intensity * 0.15})`);
+      grad.addColorStop(0, `rgba(${c[0]},${c[1]},${c[2]},${blob.alpha})`);
+      grad.addColorStop(0.3, `rgba(${c[0]},${c[1]},${c[2]},${blob.alpha * 0.5})`);
+      grad.addColorStop(0.7, `rgba(${c[0]},${c[1]},${c[2]},${blob.alpha * 0.1})`);
       grad.addColorStop(1, `rgba(${c[0]},${c[1]},${c[2]},0)`);
 
       djClubCtx.fillStyle = grad;
@@ -3083,7 +3144,7 @@
 
     // Beat flash
     if (bassEnergy > 0.6) {
-      djClubCtx.fillStyle = `rgba(255,255,255,${(bassEnergy - 0.6) * 0.12})`;
+      djClubCtx.fillStyle = `rgba(255,255,255,${(bassEnergy - 0.6) * 0.2})`;
       djClubCtx.fillRect(0, 0, w, h);
     }
 
