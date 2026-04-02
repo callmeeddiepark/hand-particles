@@ -660,6 +660,9 @@
   let gestureKnobTarget = null;
   let gestureKnobStartY = 0;
 
+  // Tattoo gesture: thumb+index+middle together, ring+pinky curled
+  let tattooGestureActive = false;
+
   function onResults(results) {
     if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
       const lm = results.multiHandLandmarks[0];
@@ -695,6 +698,22 @@
       );
       wasPinching = isPinching;
       isPinching = pinchDist < 0.045;
+
+      // Tattoo gesture: thumb(4)+index(8)+middle(12) tips close together, ring(16)+pinky(20) curled
+      const midTip = lm[12];
+      const ringTip = lm[16];
+      const pinkyTip = lm[20];
+      const ringPip = lm[14];
+      const pinkyPip = lm[18];
+      // Distance between thumb-index-middle tips
+      const tiDist = Math.sqrt((thumb.x-index.x)**2 + (thumb.y-index.y)**2);
+      const tmDist = Math.sqrt((thumb.x-midTip.x)**2 + (thumb.y-midTip.y)**2);
+      const imDist = Math.sqrt((index.x-midTip.x)**2 + (index.y-midTip.y)**2);
+      const threeClose = tiDist < 0.08 && tmDist < 0.08 && imDist < 0.08;
+      // Ring and pinky curled (tip below PIP joint in y)
+      const ringCurled = ringTip.y > ringPip.y;
+      const pinkyCurled = pinkyTip.y > pinkyPip.y;
+      tattooGestureActive = threeClose && ringCurled && pinkyCurled;
 
       // DJ knob gesture: pinch + drag up/down over a knob
       if (isPinching && !wasPinching) {
@@ -782,6 +801,7 @@
       handVelX *= 0.9;
       handVelY *= 0.9;
       isPinching = false;
+      tattooGestureActive = false;
       wasPinching = false;
     }
   }
@@ -3268,7 +3288,7 @@
     }
 
     // Check tattooing state
-    if (isGesture && nx >= 0) {
+    if (isGesture && nx >= 0 && tattooGestureActive) {
       const coords = tattooGetCanvasCoords(nx, ny);
       if (coords.inBounds) {
         if (!tattooIsTattooing) {
@@ -3281,6 +3301,11 @@
           tattooIsTattooing = false;
           tattooStopBuzz();
         }
+      }
+    } else if (isGesture && !tattooGestureActive) {
+      if (tattooIsTattooing) {
+        tattooIsTattooing = false;
+        tattooStopBuzz();
       }
     } else if (mouseMode || !handPresent) {
       if (tattooMouseDown && nx >= 0) {
