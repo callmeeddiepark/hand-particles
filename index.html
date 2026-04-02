@@ -460,7 +460,7 @@
             <div class="skill-bar-row" data-level="50"><div class="skill-bar-label">Word</div><div class="skill-bar-track"><div class="skill-bar-fill normal" style="--level:50%"></div></div></div>
             <div class="skill-bar-row" data-level="50"><div class="skill-bar-label">Tattoo</div><div class="skill-bar-track"><div class="skill-bar-fill normal" style="--level:50%"></div></div></div>
             <div class="skill-bar-row" data-level="30"><div class="skill-bar-label">InDesign</div><div class="skill-bar-track"><div class="skill-bar-fill normal" style="--level:30%"></div></div></div>
-            <div class="skill-bar-row" data-level="30"><div class="skill-bar-label">😆</div><div class="skill-bar-track"><div class="skill-bar-fill normal" style="--level:30%"></div></div></div>
+            <div class="skill-bar-row" data-level="30"><div class="skill-bar-label">XD</div><div class="skill-bar-track"><div class="skill-bar-fill normal" style="--level:30%"></div></div></div>
             <div class="skill-bar-row" data-level="20"><div class="skill-bar-label">Excel</div><div class="skill-bar-track"><div class="skill-bar-fill normal" style="--level:20%"></div></div></div>
           </div>
         </div>
@@ -2412,6 +2412,20 @@
             fill.style.width = '100vw';
           }, idx * 300);
         });
+
+        // Phase 5: After all bars extended + 3s, retract to actual levels
+        const lastBarDelay = normalFills.length * 300 + 4000 + 3000;
+        setTimeout(() => {
+          // Retract all bars to their real levels
+          const allFills = document.querySelectorAll('.skill-bar-fill');
+          allFills.forEach(fill => {
+            const track = fill.closest('.skill-bar-track');
+            track.style.overflow = 'hidden';
+            const level = fill.style.getPropertyValue('--level');
+            fill.style.transition = 'width 1.5s cubic-bezier(.4,0,.2,1)';
+            fill.style.width = level;
+          });
+        }, lastBarDelay);
       }, 500);
     }, 1900);
   }
