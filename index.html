@@ -3161,11 +3161,65 @@
       djClubCtx.arc(cx, cy, r, 0, Math.PI * 2);
       djClubCtx.fill();
     }
+    // === LASER BEAMS ===
+    const laserCount = 6;
+    for (let i = 0; i < laserCount; i++) {
+      const laserAngle = Math.sin(clubTime * 0.03 + i * 1.2) * 0.8 + Math.cos(clubTime * 0.02 + i) * 0.3;
+      const originX = w * (0.1 + (i / laserCount) * 0.8);
+      const endX = originX + Math.sin(laserAngle) * h * 1.5;
+      const laserColor = clubPalette[(beatCount + i) % clubPalette.length];
+      const laserAlpha = midEnergy * 0.4 + bassEnergy * 0.2;
+      if (laserAlpha > 0.05) {
+        djClubCtx.beginPath();
+        djClubCtx.moveTo(originX, 0);
+        djClubCtx.lineTo(endX, h);
+        djClubCtx.strokeStyle = `rgba(${laserColor[0]},${laserColor[1]},${laserColor[2]},${laserAlpha})`;
+        djClubCtx.lineWidth = 1.5 + bassEnergy * 2;
+        djClubCtx.shadowColor = `rgba(${laserColor[0]},${laserColor[1]},${laserColor[2]},0.8)`;
+        djClubCtx.shadowBlur = 15 + bassEnergy * 20;
+        djClubCtx.stroke();
+        djClubCtx.shadowBlur = 0;
+      }
+    }
+
+    // === SPOTLIGHT CONES ===
+    const spotCount = 3;
+    for (let i = 0; i < spotCount; i++) {
+      const spotAngle = Math.sin(clubTime * 0.015 + i * 2.1) * 0.5;
+      const spotX = w * (0.2 + i * 0.3);
+      const spotColor = clubPalette[(beatCount + i + 3) % clubPalette.length];
+      const spotAlpha = (bassEnergy > 0.3 ? 0.08 + bassEnergy * 0.12 : 0) * (((beatCount + i) % 3 === 0) ? 1 : 0.3);
+      if (spotAlpha > 0.01) {
+        djClubCtx.save();
+        djClubCtx.translate(spotX, 0);
+        djClubCtx.rotate(spotAngle);
+        const coneW = 60 + bassEnergy * 40;
+        const grad = djClubCtx.createLinearGradient(0, 0, 0, h);
+        grad.addColorStop(0, `rgba(${spotColor[0]},${spotColor[1]},${spotColor[2]},${spotAlpha * 2})`);
+        grad.addColorStop(1, `rgba(${spotColor[0]},${spotColor[1]},${spotColor[2]},0)`);
+        djClubCtx.beginPath();
+        djClubCtx.moveTo(-5, 0);
+        djClubCtx.lineTo(-coneW, h);
+        djClubCtx.lineTo(coneW, h);
+        djClubCtx.lineTo(5, 0);
+        djClubCtx.closePath();
+        djClubCtx.fillStyle = grad;
+        djClubCtx.fill();
+        djClubCtx.restore();
+      }
+    }
+
     djClubCtx.globalCompositeOperation = 'source-over';
 
-    // Beat flash — blinding strobe
+    // === STROBE FLASH ===
     if (bassEnergy > 0.55) {
-      djClubCtx.fillStyle = `rgba(255,255,255,${(bassEnergy - 0.55) * 0.5})`;
+      // Random strobe — sometimes full white, sometimes colored
+      if (beatCount % 4 === 0) {
+        djClubCtx.fillStyle = `rgba(255,255,255,${(bassEnergy - 0.55) * 0.6})`;
+      } else {
+        const strobeC = clubPalette[beatCount % clubPalette.length];
+        djClubCtx.fillStyle = `rgba(${strobeC[0]},${strobeC[1]},${strobeC[2]},${(bassEnergy - 0.55) * 0.4})`;
+      }
       djClubCtx.fillRect(0, 0, w, h);
     }
 
