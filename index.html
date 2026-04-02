@@ -229,9 +229,9 @@
   .skill-bar-fill.overload{background:linear-gradient(90deg,rgba(192,255,0,0.5),rgba(192,255,0,0.9));box-shadow:0 0 12px rgba(192,255,0,0.4),0 0 24px rgba(192,255,0,0.2)}
   .skill-bar-pct{font-family:'Space Mono',monospace;font-size:10px;color:rgba(192,255,0,0.6);width:36px;text-align:right;flex-shrink:0}
   .skill-bar-track.overload-track{overflow:visible}
-  .skill-bar-burst{position:absolute;left:100%;top:50%;height:4px;width:0;transform:translateY(-50%);background:linear-gradient(90deg,rgba(192,255,0,0.8),rgba(192,255,0,0.3) 40%,rgba(192,255,0,0.08));border-radius:2px;filter:blur(2px);opacity:0;transition:none}
+  .skill-bar-burst{position:absolute;left:100%;top:0;height:100%;width:0;background:linear-gradient(90deg,rgba(192,255,0,0.9),rgba(192,255,0,0.6) 50%,rgba(192,255,0,0.3));border-radius:0 4px 4px 0;opacity:0;transition:none;box-shadow:0 0 12px rgba(192,255,0,0.4),0 0 24px rgba(192,255,0,0.2)}
   .skill-bar-burst.active{animation:burstSpread 2s cubic-bezier(.16,1,.3,1) forwards}
-  @keyframes burstSpread{0%{width:0;opacity:1;height:4px}10%{width:30px;opacity:1;height:10px}30%{height:6px;opacity:0.8}100%{width:100vw;opacity:0.5;height:3px}}
+  @keyframes burstSpread{0%{width:0;opacity:1}15%{width:40px;opacity:1}100%{width:100vw;opacity:0.8}}
   .skill-bar-burst-glow{position:absolute;right:0;top:50%;width:0;height:0;transform:translate(0,-50%);border-radius:50%;background:radial-gradient(circle,rgba(192,255,0,0.6),transparent 70%);opacity:0}
   .skill-bar-burst-glow.active{animation:burstGlow 0.6s ease-out forwards}
   @keyframes burstGlow{0%{width:0;height:0;opacity:1}100%{width:60px;height:60px;opacity:0;transform:translate(0,-50%)}}
