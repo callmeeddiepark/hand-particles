@@ -195,16 +195,14 @@
   #page-about.active{display:block;opacity:1}
   canvas#aboutCanvas{position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none}
   .about-light{position:fixed;width:300px;height:300px;border-radius:50%;background:radial-gradient(circle,rgba(192,255,0,0.04) 0%,transparent 70%);pointer-events:none;z-index:0;transform:translate(-50%,-50%);transition:left .1s linear,top .1s linear;display:none}
-  .about-tabs{position:fixed;top:60px;left:0;right:0;z-index:5;display:flex;flex-direction:row;gap:8px;justify-content:center;padding:10px 0;background:transparent}
-  .about-tab{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.2em;text-transform:uppercase;padding:8px 20px;border:1px solid rgba(255,255,255,0.08);background:transparent;color:rgba(255,255,255,0.3);cursor:pointer;border-radius:2px;transition:all .3s ease}
-  .about-tab.active{border-color:var(--accent);color:var(--accent)}
-  .about-tab:hover,.about-tab.pinch-hover{border-color:rgba(255,255,255,0.2)}
+  .labs-tabs{position:fixed;top:60px;left:0;right:0;z-index:5;display:flex;flex-direction:row;gap:8px;justify-content:center;padding:10px 0;background:transparent}
+  .labs-tab{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.2em;text-transform:uppercase;padding:8px 20px;border:1px solid rgba(255,255,255,0.08);background:transparent;color:rgba(255,255,255,0.3);cursor:pointer;border-radius:2px;transition:all .3s ease}
+  .labs-tab.active{border-color:var(--accent);color:var(--accent)}
+  .labs-tab:hover,.labs-tab.pinch-hover{border-color:rgba(255,255,255,0.2)}
+  .labs-section{display:none;position:relative;width:100%;height:100%}
+  .labs-section.active{display:block}
+  #section-dj.labs-section.active,#section-tattoo.labs-section.active{overflow-y:auto}
   .about-content{position:relative;z-index:1}
-  .about-section{display:none}
-  .about-section.active{display:block}
-  .about-section.coming-soon-section{display:none;align-items:center;justify-content:center;min-height:60vh;padding-top:120px}
-  .about-section.coming-soon-section.active{display:flex}
-  .coming-soon-text{font-family:'Space Mono',monospace;font-size:12px;letter-spacing:.3em;text-transform:uppercase;color:rgba(255,255,255,0.15)}
   .resume-inner{max-width:700px;margin:0 auto;padding:120px 32px 80px;position:relative}
   .resume-header{margin-bottom:60px;position:relative}
   .resume-name{font-family:'Syne',sans-serif;font-weight:800;font-size:clamp(36px,7vw,64px);color:var(--fg);letter-spacing:.06em;line-height:1.1;margin-bottom:4px}
@@ -246,7 +244,7 @@
   .dj-club-overlay.playing{background:rgba(0,0,0,0.6)}
   #djClubCanvas{position:absolute;inset:0;width:100%;height:100%;z-index:3;pointer-events:none}
   #djHandCanvas{position:absolute;inset:0;width:100%;height:100%;z-index:6;pointer-events:none}
-  #section-dj{position:relative;overflow:hidden}
+  #section-dj{position:relative;overflow:hidden;min-height:100vh}
   .dj-container{display:flex;flex-direction:column;align-items:center;padding:120px 16px 80px;max-width:540px;margin:0 auto;position:relative;z-index:5}
   .dj-tracklist{width:100%;overflow:hidden;margin-bottom:10px;border-top:1px solid rgba(0,212,255,0.1)}
   .dj-tracklist-title{font-family:'Space Mono',monospace;font-size:8px;letter-spacing:.25em;text-transform:uppercase;color:rgba(0,212,255,0.3);padding:6px 0 4px}
@@ -404,7 +402,79 @@
     <a href="#" class="nav-item" data-page="about">About</a>
     <a href="#" class="nav-item" data-page="contact">Contact</a>
   </nav>
-  <div class="labs-inner" id="labsInner">
+  <div class="labs-tabs">
+    <button class="labs-tab active" data-tab="labs-main">Labs</button>
+    <button class="labs-tab" data-tab="dj">DJ</button>
+    <button class="labs-tab" data-tab="tattoo">Tattoo</button>
+  </div>
+  <div class="labs-section active" id="section-labs-main">
+    <div class="labs-inner" id="labsInner">
+    </div>
+  </div>
+  <div class="labs-section" id="section-dj">
+    <div class="dj-club-overlay" id="djClubOverlay"></div>
+    <canvas id="djClubCanvas"></canvas>
+    <canvas id="djHandCanvas"></canvas>
+    <div class="dj-container">
+      <div class="cdj-unit">
+        <div class="cdj-display">
+          <div class="cdj-display-track" id="djTrackName">NO TRACK</div>
+          <canvas class="cdj-waveform" id="djWaveform"></canvas>
+          <div class="cdj-display-time" id="djTime">00:00</div>
+          <div class="dj-tracklist">
+            <div class="dj-tracklist-title">TRACKS</div>
+            <div class="dj-track" data-track="0">01. Midnight Drive</div>
+            <div class="dj-track" data-track="1">02. Neon Streets</div>
+            <div class="dj-track" data-track="2">03. After Hours</div>
+          </div>
+        </div>
+        <div class="cdj-controls-row">
+          <div class="cdj-eq-row">
+            <div class="cdj-knob-group">
+              <canvas class="cdj-knob" id="knobHigh" data-param="high"></canvas>
+              <div class="cdj-knob-label">HIGH</div>
+            </div>
+            <div class="cdj-knob-group">
+              <canvas class="cdj-knob" id="knobMid" data-param="mid"></canvas>
+              <div class="cdj-knob-label">MID</div>
+            </div>
+            <div class="cdj-knob-group">
+              <canvas class="cdj-knob" id="knobBass" data-param="bass"></canvas>
+              <div class="cdj-knob-label">BASS</div>
+            </div>
+          </div>
+          <div class="cdj-fader-group">
+            <input type="range" class="cdj-fader" id="djVolume" min="0" max="100" value="80">
+            <div class="cdj-knob-label">VOL</div>
+          </div>
+        </div>
+        <div class="cdj-jog-container">
+          <canvas class="cdj-jog" id="djJog" width="240" height="240"></canvas>
+        </div>
+        <div class="cdj-transport">
+          <button class="cdj-btn cdj-cue" id="djCue">CUE</button>
+          <button class="cdj-btn cdj-play" id="djPlay">&#9654;</button>
+        </div>
+        <div class="cdj-branding">
+          <span>Pioneer DJ</span>
+          <span>CDJ-3000</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="labs-section" id="section-tattoo">
+    <div class="tattoo-container">
+      <div class="tattoo-canvas-wrap">
+        <canvas id="tattooCanvas"></canvas>
+        <div class="tattoo-needle" id="tattooNeedle"></div>
+      </div>
+      <div class="tattoo-toolbar">
+        <button class="tattoo-tool-btn active" data-size="2">FINE</button>
+        <button class="tattoo-tool-btn" data-size="4">MEDIUM</button>
+        <button class="tattoo-tool-btn" data-size="6">BOLD</button>
+        <button class="tattoo-tool-btn tattoo-clear-btn">CLEAR</button>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -438,13 +508,8 @@
     <a href="#" class="nav-item active" data-page="about">About</a>
     <a href="#" class="nav-item" data-page="contact">Contact</a>
   </nav>
-  <div class="about-tabs">
-    <button class="about-tab active" data-tab="resume">Resume</button>
-    <button class="about-tab" data-tab="dj">DJ</button>
-    <button class="about-tab" data-tab="tattoo">Tattoo</button>
-  </div>
   <div class="about-content">
-    <div class="about-section active" id="section-resume">
+    <div id="section-resume">
       <div class="resume-inner">
         <div class="resume-header">
           <div class="resume-name" id="glitchName">EDDIE</div>
@@ -541,71 +606,6 @@
           <div class="resume-section-value">English</div>
           <div class="resume-section-sub">연수국가: 미국</div>
           <div class="resume-section-sub">연수기간: 8년 (2009. 12 — 2017. 05)</div>
-        </div>
-      </div>
-    </div>
-    <div class="about-section" id="section-dj">
-      <div class="dj-club-overlay" id="djClubOverlay"></div>
-      <canvas id="djClubCanvas"></canvas>
-      <canvas id="djHandCanvas"></canvas>
-      <div class="dj-container">
-        <div class="cdj-unit">
-          <div class="cdj-display">
-            <div class="cdj-display-track" id="djTrackName">NO TRACK</div>
-            <canvas class="cdj-waveform" id="djWaveform"></canvas>
-            <div class="cdj-display-time" id="djTime">00:00</div>
-            <div class="dj-tracklist">
-              <div class="dj-tracklist-title">TRACKS</div>
-              <div class="dj-track" data-track="0">01. Midnight Drive</div>
-              <div class="dj-track" data-track="1">02. Neon Streets</div>
-              <div class="dj-track" data-track="2">03. After Hours</div>
-            </div>
-          </div>
-          <div class="cdj-controls-row">
-            <div class="cdj-eq-row">
-              <div class="cdj-knob-group">
-                <canvas class="cdj-knob" id="knobHigh" data-param="high"></canvas>
-                <div class="cdj-knob-label">HIGH</div>
-              </div>
-              <div class="cdj-knob-group">
-                <canvas class="cdj-knob" id="knobMid" data-param="mid"></canvas>
-                <div class="cdj-knob-label">MID</div>
-              </div>
-              <div class="cdj-knob-group">
-                <canvas class="cdj-knob" id="knobBass" data-param="bass"></canvas>
-                <div class="cdj-knob-label">BASS</div>
-              </div>
-            </div>
-            <div class="cdj-fader-group">
-              <input type="range" class="cdj-fader" id="djVolume" min="0" max="100" value="80">
-              <div class="cdj-knob-label">VOL</div>
-            </div>
-          </div>
-          <div class="cdj-jog-container">
-            <canvas class="cdj-jog" id="djJog" width="240" height="240"></canvas>
-          </div>
-          <div class="cdj-transport">
-            <button class="cdj-btn cdj-cue" id="djCue">CUE</button>
-            <button class="cdj-btn cdj-play" id="djPlay">&#9654;</button>
-          </div>
-          <div class="cdj-branding">
-            <span>Pioneer DJ</span>
-            <span>CDJ-3000</span>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="about-section" id="section-tattoo">
-      <div class="tattoo-container">
-        <div class="tattoo-canvas-wrap">
-          <canvas id="tattooCanvas"></canvas>
-          <div class="tattoo-needle" id="tattooNeedle"></div>
-        </div>
-        <div class="tattoo-toolbar">
-          <button class="tattoo-tool-btn active" data-size="2">FINE</button>
-          <button class="tattoo-tool-btn" data-size="4">MEDIUM</button>
-          <button class="tattoo-tool-btn" data-size="6">BOLD</button>
-          <button class="tattoo-tool-btn tattoo-clear-btn">CLEAR</button>
         </div>
       </div>
     </div>
@@ -744,7 +744,7 @@
         gestureKnobTarget = null;
         gestureVolumeFader = false;
         gestureJogActive = false;
-        if (aboutActive && typeof djKnobs !== 'undefined') {
+        if (labsActive && typeof djKnobs !== 'undefined') {
           const cx2 = smoothCursorX >= 0 ? smoothCursorX : cursorX;
           const cy2 = smoothCursorY >= 0 ? smoothCursorY : cursorY;
           const elUnder = document.elementFromPoint(cx2, cy2);
@@ -854,7 +854,7 @@
       if (isPinching && wasPinching) {
         // Pinch held — check if dragging (scroll)
         const dy = cursorY - pinchStartY;
-        const djTabActive = aboutActive && document.getElementById('section-dj').classList.contains('active');
+        const djTabActive = labsActive && document.getElementById('section-dj').classList.contains('active');
         if (Math.abs(dy) > 8 && !labsActive && !gestureKnobTarget && !gestureVolumeFader && !gestureJogActive && !djTabActive) {
           pinchMoved = true;
           // Scroll: move the page based on drag distance
@@ -1636,6 +1636,8 @@
     aboutActive = false;
     // Stop labs animations
     if (labsAnimId) { cancelAnimationFrame(labsAnimId); labsAnimId = null; }
+    tattooStop();
+    if (djPlaying) djStop();
     // Stop contact animations
     if (contactAnimId) { cancelAnimationFrame(contactAnimId); contactAnimId = null; }
     // Stop about animations
@@ -1691,6 +1693,8 @@
     if (pBgAnimId) { cancelAnimationFrame(pBgAnimId); pBgAnimId = null; }
     // Stop labs animations
     if (labsAnimId) { cancelAnimationFrame(labsAnimId); labsAnimId = null; }
+    tattooStop();
+    if (djPlaying) djStop();
     // Stop about animations
     if (aBgAnimId) { cancelAnimationFrame(aBgAnimId); aBgAnimId = null; }
     // Reset thumb canvases
@@ -2093,6 +2097,8 @@
 
   function animateLabs() {
     if (!labsActive) { labsAnimId = null; return; }
+    const labsMainSection = document.getElementById('section-labs-main');
+    if (!labsMainSection || !labsMainSection.classList.contains('active')) { labsAnimId = null; return; }
     drawLabsMatrix();
     drawLabsConnections();
     updateLabCards();
@@ -2276,6 +2282,8 @@
     portfolioGrid.querySelectorAll('.card-thumb canvas').forEach(c => { c._ready = false; });
     // Stop labs animations
     if (labsAnimId) { cancelAnimationFrame(labsAnimId); labsAnimId = null; }
+    tattooStop();
+    if (djPlaying) djStop();
     // Stop about animations
     if (aBgAnimId) { cancelAnimationFrame(aBgAnimId); aBgAnimId = null; }
     // Hide portfolio
@@ -2348,6 +2356,12 @@
     labsPage.querySelectorAll('.nav-item').forEach(n => n.classList.toggle('active', n.dataset.page === 'labs'));
     // Ensure cursor matches current mode
     document.body.style.cursor = mouseMode ? 'default' : 'none';
+    // Reset to labs-main tab
+    labsPage.querySelectorAll('.labs-tab').forEach(t => t.classList.toggle('active', t.dataset.tab === 'labs-main'));
+    labsPage.querySelectorAll('.labs-section').forEach(s => s.classList.remove('active'));
+    document.getElementById('section-labs-main').classList.add('active');
+    tattooStop();
+    if (djPlaying) djStop();
     // Init and start
     initLabsCanvas();
     buildLabCards();
@@ -2557,17 +2571,34 @@
     aboutPage.querySelectorAll('.resume-section[data-reveal]').forEach(s => obs.observe(s));
   }
 
-  // Tab switching
-  aboutPage.querySelectorAll('.about-tab').forEach(tab => {
+  // Labs tab switching
+  labsPage.querySelectorAll('.labs-tab').forEach(tab => {
     tab.addEventListener('click', () => {
-      aboutPage.querySelectorAll('.about-tab').forEach(t => t.classList.remove('active'));
+      labsPage.querySelectorAll('.labs-tab').forEach(t => t.classList.remove('active'));
       tab.classList.add('active');
       const target = tab.dataset.tab;
-      aboutPage.querySelectorAll('.about-section').forEach(s => s.classList.remove('active'));
+      labsPage.querySelectorAll('.labs-section').forEach(s => s.classList.remove('active'));
       document.getElementById('section-' + target).classList.add('active');
-      if (target === 'dj') djInitUI();
-      if (target === 'tattoo') tattooInit();
+      if (target === 'dj') {
+        djInitUI();
+        // Stop labs card animations while on DJ tab
+        if (labsAnimId) { cancelAnimationFrame(labsAnimId); labsAnimId = null; }
+      }
+      if (target === 'tattoo') {
+        tattooInit();
+        // Stop labs card animations while on Tattoo tab
+        if (labsAnimId) { cancelAnimationFrame(labsAnimId); labsAnimId = null; }
+      }
       if (target !== 'tattoo') tattooStop();
+      if (target !== 'dj' && djPlaying) {
+        djStop();
+      }
+      if (target === 'labs-main') {
+        // Restart labs card animations
+        initLabsCanvas();
+        buildLabCards();
+        if (!labsAnimId) animateLabs();
+      }
     });
   });
 
@@ -2583,6 +2614,8 @@
     portfolioGrid.querySelectorAll('.card-thumb canvas').forEach(c => { c._ready = false; });
     // Stop labs animations
     if (labsAnimId) { cancelAnimationFrame(labsAnimId); labsAnimId = null; }
+    tattooStop();
+    if (djPlaying) djStop();
     // Stop contact animations
     if (contactAnimId) { cancelAnimationFrame(contactAnimId); contactAnimId = null; }
     // Hide portfolio
@@ -2608,11 +2641,6 @@
     aboutPage.scrollTop = 0;
     // Update nav active states
     aboutPage.querySelectorAll('.nav-item').forEach(n => n.classList.toggle('active', n.dataset.page === 'about'));
-    // Reset to resume tab
-    aboutPage.querySelectorAll('.about-tab').forEach(t => t.classList.toggle('active', t.dataset.tab === 'resume'));
-    aboutPage.querySelectorAll('.about-section').forEach(s => s.classList.remove('active'));
-    document.getElementById('section-resume').classList.add('active');
-    tattooStop();
     // Reset resume section reveal
     aboutPage.querySelectorAll('.resume-section[data-reveal]').forEach(s => s.classList.remove('visible'));
     // Ensure cursor matches current mode
@@ -3631,7 +3659,7 @@
 
   function tattooAnimate() {
     const sectionEl = document.getElementById('section-tattoo');
-    if (!sectionEl.classList.contains('active') || !aboutActive) {
+    if (!sectionEl.classList.contains('active') || !labsActive) {
       tattooAnimId = null;
       tattooStopBuzz();
       tattooNeedleEl.style.display = 'none';
