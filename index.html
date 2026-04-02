@@ -676,6 +676,8 @@
   let gestureKnobTarget = null;
   let gestureKnobStartY = 0;
   let gestureVolumeFader = false;
+  let gestureJogActive = false;
+  let gestureJogLastAngle = 0;
 
   // Tattoo gesture: thumb+index+middle together, ring+pinky curled
   let tattooGestureActive = false;
@@ -741,6 +743,7 @@
         // Pinch just started — check if over a DJ knob or volume fader
         gestureKnobTarget = null;
         gestureVolumeFader = false;
+        gestureJogActive = false;
         if (aboutActive && typeof djKnobs !== 'undefined') {
           const cx2 = smoothCursorX >= 0 ? smoothCursorX : cursorX;
           const cy2 = smoothCursorY >= 0 ? smoothCursorY : cursorY;
@@ -754,6 +757,14 @@
           } else if (elUnder && elUnder.id === 'djVolume') {
             gestureVolumeFader = true;
             gestureKnobStartY = cursorY;
+          } else if (elUnder && (elUnder.id === 'djJog' || elUnder.closest('.cdj-jog-container'))) {
+            gestureJogActive = true;
+            // Calculate angle from jog center
+            const jogEl = document.getElementById('djJog');
+            const jogRect = jogEl.getBoundingClientRect();
+            const jogCx = jogRect.left + jogRect.width / 2;
+            const jogCy = jogRect.top + jogRect.height / 2;
+            gestureJogLastAngle = Math.atan2(cy2 - jogCy, cx2 - jogCx);
           }
         }
       }
@@ -778,6 +789,35 @@
         }
       }
 
+      if (isPinching && wasPinching && gestureJogActive) {
+        // Circular rotation over jog wheel
+        const cx2 = smoothCursorX >= 0 ? smoothCursorX : cursorX;
+        const cy2 = smoothCursorY >= 0 ? smoothCursorY : cursorY;
+        const jogEl = document.getElementById('djJog');
+        if (jogEl) {
+          const jogRect = jogEl.getBoundingClientRect();
+          const jogCx = jogRect.left + jogRect.width / 2;
+          const jogCy = jogRect.top + jogRect.height / 2;
+          const newAngle = Math.atan2(cy2 - jogCy, cx2 - jogCx);
+          let delta = newAngle - gestureJogLastAngle;
+          if (delta > Math.PI) delta -= Math.PI * 2;
+          if (delta < -Math.PI) delta += Math.PI * 2;
+          if (Math.abs(delta) > 0.005 && Math.abs(delta) < 2) {
+            pinchMoved = true;
+            djJogAngle += delta;
+            gestureJogLastAngle = newAngle;
+            if (djBuffer) {
+              const timeShift = (delta / (Math.PI * 2)) * 2;
+              djPauseOffset += timeShift;
+              if (djPauseOffset < 0) djPauseOffset += djBuffer.duration;
+              djPauseOffset = djPauseOffset % djBuffer.duration;
+              if (djPlaying) djStartTime -= timeShift;
+            }
+            if (typeof djDrawJog === 'function') djDrawJog();
+          }
+        }
+      }
+
       if (isPinching && wasPinching && gestureVolumeFader) {
         // Dragging up/down over volume fader
         const dy = gestureKnobStartY - cursorY; // up = positive = louder
@@ -797,6 +837,7 @@
       if (!isPinching && wasPinching) {
         gestureKnobTarget = null;
         gestureVolumeFader = false;
+        gestureJogActive = false;
       }
 
       // Pinch logic: click vs scroll
@@ -811,7 +852,7 @@
         // Pinch held — check if dragging (scroll)
         const dy = cursorY - pinchStartY;
         const djTabActive = aboutActive && document.getElementById('section-dj').classList.contains('active');
-        if (Math.abs(dy) > 8 && !labsActive && !gestureKnobTarget && !gestureVolumeFader && !djTabActive) {
+        if (Math.abs(dy) > 8 && !labsActive && !gestureKnobTarget && !gestureVolumeFader && !gestureJogActive && !djTabActive) {
           pinchMoved = true;
           // Scroll: move the page based on drag distance
           const scrollAmount = -(cursorY - prevCursorY) * 2.5;
