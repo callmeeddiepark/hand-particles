@@ -220,9 +220,20 @@
   .resume-timeline{position:absolute;left:0;top:0;bottom:0;width:1px;background:var(--accent);opacity:0.15}
   .resume-timeline-wrap{position:relative;padding-left:40px}
   .resume-timeline-dot{position:absolute;left:-19px;top:6px;width:9px;height:9px;border:1px solid var(--accent);border-radius:50%;background:var(--bg)}
-  .skills-container{display:flex;flex-wrap:wrap;gap:10px;position:relative;min-height:60px}
-  .skill-pill{display:inline-block;padding:8px 18px;border:1px solid rgba(192,255,0,0.2);border-radius:20px;font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.1em;color:rgba(192,255,0,0.7);text-transform:uppercase;cursor:default;transition:border-color .3s ease,transform .1s ease,box-shadow .3s ease;position:relative;user-select:none}
-  .skill-pill:hover,.skill-pill.pinch-hover{border-color:rgba(192,255,0,0.5);box-shadow:0 0 16px rgba(192,255,0,0.08)}
+  .skills-container{display:flex;flex-direction:column;gap:20px;position:relative}
+  .skill-bar-row{display:flex;align-items:center;gap:16px}
+  .skill-bar-label{font-family:'Space Mono',monospace;font-size:11px;letter-spacing:.1em;color:rgba(255,255,255,0.5);text-transform:uppercase;width:140px;flex-shrink:0}
+  .skill-bar-track{flex:1;height:8px;background:rgba(255,255,255,0.04);border-radius:4px;position:relative;overflow:visible}
+  .skill-bar-fill{height:100%;border-radius:4px;position:relative;transition:width 1.5s cubic-bezier(.16,1,.3,1);width:0}
+  .skill-bar-fill.animate{width:var(--level)}
+  .skill-bar-fill.normal{background:linear-gradient(90deg,rgba(192,255,0,0.3),rgba(192,255,0,0.7))}
+  .skill-bar-fill.overload{background:linear-gradient(90deg,rgba(192,255,0,0.5),rgba(192,255,0,0.9));box-shadow:0 0 12px rgba(192,255,0,0.4),0 0 24px rgba(192,255,0,0.2)}
+  .skill-bar-pct{font-family:'Space Mono',monospace;font-size:10px;color:rgba(192,255,0,0.6);width:36px;text-align:right;flex-shrink:0}
+  .skill-bar-fill.overload::after{content:'';position:absolute;right:-2px;top:-4px;bottom:-4px;width:6px;border-radius:3px;background:var(--accent);animation:energyPulse .6s ease-in-out infinite alternate;box-shadow:0 0 8px var(--accent),0 0 16px var(--accent)}
+  @keyframes energyPulse{0%{opacity:0.6;transform:scaleY(0.8)}100%{opacity:1;transform:scaleY(1.2)}}
+  .skill-sparks{position:absolute;right:-8px;top:50%;transform:translateY(-50%);pointer-events:none}
+  .skill-spark{position:absolute;width:3px;height:3px;border-radius:50%;background:var(--accent);animation:sparkFloat 1s ease-out infinite}
+  @keyframes sparkFloat{0%{opacity:1;transform:translate(0,0) scale(1)}100%{opacity:0;transform:translate(var(--sx),var(--sy)) scale(0)}}
   .resume-divider{width:60px;height:1px;background:rgba(255,255,255,0.06);margin:48px 0}
 
   /* DJ SECTION */
@@ -411,12 +422,12 @@
         <div class="resume-section" data-reveal>
           <div class="resume-section-label">Skills</div>
           <div class="skills-container" id="skillsContainer">
-            <span class="skill-pill">Vibe Coding</span>
-            <span class="skill-pill">After Effects</span>
-            <span class="skill-pill">Premiere</span>
-            <span class="skill-pill">Photoshop</span>
-            <span class="skill-pill">Illustrator</span>
-            <span class="skill-pill">AI</span>
+            <div class="skill-bar-row" data-level="100" data-overload="true"><div class="skill-bar-label">Vibe Coding</div><div class="skill-bar-track"><div class="skill-bar-fill overload" style="--level:100%"></div></div><div class="skill-bar-pct">100</div></div>
+            <div class="skill-bar-row" data-level="90"><div class="skill-bar-label">After Effects</div><div class="skill-bar-track"><div class="skill-bar-fill normal" style="--level:90%"></div></div><div class="skill-bar-pct">90</div></div>
+            <div class="skill-bar-row" data-level="85"><div class="skill-bar-label">Premiere</div><div class="skill-bar-track"><div class="skill-bar-fill normal" style="--level:85%"></div></div><div class="skill-bar-pct">85</div></div>
+            <div class="skill-bar-row" data-level="90"><div class="skill-bar-label">Photoshop</div><div class="skill-bar-track"><div class="skill-bar-fill normal" style="--level:90%"></div></div><div class="skill-bar-pct">90</div></div>
+            <div class="skill-bar-row" data-level="90"><div class="skill-bar-label">Illustrator</div><div class="skill-bar-track"><div class="skill-bar-fill normal" style="--level:90%"></div></div><div class="skill-bar-pct">90</div></div>
+            <div class="skill-bar-row" data-level="100" data-overload="true"><div class="skill-bar-label">AI</div><div class="skill-bar-track"><div class="skill-bar-fill overload" style="--level:100%"></div></div><div class="skill-bar-pct">100</div></div>
           </div>
         </div>
         <div class="resume-divider"></div>
@@ -2257,32 +2268,40 @@
     aboutLight.style.display = 'block';
     aboutLight.style.left = e.clientX + 'px';
     aboutLight.style.top = e.clientY + 'px';
-    // Skills pill repulsion
-    updateSkillPillRepulsion(e.clientX, e.clientY);
   });
   aboutPage.addEventListener('mouseleave', () => {
     aboutLight.style.display = 'none';
   });
 
-  // Skills pill physics
-  function updateSkillPillRepulsion(mx, my) {
-    const pills = document.querySelectorAll('.skill-pill');
-    pills.forEach(pill => {
-      const rect = pill.getBoundingClientRect();
-      const px = rect.left + rect.width / 2;
-      const py = rect.top + rect.height / 2;
-      const dx = px - mx;
-      const dy = py - my;
-      const dist = Math.sqrt(dx * dx + dy * dy);
-      if (dist < 100 && dist > 1) {
-        const force = (1 - dist / 100) * 12;
-        const tx = (dx / dist) * force;
-        const ty = (dy / dist) * force;
-        pill.style.transform = `translate(${tx}px, ${ty}px)`;
-      } else {
-        pill.style.transform = '';
-      }
+  // Skills energy bar animation
+  let skillBarsAnimated = false;
+  function animateSkillBars() {
+    if (skillBarsAnimated) return;
+    skillBarsAnimated = true;
+    document.querySelectorAll('.skill-bar-fill').forEach(fill => fill.classList.add('animate'));
+    // Add spark particles to overloaded bars
+    document.querySelectorAll('.skill-bar-row[data-overload="true"]').forEach(row => {
+      const track = row.querySelector('.skill-bar-track');
+      const sparksEl = document.createElement('div');
+      sparksEl.className = 'skill-sparks';
+      track.appendChild(sparksEl);
+      // Continuously spawn sparks
+      setInterval(() => {
+        if (!aboutActive) return;
+        const spark = document.createElement('div');
+        spark.className = 'skill-spark';
+        spark.style.setProperty('--sx', (Math.random() * 20 - 5) + 'px');
+        spark.style.setProperty('--sy', (Math.random() * 30 - 15) + 'px');
+        spark.style.animationDuration = (0.5 + Math.random() * 0.8) + 's';
+        sparksEl.appendChild(spark);
+        setTimeout(() => spark.remove(), 1300);
+      }, 150);
     });
+  }
+  function resetSkillBars() {
+    skillBarsAnimated = false;
+    document.querySelectorAll('.skill-bar-fill').forEach(fill => fill.classList.remove('animate'));
+    document.querySelectorAll('.skill-sparks').forEach(el => el.remove());
   }
 
   // Glitch effect for name
@@ -2378,6 +2397,9 @@
     setTimeout(() => glitchName(), 200);
     // Observe sections for reveal
     setTimeout(() => observeResumeSections(), 100);
+    // Animate skill bars
+    resetSkillBars();
+    setTimeout(() => animateSkillBars(), 500);
   }
 
   // ===== DJ SECTION =====
