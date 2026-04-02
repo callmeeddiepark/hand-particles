@@ -242,8 +242,8 @@
   .resume-divider{width:60px;height:1px;background:rgba(255,255,255,0.06);margin:48px 0}
 
   /* DJ SECTION */
-  .dj-club-overlay{position:absolute;inset:0;background:rgba(0,0,0,0.7);z-index:4;pointer-events:none;transition:opacity 1s ease}
-  .dj-club-overlay.playing{opacity:0}
+  .dj-club-overlay{position:absolute;inset:0;background:rgba(0,0,0,0.85);z-index:4;pointer-events:none;transition:opacity 1s ease}
+  .dj-club-overlay.playing{background:rgba(0,0,0,0.6)}
   #djClubCanvas{position:absolute;inset:0;width:100%;height:100%;z-index:3;pointer-events:none}
   #section-dj{position:relative;overflow:hidden}
   .dj-container{display:flex;flex-direction:column;align-items:center;padding:120px 16px 80px;max-width:540px;margin:0 auto;position:relative;z-index:5}
@@ -3042,10 +3042,10 @@
         x: Math.random(), y: Math.random(),
         vx: (Math.random() - 0.5) * 0.02,
         vy: (Math.random() - 0.5) * 0.02,
-        r: 120 + Math.random() * 200,
+        r: 150 + Math.random() * 250,
         color: randomClubColor(),
         alpha: 0,
-        targetAlpha: 0.2 + Math.random() * 0.3,
+        targetAlpha: 0.5 + Math.random() * 0.5,
         on: Math.random() > 0.3,
         nextToggle: Math.random() * 60,
         life: 0
@@ -3116,7 +3116,7 @@
       if (blob.y < -0.2) blob.y = 1.2;
       if (blob.y > 1.2) blob.y = -0.2;
       // Smooth alpha toward target
-      const target = blob.on ? (blob.targetAlpha + bassEnergy * 0.3) : 0;
+      const target = blob.on ? (blob.targetAlpha + bassEnergy * 0.5) : 0;
       blob.alpha += (target - blob.alpha) * 0.15;
     }
 
@@ -3126,13 +3126,16 @@
       if (blob.alpha < 0.01) continue;
       const cx = w * blob.x;
       const cy = h * blob.y;
-      const r = blob.r * (0.7 + bassEnergy * 1.0);
+      const r = blob.r * (0.8 + bassEnergy * 1.2);
       const c = blob.color;
+      const a = blob.alpha;
 
+      // Bright core
       const grad = djClubCtx.createRadialGradient(cx, cy, 0, cx, cy, r);
-      grad.addColorStop(0, `rgba(${c[0]},${c[1]},${c[2]},${blob.alpha})`);
-      grad.addColorStop(0.3, `rgba(${c[0]},${c[1]},${c[2]},${blob.alpha * 0.5})`);
-      grad.addColorStop(0.7, `rgba(${c[0]},${c[1]},${c[2]},${blob.alpha * 0.1})`);
+      grad.addColorStop(0, `rgba(${Math.min(255,c[0]+80)},${Math.min(255,c[1]+80)},${Math.min(255,c[2]+80)},${a})`);
+      grad.addColorStop(0.15, `rgba(${c[0]},${c[1]},${c[2]},${a * 0.8})`);
+      grad.addColorStop(0.4, `rgba(${c[0]},${c[1]},${c[2]},${a * 0.4})`);
+      grad.addColorStop(0.7, `rgba(${c[0]},${c[1]},${c[2]},${a * 0.1})`);
       grad.addColorStop(1, `rgba(${c[0]},${c[1]},${c[2]},0)`);
 
       djClubCtx.fillStyle = grad;
@@ -3142,9 +3145,9 @@
     }
     djClubCtx.globalCompositeOperation = 'source-over';
 
-    // Beat flash
-    if (bassEnergy > 0.6) {
-      djClubCtx.fillStyle = `rgba(255,255,255,${(bassEnergy - 0.6) * 0.2})`;
+    // Beat flash — blinding strobe
+    if (bassEnergy > 0.55) {
+      djClubCtx.fillStyle = `rgba(255,255,255,${(bassEnergy - 0.55) * 0.5})`;
       djClubCtx.fillRect(0, 0, w, h);
     }
 
