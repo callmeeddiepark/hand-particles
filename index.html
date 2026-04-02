@@ -811,7 +811,10 @@
               djPauseOffset += timeShift;
               if (djPauseOffset < 0) djPauseOffset += djBuffer.duration;
               djPauseOffset = djPauseOffset % djBuffer.duration;
-              if (djPlaying) djStartTime -= timeShift;
+              if (djPlaying) {
+                djStartTime -= timeShift;
+                djRestartAtOffset();
+              }
             }
             if (typeof djDrawJog === 'function') djDrawJog();
           }
@@ -2796,6 +2799,18 @@
     if (!djAnimId) djAnimate();
   }
 
+  // Restart audio at current position (for scratch/rewind)
+  function djRestartAtOffset() {
+    if (!djPlaying || !djBuffer) return;
+    if (djSourceNode) { try { djSourceNode.stop(); } catch(e){} }
+    djSourceNode = djAudioCtx.createBufferSource();
+    djSourceNode.buffer = djBuffer;
+    djSourceNode.connect(djHighEQ);
+    djSourceNode.loop = true;
+    const offset = ((djAudioCtx.currentTime - djStartTime) % djBuffer.duration + djBuffer.duration) % djBuffer.duration;
+    djSourceNode.start(0, offset);
+  }
+
   function djStop() {
     if (djSourceNode) { try { djSourceNode.stop(); } catch(e){} djSourceNode = null; }
     djPauseOffset = (djAudioCtx.currentTime - djStartTime) % (djBuffer ? djBuffer.duration : 1);
@@ -3088,6 +3103,7 @@
         djPauseOffset = djPauseOffset % djBuffer.duration;
         if (djPlaying) {
           djStartTime -= timeShift;
+          djRestartAtOffset();
         }
       }
       djDrawJog();
