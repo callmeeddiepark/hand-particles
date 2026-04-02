@@ -274,6 +274,27 @@
   .cdj-fader::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:18px;height:10px;background:var(--accent);border-radius:2px;cursor:pointer}
   .cdj-fader::-moz-range-thumb{width:18px;height:10px;background:var(--accent);border:none;border-radius:2px;cursor:pointer}
   .cdj-fader::-moz-range-track{background:rgba(255,255,255,0.08);border-radius:3px}
+
+  /* TATTOO SECTION */
+  .tattoo-container{display:flex;flex-direction:column;align-items:center;padding:80px 0 40px}
+  .tattoo-toolbar{display:flex;flex-direction:row;gap:8px;margin-bottom:20px}
+  .tattoo-tool-btn{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.2em;text-transform:uppercase;padding:8px 20px;border:1px solid rgba(255,255,255,0.08);background:transparent;color:rgba(255,255,255,0.3);cursor:pointer;border-radius:2px;transition:all .3s ease}
+  .tattoo-tool-btn.active{border-color:var(--accent);color:var(--accent)}
+  .tattoo-tool-btn:hover{border-color:rgba(255,255,255,0.2)}
+  .tattoo-clear-btn{color:rgba(255,100,100,0.5);border-color:rgba(255,100,100,0.15)}
+  .tattoo-clear-btn:hover{border-color:rgba(255,100,100,0.4);color:rgba(255,100,100,0.7)}
+  .tattoo-canvas-wrap{position:relative;display:inline-block;border-radius:8px;overflow:hidden;box-shadow:0 4px 30px rgba(0,0,0,0.4)}
+  #tattooCanvas{display:block;cursor:none}
+  .tattoo-needle{position:fixed;pointer-events:none;z-index:100;width:4px;height:20px;will-change:transform;display:none}
+  .tattoo-needle::before{content:'';position:absolute;left:0;top:0;width:0;height:0;border-left:2px solid transparent;border-right:2px solid transparent;border-top:14px solid rgba(60,60,60,0.9)}
+  .tattoo-needle::after{content:'';position:absolute;left:1px;top:14px;width:2px;height:6px;background:rgba(40,40,40,0.8);border-radius:0 0 1px 1px}
+  .tattoo-needle.buzzing{animation:buzz 0.05s infinite}
+  @keyframes buzz{0%{transform:translate(0,0)}25%{transform:translate(1px,-1px)}50%{transform:translate(-1px,1px)}75%{transform:translate(1px,1px)}100%{transform:translate(-1px,-1px)}}
+  @media(max-width:700px){
+    .tattoo-canvas-wrap{width:100%;max-width:100vw}
+    #tattooCanvas{width:100%!important;height:auto!important}
+    .tattoo-toolbar{flex-wrap:wrap;justify-content:center}
+  }
 </style>
 </head>
 <body>
@@ -546,8 +567,19 @@
         </div>
       </div>
     </div>
-    <div class="about-section coming-soon-section" id="section-tattoo">
-      <div class="coming-soon-text">Coming Soon</div>
+    <div class="about-section" id="section-tattoo">
+      <div class="tattoo-container">
+        <div class="tattoo-toolbar">
+          <button class="tattoo-tool-btn active" data-size="2">FINE</button>
+          <button class="tattoo-tool-btn" data-size="4">MEDIUM</button>
+          <button class="tattoo-tool-btn" data-size="6">BOLD</button>
+          <button class="tattoo-tool-btn tattoo-clear-btn">CLEAR</button>
+        </div>
+        <div class="tattoo-canvas-wrap">
+          <canvas id="tattooCanvas"></canvas>
+          <div class="tattoo-needle" id="tattooNeedle"></div>
+        </div>
+      </div>
     </div>
   </div>
 </div>
@@ -2429,6 +2461,8 @@
       aboutPage.querySelectorAll('.about-section').forEach(s => s.classList.remove('active'));
       document.getElementById('section-' + target).classList.add('active');
       if (target === 'dj') djInitUI();
+      if (target === 'tattoo') tattooInit();
+      if (target !== 'tattoo') tattooStop();
     });
   });
 
@@ -2473,6 +2507,7 @@
     aboutPage.querySelectorAll('.about-tab').forEach(t => t.classList.toggle('active', t.dataset.tab === 'resume'));
     aboutPage.querySelectorAll('.about-section').forEach(s => s.classList.remove('active'));
     document.getElementById('section-resume').classList.add('active');
+    tattooStop();
     // Reset resume section reveal
     aboutPage.querySelectorAll('.resume-section[data-reveal]').forEach(s => s.classList.remove('visible'));
     // Ensure cursor matches current mode
@@ -2967,6 +3002,408 @@
       djJogAngle = (t / djBuffer.duration) * Math.PI * 2 * 10; // 10 rotations per track
       djDrawJog();
     }
+  }
+
+  // ===== TATTOO SECTION =====
+  let tattooAnimId = null;
+  let tattooInited = false;
+  let tattooNeedleSize = 2;
+  let tattooIsTattooing = false;
+  let tattooMouseDown = false;
+  let tattooNeedleX = -1, tattooNeedleY = -1;
+  let tattooAudioCtx = null;
+  let tattooOsc = null;
+  let tattooOscGain = null;
+  let tattooRedMarks = []; // {x, y, age, radius}
+
+  const tattooCanvasEl = document.getElementById('tattooCanvas');
+  const tattooCtx = tattooCanvasEl.getContext('2d');
+  const tattooNeedleEl = document.getElementById('tattooNeedle');
+
+  // Skin layer (persistent ink) and reference layer
+  let tattooSkinCanvas = null;
+  let tattooSkinCtx = null;
+  let tattooRedCanvas = null;
+  let tattooRedCtx = null;
+
+  function tattooDrawReference(ctx2, w, h) {
+    ctx2.save();
+    ctx2.strokeStyle = 'rgba(120, 100, 80, 0.1)';
+    ctx2.lineWidth = 1.5;
+    const cx = w / 2, cy = h / 2;
+
+    // Central circle
+    ctx2.beginPath();
+    ctx2.arc(cx, cy, 60, 0, Math.PI * 2);
+    ctx2.stroke();
+
+    // Inner circle
+    ctx2.beginPath();
+    ctx2.arc(cx, cy, 25, 0, Math.PI * 2);
+    ctx2.stroke();
+
+    // 8 radiating lines with endpoint circles
+    for (let i = 0; i < 8; i++) {
+      const angle = (i / 8) * Math.PI * 2;
+      const innerR = 60;
+      const outerR = 140;
+      const x1 = cx + Math.cos(angle) * innerR;
+      const y1 = cy + Math.sin(angle) * innerR;
+      const x2 = cx + Math.cos(angle) * outerR;
+      const y2 = cy + Math.sin(angle) * outerR;
+      ctx2.beginPath();
+      ctx2.moveTo(x1, y1);
+      ctx2.lineTo(x2, y2);
+      ctx2.stroke();
+
+      // Endpoint circles
+      ctx2.beginPath();
+      ctx2.arc(x2, y2, 10, 0, Math.PI * 2);
+      ctx2.stroke();
+    }
+
+    // Diamond shapes between lines
+    for (let i = 0; i < 8; i++) {
+      const angle = (i / 8) * Math.PI * 2 + Math.PI / 8;
+      const r1 = 80, r2 = 110;
+      const aOff = 0.12;
+      ctx2.beginPath();
+      ctx2.moveTo(cx + Math.cos(angle) * r1, cy + Math.sin(angle) * r1);
+      ctx2.lineTo(cx + Math.cos(angle - aOff) * ((r1 + r2) / 2), cy + Math.sin(angle - aOff) * ((r1 + r2) / 2));
+      ctx2.lineTo(cx + Math.cos(angle) * r2, cy + Math.sin(angle) * r2);
+      ctx2.lineTo(cx + Math.cos(angle + aOff) * ((r1 + r2) / 2), cy + Math.sin(angle + aOff) * ((r1 + r2) / 2));
+      ctx2.closePath();
+      ctx2.stroke();
+    }
+
+    // Outer ring
+    ctx2.beginPath();
+    ctx2.arc(cx, cy, 160, 0, Math.PI * 2);
+    ctx2.stroke();
+
+    // Dotted outer accent ring
+    ctx2.setLineDash([4, 6]);
+    ctx2.beginPath();
+    ctx2.arc(cx, cy, 175, 0, Math.PI * 2);
+    ctx2.stroke();
+    ctx2.setLineDash([]);
+
+    ctx2.restore();
+  }
+
+  function tattooSetupCanvas() {
+    const dpr = window.devicePixelRatio || 1;
+    const isMobile = window.innerWidth <= 700;
+    const displaySize = isMobile ? Math.min(window.innerWidth - 32, 600) : 600;
+
+    tattooCanvasEl.style.width = displaySize + 'px';
+    tattooCanvasEl.style.height = displaySize + 'px';
+    tattooCanvasEl.width = displaySize * dpr;
+    tattooCanvasEl.height = displaySize * dpr;
+    tattooCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+    // Create skin layer
+    tattooSkinCanvas = document.createElement('canvas');
+    tattooSkinCanvas.width = displaySize * dpr;
+    tattooSkinCanvas.height = displaySize * dpr;
+    tattooSkinCtx = tattooSkinCanvas.getContext('2d');
+    tattooSkinCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+    // Create redness layer
+    tattooRedCanvas = document.createElement('canvas');
+    tattooRedCanvas.width = displaySize * dpr;
+    tattooRedCanvas.height = displaySize * dpr;
+    tattooRedCtx = tattooRedCanvas.getContext('2d');
+    tattooRedCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+    // Draw reference on skin layer
+    tattooDrawReference(tattooSkinCtx, displaySize, displaySize);
+
+    tattooRedMarks = [];
+  }
+
+  function tattooClearCanvas() {
+    const dpr = window.devicePixelRatio || 1;
+    const isMobile = window.innerWidth <= 700;
+    const displaySize = isMobile ? Math.min(window.innerWidth - 32, 600) : 600;
+
+    tattooSkinCtx.clearRect(0, 0, displaySize, displaySize);
+    tattooRedCtx.clearRect(0, 0, displaySize, displaySize);
+    tattooRedMarks = [];
+
+    // Redraw reference
+    tattooDrawReference(tattooSkinCtx, displaySize, displaySize);
+  }
+
+  function tattooStampDots(canvasX, canvasY) {
+    const size = tattooNeedleSize;
+    const dotCount = Math.ceil(size * 1.5) + 2;
+    for (let i = 0; i < dotCount; i++) {
+      const scatter = size * 1.5;
+      const dx = (Math.random() - 0.5) * scatter * 2;
+      const dy = (Math.random() - 0.5) * scatter * 2;
+      const dotR = size * (0.3 + Math.random() * 0.4);
+      const alpha = 0.3 + Math.random() * 0.2;
+
+      tattooSkinCtx.beginPath();
+      tattooSkinCtx.arc(canvasX + dx, canvasY + dy, dotR, 0, Math.PI * 2);
+      tattooSkinCtx.fillStyle = `rgba(20,20,20,${alpha})`;
+      tattooSkinCtx.fill();
+    }
+
+    // Add redness mark
+    tattooRedMarks.push({ x: canvasX, y: canvasY, age: 0, radius: size * 3 + Math.random() * 4 });
+    // Cap redness marks
+    if (tattooRedMarks.length > 600) tattooRedMarks.splice(0, 100);
+  }
+
+  function tattooComposite() {
+    const isMobile = window.innerWidth <= 700;
+    const displaySize = isMobile ? Math.min(window.innerWidth - 32, 600) : 600;
+
+    // Clear main canvas
+    tattooCtx.clearRect(0, 0, displaySize, displaySize);
+
+    // Skin background
+    tattooCtx.fillStyle = '#e8d4b8';
+    tattooCtx.fillRect(0, 0, displaySize, displaySize);
+
+    // Subtle skin texture noise
+    tattooCtx.globalAlpha = 0.03;
+    for (let i = 0; i < 200; i++) {
+      const x = Math.random() * displaySize;
+      const y = Math.random() * displaySize;
+      tattooCtx.fillStyle = Math.random() > 0.5 ? '#d0b898' : '#f0e0c8';
+      tattooCtx.fillRect(x, y, 2, 2);
+    }
+    tattooCtx.globalAlpha = 1;
+
+    // Draw redness layer
+    tattooRedCtx.clearRect(0, 0, displaySize, displaySize);
+    for (let i = tattooRedMarks.length - 1; i >= 0; i--) {
+      const m = tattooRedMarks[i];
+      m.age++;
+      const fadeAlpha = Math.max(0, 1 - m.age / 180);
+      if (fadeAlpha <= 0) {
+        tattooRedMarks.splice(i, 1);
+        continue;
+      }
+      tattooRedCtx.beginPath();
+      tattooRedCtx.arc(m.x, m.y, m.radius, 0, Math.PI * 2);
+      tattooRedCtx.fillStyle = `rgba(200,60,60,${fadeAlpha * 0.08})`;
+      tattooRedCtx.fill();
+    }
+    tattooCtx.drawImage(tattooRedCanvas, 0, 0, displaySize, displaySize);
+
+    // Draw ink layer on top
+    tattooCtx.drawImage(tattooSkinCanvas, 0, 0, displaySize, displaySize);
+  }
+
+  function tattooGetCanvasCoords(clientX, clientY) {
+    const rect = tattooCanvasEl.getBoundingClientRect();
+    const scaleX = parseFloat(tattooCanvasEl.style.width) / rect.width;
+    const scaleY = parseFloat(tattooCanvasEl.style.height) / rect.height;
+    return {
+      x: (clientX - rect.left) * scaleX,
+      y: (clientY - rect.top) * scaleY,
+      inBounds: clientX >= rect.left && clientX <= rect.right && clientY >= rect.top && clientY <= rect.bottom
+    };
+  }
+
+  function tattooStartBuzz() {
+    if (tattooOsc) return;
+    try {
+      if (!tattooAudioCtx) tattooAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      if (tattooAudioCtx.state === 'suspended') tattooAudioCtx.resume();
+      tattooOsc = tattooAudioCtx.createOscillator();
+      tattooOscGain = tattooAudioCtx.createGain();
+      tattooOsc.type = 'sawtooth';
+      tattooOsc.frequency.value = 120;
+      tattooOscGain.gain.value = 0.04;
+      // Add modulation
+      const lfo = tattooAudioCtx.createOscillator();
+      const lfoGain = tattooAudioCtx.createGain();
+      lfo.frequency.value = 45;
+      lfoGain.gain.value = 30;
+      lfo.connect(lfoGain);
+      lfoGain.connect(tattooOsc.frequency);
+      lfo.start();
+      tattooOsc._lfo = lfo;
+
+      tattooOsc.connect(tattooOscGain);
+      tattooOscGain.connect(tattooAudioCtx.destination);
+      tattooOsc.start();
+    } catch(e) {}
+  }
+
+  function tattooStopBuzz() {
+    if (tattooOsc) {
+      try {
+        if (tattooOsc._lfo) tattooOsc._lfo.stop();
+        tattooOsc.stop();
+      } catch(e) {}
+      tattooOsc = null;
+      tattooOscGain = null;
+    }
+  }
+
+  function tattooAnimate() {
+    const sectionEl = document.getElementById('section-tattoo');
+    if (!sectionEl.classList.contains('active') || !aboutActive) {
+      tattooAnimId = null;
+      tattooStopBuzz();
+      tattooNeedleEl.style.display = 'none';
+      return;
+    }
+    tattooAnimId = requestAnimationFrame(tattooAnimate);
+
+    // Determine if tattooing
+    const isGesture = !mouseMode && handPresent;
+    let nx = tattooNeedleX, ny = tattooNeedleY;
+
+    if (isGesture) {
+      nx = smoothCursorX >= 0 ? smoothCursorX : cursorX;
+      ny = smoothCursorY >= 0 ? smoothCursorY : cursorY;
+    }
+
+    // Update needle position
+    if (nx >= 0 && ny >= 0) {
+      tattooNeedleEl.style.display = 'block';
+      const vibX = tattooIsTattooing ? (Math.random() - 0.5) * 3 : 0;
+      const vibY = tattooIsTattooing ? (Math.random() - 0.5) * 3 : 0;
+      tattooNeedleEl.style.left = (nx - 2 + vibX) + 'px';
+      tattooNeedleEl.style.top = (ny - 2 + vibY) + 'px';
+
+      if (tattooIsTattooing) {
+        tattooNeedleEl.classList.add('buzzing');
+      } else {
+        tattooNeedleEl.classList.remove('buzzing');
+      }
+    } else {
+      tattooNeedleEl.style.display = 'none';
+    }
+
+    // Check tattooing state
+    if (isGesture && nx >= 0) {
+      const coords = tattooGetCanvasCoords(nx, ny);
+      if (coords.inBounds) {
+        if (!tattooIsTattooing) {
+          tattooIsTattooing = true;
+          tattooStartBuzz();
+        }
+        tattooStampDots(coords.x, coords.y);
+      } else {
+        if (tattooIsTattooing) {
+          tattooIsTattooing = false;
+          tattooStopBuzz();
+        }
+      }
+    } else if (mouseMode || !handPresent) {
+      if (tattooMouseDown && nx >= 0) {
+        const coords = tattooGetCanvasCoords(nx, ny);
+        if (coords.inBounds) {
+          if (!tattooIsTattooing) {
+            tattooIsTattooing = true;
+            tattooStartBuzz();
+          }
+          tattooStampDots(coords.x, coords.y);
+        }
+      } else {
+        if (tattooIsTattooing) {
+          tattooIsTattooing = false;
+          tattooStopBuzz();
+        }
+      }
+    }
+
+    // Composite and render
+    tattooComposite();
+  }
+
+  function tattooInit() {
+    if (!tattooInited) {
+      tattooInited = true;
+      tattooSetupCanvas();
+
+      // Toolbar events
+      document.querySelectorAll('.tattoo-tool-btn[data-size]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('.tattoo-tool-btn').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          tattooNeedleSize = parseInt(btn.dataset.size);
+        });
+      });
+      document.querySelector('.tattoo-clear-btn').addEventListener('click', () => {
+        tattooClearCanvas();
+      });
+
+      // Mouse events on canvas
+      tattooCanvasEl.addEventListener('mousedown', (e) => {
+        tattooMouseDown = true;
+        const coords = tattooGetCanvasCoords(e.clientX, e.clientY);
+        if (coords.inBounds) {
+          tattooIsTattooing = true;
+          tattooStartBuzz();
+        }
+      });
+      tattooCanvasEl.addEventListener('touchstart', (e) => {
+        tattooMouseDown = true;
+        const t = e.touches[0];
+        const coords = tattooGetCanvasCoords(t.clientX, t.clientY);
+        if (coords.inBounds) {
+          tattooIsTattooing = true;
+          tattooStartBuzz();
+        }
+        e.preventDefault();
+      }, { passive: false });
+
+      document.addEventListener('mouseup', () => {
+        tattooMouseDown = false;
+        tattooIsTattooing = false;
+        tattooStopBuzz();
+      });
+      document.addEventListener('touchend', () => {
+        tattooMouseDown = false;
+        tattooIsTattooing = false;
+        tattooStopBuzz();
+      });
+
+      tattooCanvasEl.addEventListener('mousemove', (e) => {
+        tattooNeedleX = e.clientX;
+        tattooNeedleY = e.clientY;
+      });
+      tattooCanvasEl.addEventListener('touchmove', (e) => {
+        const t = e.touches[0];
+        tattooNeedleX = t.clientX;
+        tattooNeedleY = t.clientY;
+        e.preventDefault();
+      }, { passive: false });
+
+      tattooCanvasEl.addEventListener('mouseleave', () => {
+        if (!handPresent) {
+          tattooNeedleEl.style.display = 'none';
+          tattooNeedleX = -1;
+          tattooNeedleY = -1;
+          if (tattooIsTattooing) {
+            tattooIsTattooing = false;
+            tattooStopBuzz();
+          }
+        }
+      });
+    }
+
+    // Start animation loop
+    if (!tattooAnimId) tattooAnimate();
+  }
+
+  function tattooStop() {
+    if (tattooAnimId) {
+      cancelAnimationFrame(tattooAnimId);
+      tattooAnimId = null;
+    }
+    tattooStopBuzz();
+    tattooIsTattooing = false;
+    tattooNeedleEl.style.display = 'none';
   }
 
 })();
