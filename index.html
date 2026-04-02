@@ -2010,20 +2010,6 @@
     contactLastScratchX = x;
     contactLastScratchY = y;
 
-    // Spawn scratch particles
-    for (let i = 0; i < 4; i++) {
-      const angle = Math.random() * Math.PI * 2;
-      const speed = 1 + Math.random() * 3;
-      contactScratchParticles.push({
-        x: x,
-        y: y,
-        vx: Math.cos(angle) * speed,
-        vy: Math.sin(angle) * speed,
-        size: 1 + Math.random() * 2,
-        alpha: 0.6 + Math.random() * 0.4,
-        color: Math.random() > 0.5 ? '200,200,200' : '255,255,255'
-      });
-    }
   }
 
   function getScratchPercentage() {
@@ -2047,35 +2033,6 @@
 
   function animateContact() {
     if (!contactActive) { contactAnimId = null; return; }
-
-    // Draw particles on a separate pass (on top of the contact canvas)
-    // We need to draw particles without affecting the scratch coating
-    // Use a temporary approach: draw particles using destination-over won't work
-    // Instead, we just let particles live as DOM-less visual on the canvas
-    // Actually particles should appear ON TOP of the coating, so we draw them normally
-    const w = contactCanvas.width;
-    const h = contactCanvas.height;
-
-    // Update and draw scratch particles on the contact canvas
-    // We draw particles in 'source-over' mode on top
-    contactCtx.save();
-    contactCtx.globalCompositeOperation = 'source-over';
-    for (let i = contactScratchParticles.length - 1; i >= 0; i--) {
-      const p = contactScratchParticles[i];
-      p.x += p.vx;
-      p.y += p.vy;
-      p.vy += 0.05; // gravity
-      p.alpha -= 0.02;
-      if (p.alpha <= 0) {
-        contactScratchParticles.splice(i, 1);
-        continue;
-      }
-      contactCtx.beginPath();
-      contactCtx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-      contactCtx.fillStyle = `rgba(${p.color},${p.alpha})`;
-      contactCtx.fill();
-    }
-    contactCtx.restore();
 
     // Animate hint text pulse - redraw hint if not too much scratched
     // (Skip this since redrawing would cover scratched areas)
