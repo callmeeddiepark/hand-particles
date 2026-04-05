@@ -1761,11 +1761,16 @@
     }
 
     if (contactActive) {
-      // Scratch with hand movement (no pinch needed)
       contactLight.style.display = 'block';
       contactLight.style.left = smoothCursorX + 'px';
       contactLight.style.top = smoothCursorY + 'px';
-      scratchAt(smoothCursorX, smoothCursorY, 60);
+      // Only scratch when pinching
+      if (isPinching) {
+        scratchAt(smoothCursorX, smoothCursorY, 60);
+      } else {
+        contactLastScratchX = -1;
+        contactLastScratchY = -1;
+      }
     }
 
     if (aboutActive) {
