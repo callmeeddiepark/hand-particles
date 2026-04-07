@@ -15,26 +15,47 @@
     animation:gs .4s steps(1) infinite}
   @keyframes gs{0%{transform:translate(0,0)}25%{transform:translate(-1%,2%)}50%{transform:translate(2%,-1%)}75%{transform:translate(-2%,1%)}}
 
-  /* PAGE 1 */
-  #page-attention{position:fixed;inset:0;z-index:100;display:flex;align-items:center;justify-content:center;background:var(--bg);transition:opacity .6s ease,transform .6s ease}
-  #page-attention.exit{opacity:0;transform:scale(.98);pointer-events:none}
-  .attention-container{max-width:520px;padding:40px}
-  .attention-icon{width:48px;height:48px;border:2px solid var(--accent);border-radius:50%;display:flex;align-items:center;justify-content:center;margin-bottom:32px;animation:ip 3s ease-in-out infinite}
-  .attention-icon svg{width:24px;height:24px;stroke:var(--accent);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
-  @keyframes ip{0%,100%{box-shadow:0 0 0 0 rgba(192,255,0,.15)}50%{box-shadow:0 0 0 12px transparent}}
-  .attention-title{font-family:'Syne',sans-serif;font-weight:800;font-size:11px;letter-spacing:.4em;text-transform:uppercase;color:var(--accent);margin-bottom:36px}
-  .attention-items{list-style:none;display:flex;flex-direction:column;gap:20px;margin-bottom:40px}
-  .attention-items li{display:flex;gap:14px;align-items:flex-start;font-size:12px;line-height:1.7;color:var(--mid);letter-spacing:.02em}
-  .attention-items li .marker{flex-shrink:0;width:6px;height:6px;margin-top:7px;border:1px solid rgba(255,255,255,.2);border-radius:1px;transform:rotate(45deg)}
-  .attention-items li strong{color:var(--fg);font-weight:400}
-  .attention-divider{width:100%;height:1px;background:var(--dim);margin-bottom:32px}
-  .attention-privacy{font-size:10px;line-height:1.8;color:rgba(255,255,255,.2);letter-spacing:.05em;margin-bottom:40px;padding-left:20px;border-left:1px solid rgba(255,255,255,.06)}
-  .start-btn{display:inline-flex;align-items:center;gap:12px;padding:14px 32px;background:transparent;border:1px solid rgba(255,255,255,.15);color:var(--fg);font-family:'Space Mono',monospace;font-size:11px;letter-spacing:.3em;text-transform:uppercase;cursor:pointer;transition:all .3s ease;position:relative;overflow:hidden}
-  .start-btn::before{content:'';position:absolute;inset:0;background:var(--accent);transform:scaleX(0);transform-origin:left;transition:transform .4s cubic-bezier(.16,1,.3,1);z-index:-1}
-  .start-btn:hover{border-color:var(--accent);color:var(--bg)}
-  .start-btn:hover::before{transform:scaleX(1)}
-  .start-btn .arrow{transition:transform .3s ease}
-  .start-btn:hover .arrow{transform:translateX(4px)}
+  /* SCAN PAGE */
+  #page-attention{position:fixed;inset:0;z-index:100;background:#000;overflow:hidden;transition:opacity .6s ease}
+  #page-attention.exit{opacity:0;pointer-events:none}
+  #scanCanvas{position:absolute;inset:0;width:100%;height:100%;z-index:0}
+
+  .scan-tap-prompt{position:absolute;inset:0;z-index:5;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-direction:column;gap:16px}
+  .scan-tap-prompt .tap-text{font-family:'Space Mono',monospace;font-size:13px;letter-spacing:.4em;text-transform:uppercase;color:rgba(0,255,65,0.5);animation:statusPulse 1s ease infinite alternate}
+  .scan-tap-prompt .tap-sub{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.2em;color:rgba(0,255,65,0.2)}
+
+  .scan-ui{position:relative;z-index:2;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none;opacity:0;transition:opacity .8s ease}
+  .scan-ui.visible{opacity:1}
+
+  .scan-howto{text-align:center;margin-bottom:40px;max-width:500px;padding:0 20px}
+  .scan-howto-main{font-family:'Syne',sans-serif;font-size:18px;font-weight:700;color:rgba(0,255,65,0.9);margin-bottom:16px;letter-spacing:0.02em;line-height:1.6}
+  .scan-howto-sub{font-family:'Space Mono',monospace;font-size:11px;color:rgba(0,255,65,0.4);line-height:1.8;margin-bottom:28px}
+  .scan-howto-guide{display:flex;gap:24px;justify-content:center;flex-wrap:wrap}
+  .scan-guide-item{display:flex;flex-direction:column;align-items:center;gap:6px}
+  .scan-guide-icon{font-size:24px}
+  .scan-guide-text{font-family:'Space Mono',monospace;font-size:9px;color:rgba(0,255,65,0.5);letter-spacing:0.1em;text-transform:uppercase}
+
+  .scan-hands-area{display:flex;gap:80px;margin-bottom:30px}
+  .scan-hand-outline{width:160px;height:220px;border:1px solid rgba(0,255,65,0.15);border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;transition:all 0.5s ease}
+  .scan-hand-outline.detected{border-color:rgba(0,255,65,0.6);box-shadow:0 0 30px rgba(0,255,65,0.15),inset 0 0 30px rgba(0,255,65,0.05)}
+  .scan-hand-label{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:0.3em;color:rgba(0,255,65,0.3);margin-top:12px}
+  .hand-svg{width:100px;height:140px;opacity:0.15}
+  .scan-hand-outline.detected .hand-svg{opacity:0.5}
+  .scan-hand-outline.detected .scan-hand-label{color:rgba(0,255,65,0.7)}
+
+  .scan-hand-outline.detected::after{content:'';position:absolute;left:10%;right:10%;height:2px;background:linear-gradient(90deg,transparent,rgba(0,255,65,0.8),transparent);animation:scanLine 1.5s ease-in-out infinite;box-shadow:0 0 10px rgba(0,255,65,0.5)}
+  @keyframes scanLine{0%{top:10%}50%{top:85%}100%{top:10%}}
+
+  .scan-status{font-family:'Space Mono',monospace;font-size:12px;letter-spacing:0.3em;color:rgba(0,255,65,0.5);text-transform:uppercase;margin-bottom:16px;transition:color 0.3s ease}
+  .scan-status.scanning{color:rgba(0,255,65,0.8);animation:statusPulse 0.5s ease infinite alternate}
+  @keyframes statusPulse{0%{opacity:0.6}100%{opacity:1}}
+
+  .scan-progress-bar{width:200px;height:3px;background:rgba(0,255,65,0.1);border-radius:2px;overflow:hidden}
+  .scan-progress-fill{width:0%;height:100%;background:rgba(0,255,65,0.7);transition:width 0.1s linear;box-shadow:0 0 8px rgba(0,255,65,0.5)}
+
+  .scan-approved{position:fixed;inset:0;z-index:10;display:none;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-size:clamp(36px,8vw,72px);font-weight:800;letter-spacing:0.3em;color:rgba(0,255,65,0);text-transform:uppercase;text-shadow:0 0 40px rgba(0,255,65,0.5),0 0 80px rgba(0,255,65,0.3)}
+  .scan-approved.show{display:flex;animation:approvedFlash 2s ease forwards}
+  @keyframes approvedFlash{0%{color:rgba(0,255,65,0);background:rgba(0,255,65,0)}10%{background:rgba(0,255,65,0.15);color:rgba(0,255,65,1)}40%{background:rgba(0,255,65,0.05);color:rgba(0,255,65,0.9)}100%{color:rgba(0,255,65,0);background:rgba(0,0,0,0)}}
 
   /* PAGE 2 */
   #page-landing{position:fixed;inset:0;z-index:50;display:none;opacity:0;transition:opacity .8s ease}
@@ -280,26 +301,48 @@
 <body>
 
 <div id="page-attention">
-  <div class="attention-container">
-    <div class="attention-icon fade-in">
-      <svg viewBox="0 0 24 24"><path d="M12 9v4m0 4h.01M5.07 19h13.86c1.54 0 2.5-1.67 1.73-3L13.73 4.99c-.77-1.33-2.69-1.33-3.46 0L3.34 16c-.77 1.33.19 3 1.73 3z"/></svg>
-    </div>
-    <div class="attention-title fade-in-delay-1">Attention</div>
-    <ul class="attention-items fade-in-delay-2">
-      <li><span class="marker"></span><span>This experience requires <strong>camera access</strong> to track your hand movements in real-time.</span></li>
-      <li><span class="marker"></span><span>This website is controlled entirely by <strong>hand gestures</strong>, not by mouse or keyboard.</span></li>
-      <li><span class="marker"></span><span>For the best experience, ensure your hand is <strong>clearly visible</strong> to the camera with good lighting.</span></li>
-    </ul>
-    <div class="attention-divider fade-in-delay-3"></div>
-    <div class="attention-privacy fade-in-delay-4">
-      Your camera feed is processed locally in your browser.<br>
-      No video data is recorded, stored, or transmitted to any server.<br>
-      No personal data is collected at any point during this experience.
-    </div>
-    <button class="start-btn fade-in-delay-5" id="startBtn">
-      <span>Start Experience</span><span class="arrow">→</span>
-    </button>
+  <canvas id="scanCanvas"></canvas>
+  <div class="scan-tap-prompt" id="scanTapPrompt">
+    <div class="tap-text">TAP TO BEGIN</div>
+    <div class="tap-sub">camera access required</div>
   </div>
+  <div class="scan-ui" id="scanUI">
+    <div class="scan-howto">
+      <p class="scan-howto-main">이곳에서는 당신의 손짓이 마우스가 됩니다.</p>
+      <p class="scan-howto-sub">더 이상 마우스라는 물리적 제약에서 벗어나<br>기술과 감각이 만나는 새로운 차원의 포트폴리오를<br>직접 경험해 보세요.</p>
+      <div class="scan-howto-guide">
+        <div class="scan-guide-item">
+          <div class="scan-guide-icon">👆</div>
+          <div class="scan-guide-text">검지로 커서 이동</div>
+        </div>
+        <div class="scan-guide-item">
+          <div class="scan-guide-icon">🤏</div>
+          <div class="scan-guide-text">핀치 (짧게) → 클릭</div>
+        </div>
+        <div class="scan-guide-item">
+          <div class="scan-guide-icon">🤏↕</div>
+          <div class="scan-guide-text">핀치 + 드래그 → 스크롤</div>
+        </div>
+      </div>
+    </div>
+    <div class="scan-hands-area">
+      <div class="scan-hand-outline left" id="scanHandLeft">
+        <svg viewBox="0 0 200 280" class="hand-svg">
+          <path d="M100,270 C60,270 30,240 30,200 L30,120 C30,110 38,105 43,110 L43,160 C43,160 43,100 43,80 C43,70 51,65 56,70 L56,150 C56,150 56,70 56,55 C56,45 64,40 69,45 L69,140 C69,140 69,60 69,50 C69,40 77,35 82,40 L82,140 L82,40 C82,30 90,25 95,30 L95,170 C95,170 120,140 135,140 C150,140 155,150 145,160 L110,200 C110,200 140,270 100,270Z" fill="none" stroke="rgba(0,255,65,0.4)" stroke-width="1.5"/>
+        </svg>
+        <div class="scan-hand-label">LEFT</div>
+      </div>
+      <div class="scan-hand-outline right" id="scanHandRight">
+        <svg viewBox="0 0 200 280" class="hand-svg" style="transform:scaleX(-1)">
+          <path d="M100,270 C60,270 30,240 30,200 L30,120 C30,110 38,105 43,110 L43,160 C43,160 43,100 43,80 C43,70 51,65 56,70 L56,150 C56,150 56,70 56,55 C56,45 64,40 69,45 L69,140 C69,140 69,60 69,50 C69,40 77,35 82,40 L82,140 L82,40 C82,30 90,25 95,30 L95,170 C95,170 120,140 135,140 C150,140 155,150 145,160 L110,200 C110,200 140,270 100,270Z" fill="none" stroke="rgba(0,255,65,0.4)" stroke-width="1.5"/>
+        </svg>
+        <div class="scan-hand-label">RIGHT</div>
+      </div>
+    </div>
+    <div class="scan-status" id="scanStatus">PLACE BOTH HANDS</div>
+    <div class="scan-progress-bar" id="scanProgressBar"><div class="scan-progress-fill" id="scanProgressFill"></div></div>
+  </div>
+  <div class="scan-approved" id="scanApproved">APPROVED</div>
 </div>
 
 <div id="page-landing">
@@ -602,7 +645,6 @@
 <script>
 (() => {
   const pageAttention = document.getElementById('page-attention');
-  const startBtn = document.getElementById('startBtn');
   const pageLanding = document.getElementById('page-landing');
   const video = document.getElementById('webcam');
   const canvas = document.getElementById('scene');
@@ -653,8 +695,15 @@
 
   // Store raw hand landmarks for hand outline rendering
   let handLandmarks = null;
+  // Scan page: track number of detected hands and all landmarks
+  let scanHandCount = 0;
+  let allHandLandmarks = null;
 
   function onResults(results) {
+    // Track hand count for scan page
+    scanHandCount = (results.multiHandLandmarks && results.multiHandLandmarks.length) || 0;
+    allHandLandmarks = results.multiHandLandmarks || null;
+
     if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
       const lm = results.multiHandLandmarks[0];
       handPresent = true;
@@ -1335,7 +1384,7 @@
   async function initCamera() {
     if (typeof Hands === 'undefined' || typeof Camera === 'undefined') throw new Error('MediaPipe failed to load.');
     const hands = new Hands({ locateFile: f => `https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1675469240/${f}` });
-    hands.setOptions({ maxNumHands: 1, modelComplexity: 1, minDetectionConfidence: 0.7, minTrackingConfidence: 0.5 });
+    hands.setOptions({ maxNumHands: 2, modelComplexity: 1, minDetectionConfidence: 0.7, minTrackingConfidence: 0.5 });
     hands.onResults(onResults);
 
     mediaStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user', width: 1280, height: 720 } });
@@ -1346,27 +1395,185 @@
     statusText.textContent = 'Searching';
   }
 
-  // === Start ===
-  startBtn.addEventListener('click', () => {
-    pageAttention.classList.add('exit');
+  // === Scan Page Logic ===
+  const scanCanvas = document.getElementById('scanCanvas');
+  const scanCtx = scanCanvas.getContext('2d');
+  const scanTapPrompt = document.getElementById('scanTapPrompt');
+  const scanUI = document.getElementById('scanUI');
+  const scanHandLeft = document.getElementById('scanHandLeft');
+  const scanHandRight = document.getElementById('scanHandRight');
+  const scanStatus = document.getElementById('scanStatus');
+  const scanProgressFill = document.getElementById('scanProgressFill');
+  const scanApproved = document.getElementById('scanApproved');
+
+  let scanProgress = 0;
+  let scanComplete = false;
+  let scanMatrixCols = [];
+  let scanMatrixRunning = false;
+
+  // Matrix rain setup
+  function initMatrixRain() {
+    scanCanvas.width = window.innerWidth;
+    scanCanvas.height = window.innerHeight;
+    const fontSize = 14;
+    const cols = Math.floor(scanCanvas.width / fontSize);
+    scanMatrixCols = [];
+    for (let i = 0; i < cols; i++) {
+      scanMatrixCols.push({ y: Math.random() * scanCanvas.height / fontSize, speed: 0.3 + Math.random() * 0.7 });
+    }
+  }
+
+  const matrixChars = '0123456789ABCDEFabcdef{}[]<>/\\|=+-*&^%$#@!한국디지털손가락인식승인접근기술감각';
+
+  function drawMatrixRain() {
+    if (!scanMatrixRunning) return;
+    const fontSize = 14;
+    scanCtx.fillStyle = 'rgba(0,0,0,0.06)';
+    scanCtx.fillRect(0, 0, scanCanvas.width, scanCanvas.height);
+    scanCtx.font = fontSize + 'px monospace';
+
+    for (let i = 0; i < scanMatrixCols.length; i++) {
+      const col = scanMatrixCols[i];
+      const char = matrixChars[Math.floor(Math.random() * matrixChars.length)];
+      const x = i * fontSize;
+      const y = col.y * fontSize;
+      const alpha = 0.05 + Math.random() * 0.15;
+      scanCtx.fillStyle = `rgba(0,255,65,${alpha})`;
+      scanCtx.fillText(char, x, y);
+      col.y += col.speed;
+      if (col.y * fontSize > scanCanvas.height && Math.random() > 0.975) {
+        col.y = 0;
+      }
+    }
+
+    // Draw hand skeletons if hands detected during scan
+    if (allHandLandmarks && !scanComplete) {
+      drawScanHandSkeletons();
+    }
+
+    requestAnimationFrame(drawMatrixRain);
+  }
+
+  // Draw hand skeletons on scanCanvas
+  const HAND_CONNECTIONS = [
+    [0,1],[1,2],[2,3],[3,4],
+    [0,5],[5,6],[6,7],[7,8],
+    [5,9],[9,10],[10,11],[11,12],
+    [9,13],[13,14],[14,15],[15,16],
+    [13,17],[17,18],[18,19],[19,20],
+    [0,17]
+  ];
+
+  function drawScanHandSkeletons() {
+    if (!allHandLandmarks) return;
+    const cw = scanCanvas.width;
+    const ch = scanCanvas.height;
+    for (const lm of allHandLandmarks) {
+      // Draw connections
+      scanCtx.strokeStyle = 'rgba(0,255,65,0.4)';
+      scanCtx.lineWidth = 1.5;
+      for (const [a, b] of HAND_CONNECTIONS) {
+        const ax = (1 - lm[a].x) * cw, ay = lm[a].y * ch;
+        const bx = (1 - lm[b].x) * cw, by = lm[b].y * ch;
+        scanCtx.beginPath();
+        scanCtx.moveTo(ax, ay);
+        scanCtx.lineTo(bx, by);
+        scanCtx.stroke();
+      }
+      // Draw joints
+      for (let i = 0; i < lm.length; i++) {
+        const x = (1 - lm[i].x) * cw;
+        const y = lm[i].y * ch;
+        scanCtx.beginPath();
+        scanCtx.arc(x, y, 3, 0, Math.PI * 2);
+        scanCtx.fillStyle = 'rgba(0,255,65,0.7)';
+        scanCtx.fill();
+      }
+    }
+  }
+
+  // Scan progress loop
+  function updateScanProgress() {
+    if (scanComplete) return;
+
+    if (scanHandCount >= 2) {
+      scanHandLeft.classList.add('detected');
+      scanHandRight.classList.add('detected');
+      scanStatus.textContent = 'SCANNING...';
+      scanStatus.classList.add('scanning');
+      scanProgress = Math.min(100, scanProgress + (100 / (3 * 60))); // 3 seconds at ~60fps
+    } else if (scanHandCount === 1) {
+      // Show one hand detected
+      scanHandLeft.classList.add('detected');
+      scanHandRight.classList.remove('detected');
+      scanStatus.textContent = 'ONE HAND DETECTED';
+      scanStatus.classList.remove('scanning');
+      scanProgress = Math.max(0, scanProgress - 0.5);
+    } else {
+      scanHandLeft.classList.remove('detected');
+      scanHandRight.classList.remove('detected');
+      scanStatus.textContent = 'PLACE BOTH HANDS';
+      scanStatus.classList.remove('scanning');
+      scanProgress = Math.max(0, scanProgress - 0.8);
+    }
+
+    scanProgressFill.style.width = scanProgress + '%';
+
+    if (scanProgress >= 100) {
+      scanComplete = true;
+      triggerScanApproval();
+      return;
+    }
+
+    requestAnimationFrame(updateScanProgress);
+  }
+
+  function triggerScanApproval() {
+    scanStatus.textContent = 'ACCESS GRANTED';
+    scanStatus.classList.remove('scanning');
+    scanApproved.classList.add('show');
+
     setTimeout(() => {
-      pageAttention.style.display = 'none';
-      pageLanding.classList.add('active');
-      document.getElementById('globalModeToggle').style.display = 'block';
-      setTimeout(() => { pageLanding.style.opacity = '1'; }, 50);
+      pageAttention.classList.add('exit');
+      setTimeout(() => {
+        pageAttention.style.display = 'none';
+        scanMatrixRunning = false;
+        pageLanding.classList.add('active');
+        document.getElementById('globalModeToggle').style.display = 'block';
+        setTimeout(() => { pageLanding.style.opacity = '1'; }, 50);
 
-      document.fonts.ready.then(() => {
-        resize();
-        window.addEventListener('resize', resize);
-        requestAnimationFrame(animate);
-      });
+        document.fonts.ready.then(() => {
+          resize();
+          window.addEventListener('resize', resize);
+          requestAnimationFrame(animate);
+        });
+      }, 600);
+    }, 2000);
+  }
 
-      initCamera().catch(err => {
-        console.error(err);
-        statusText.textContent = 'Error';
-        alert('Camera error: ' + err.message);
-      });
-    }, 600);
+  // Tap to begin handler
+  scanTapPrompt.addEventListener('click', () => {
+    scanTapPrompt.style.display = 'none';
+    initMatrixRain();
+    scanMatrixRunning = true;
+    requestAnimationFrame(drawMatrixRain);
+    scanUI.classList.add('visible');
+
+    initCamera().then(() => {
+      requestAnimationFrame(updateScanProgress);
+    }).catch(err => {
+      console.error(err);
+      scanStatus.textContent = 'CAMERA ERROR';
+      alert('Camera error: ' + err.message);
+    });
+  });
+
+  // Handle window resize for scan canvas
+  window.addEventListener('resize', () => {
+    if (scanMatrixRunning) {
+      scanCanvas.width = window.innerWidth;
+      scanCanvas.height = window.innerHeight;
+    }
   });
 
   // === Mouse Mode ===
