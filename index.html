@@ -1477,8 +1477,9 @@
       opacity: 0.25
     });
     const mesh = new THREE.Mesh(geometry, material);
+    mesh.scale.set(1.5, 1.5, 1.5);
     if (mirror) {
-      mesh.scale.x = -1;
+      mesh.scale.x = -1.5;
     }
     return mesh;
   }
