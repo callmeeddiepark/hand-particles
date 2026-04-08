@@ -700,6 +700,12 @@
     scanHandCount = (results.multiHandLandmarks && results.multiHandLandmarks.length) || 0;
     allHandLandmarks = results.multiHandLandmarks || null;
 
+    // Skip coordinate processing if canvas not ready yet (scan page)
+    if (!W || !H) {
+      handPresent = results.multiHandLandmarks && results.multiHandLandmarks.length > 0;
+      return;
+    }
+
     if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
       const lm = results.multiHandLandmarks[0];
       handPresent = true;
