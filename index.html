@@ -1522,9 +1522,6 @@
     scanCtx.fillStyle = 'rgba(0,0,0,0.06)';
     scanCtx.fillRect(0, 0, scanCanvas.width, scanCanvas.height);
 
-    // Draw person silhouette (persistent, redrawn each frame at low alpha)
-    if (!scanComplete) drawPersonSilhouette();
-
     scanCtx.font = fontSize + 'px monospace';
 
     for (let i = 0; i < scanMatrixCols.length; i++) {
