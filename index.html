@@ -1425,11 +1425,106 @@
 
   const matrixChars = '0123456789ABCDEFabcdef{}[]<>/\\|=+-*&^%$#@!한국디지털손가락인식승인접근기술감각';
 
+  function drawPersonSilhouette() {
+    const w = scanCanvas.width;
+    const h = scanCanvas.height;
+    const cx = w / 2;
+    const cy = h / 2;
+    const scale = Math.min(w, h) * 0.0028;
+
+    scanCtx.save();
+    scanCtx.strokeStyle = 'rgba(0,255,65,0.12)';
+    scanCtx.lineWidth = 1.5;
+    scanCtx.setLineDash([6, 4]);
+
+    // Head
+    scanCtx.beginPath();
+    scanCtx.arc(cx, cy - 120 * scale, 35 * scale, 0, Math.PI * 2);
+    scanCtx.stroke();
+
+    // Neck
+    scanCtx.beginPath();
+    scanCtx.moveTo(cx - 10 * scale, cy - 85 * scale);
+    scanCtx.lineTo(cx - 10 * scale, cy - 65 * scale);
+    scanCtx.moveTo(cx + 10 * scale, cy - 85 * scale);
+    scanCtx.lineTo(cx + 10 * scale, cy - 65 * scale);
+    scanCtx.stroke();
+
+    // Shoulders
+    scanCtx.beginPath();
+    scanCtx.moveTo(cx - 10 * scale, cy - 65 * scale);
+    scanCtx.quadraticCurveTo(cx - 60 * scale, cy - 65 * scale, cx - 75 * scale, cy - 45 * scale);
+    scanCtx.moveTo(cx + 10 * scale, cy - 65 * scale);
+    scanCtx.quadraticCurveTo(cx + 60 * scale, cy - 65 * scale, cx + 75 * scale, cy - 45 * scale);
+    scanCtx.stroke();
+
+    // Arms (raised, palms out)
+    // Left arm
+    scanCtx.beginPath();
+    scanCtx.moveTo(cx - 75 * scale, cy - 45 * scale);
+    scanCtx.quadraticCurveTo(cx - 95 * scale, cy - 70 * scale, cx - 110 * scale, cy - 120 * scale);
+    scanCtx.stroke();
+    // Left hand (open palm)
+    scanCtx.beginPath();
+    scanCtx.arc(cx - 115 * scale, cy - 135 * scale, 18 * scale, 0, Math.PI * 2);
+    scanCtx.stroke();
+    // Left fingers
+    for (let i = -2; i <= 2; i++) {
+      scanCtx.beginPath();
+      scanCtx.moveTo(cx - 115 * scale + i * 6 * scale, cy - 153 * scale);
+      scanCtx.lineTo(cx - 115 * scale + i * 7 * scale, cy - 168 * scale);
+      scanCtx.stroke();
+    }
+
+    // Right arm
+    scanCtx.beginPath();
+    scanCtx.moveTo(cx + 75 * scale, cy - 45 * scale);
+    scanCtx.quadraticCurveTo(cx + 95 * scale, cy - 70 * scale, cx + 110 * scale, cy - 120 * scale);
+    scanCtx.stroke();
+    // Right hand (open palm)
+    scanCtx.beginPath();
+    scanCtx.arc(cx + 115 * scale, cy - 135 * scale, 18 * scale, 0, Math.PI * 2);
+    scanCtx.stroke();
+    // Right fingers
+    for (let i = -2; i <= 2; i++) {
+      scanCtx.beginPath();
+      scanCtx.moveTo(cx + 115 * scale + i * 6 * scale, cy - 153 * scale);
+      scanCtx.lineTo(cx + 115 * scale + i * 7 * scale, cy - 168 * scale);
+      scanCtx.stroke();
+    }
+
+    // Torso
+    scanCtx.beginPath();
+    scanCtx.moveTo(cx - 50 * scale, cy - 55 * scale);
+    scanCtx.lineTo(cx - 40 * scale, cy + 50 * scale);
+    scanCtx.moveTo(cx + 50 * scale, cy - 55 * scale);
+    scanCtx.lineTo(cx + 40 * scale, cy + 50 * scale);
+    // Waist
+    scanCtx.moveTo(cx - 40 * scale, cy + 50 * scale);
+    scanCtx.lineTo(cx + 40 * scale, cy + 50 * scale);
+    scanCtx.stroke();
+
+    // Legs
+    scanCtx.beginPath();
+    scanCtx.moveTo(cx - 30 * scale, cy + 50 * scale);
+    scanCtx.lineTo(cx - 40 * scale, cy + 150 * scale);
+    scanCtx.moveTo(cx + 30 * scale, cy + 50 * scale);
+    scanCtx.lineTo(cx + 40 * scale, cy + 150 * scale);
+    scanCtx.stroke();
+
+    scanCtx.setLineDash([]);
+    scanCtx.restore();
+  }
+
   function drawMatrixRain() {
     if (!scanMatrixRunning) return;
     const fontSize = 14;
     scanCtx.fillStyle = 'rgba(0,0,0,0.06)';
     scanCtx.fillRect(0, 0, scanCanvas.width, scanCanvas.height);
+
+    // Draw person silhouette (persistent, redrawn each frame at low alpha)
+    if (!scanComplete) drawPersonSilhouette();
+
     scanCtx.font = fontSize + 'px monospace';
 
     for (let i = 0; i < scanMatrixCols.length; i++) {
