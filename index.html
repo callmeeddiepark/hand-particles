@@ -1526,7 +1526,7 @@
       side: THREE.DoubleSide
     });
     const plane = new THREE.Mesh(geo, mat);
-    plane.position.z = 0.15;
+    plane.position.z = 0.5;
     return plane;
   }
 
@@ -1594,7 +1594,7 @@
       if (detected) {
         const scanTargetOpacity = 0.7 * pulse;
         scanPlane.material.opacity += (scanTargetOpacity - scanPlane.material.opacity) * 0.1;
-        scanPlane.position.y = Math.sin(time * 0.003) * 0.55;
+        scanPlane.position.y = Math.sin(time * 0.003) * 1.1;
         scanPlane.visible = true;
       } else {
         scanPlane.material.opacity *= 0.92;
