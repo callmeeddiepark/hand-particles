@@ -39,13 +39,11 @@
   .scan-hand-outline{position:absolute;top:50%;transform:translateY(-50%);width:540px;height:780px;display:flex;flex-direction:column;align-items:center;justify-content:center;transition:all 0.5s ease}
   .scan-hand-outline.left{left:8%}
   .scan-hand-outline.right{right:8%}
-  .scan-hand-outline.detected .hand-svg{opacity:0.6;filter:drop-shadow(0 0 15px rgba(0,255,65,0.4))}
   .scan-hand-label{font-family:'Space Mono',monospace;font-size:8px;letter-spacing:0.2em;color:rgba(0,255,65,0.25);position:absolute;bottom:-5px;text-align:center;width:100%}
   .scan-hand-outline.detected .scan-hand-label{color:rgba(0,255,65,0.6)}
-  .hand-svg{width:480px;height:690px;opacity:0.35;transition:opacity 0.5s ease,filter 0.5s ease;filter:drop-shadow(0 0 4px rgba(180,200,220,0.2))}
+  .hand-canvas{width:100%;height:100%}
 
-  .scan-hand-outline.detected::after{content:'';position:absolute;left:15%;right:15%;height:2px;background:linear-gradient(90deg,transparent,rgba(0,255,65,0.8),transparent);animation:scanLine 1.5s ease-in-out infinite;box-shadow:0 0 10px rgba(0,255,65,0.5)}
-  @keyframes scanLine{0%{top:5%}50%{top:90%}100%{top:5%}}
+  /* scan line now drawn on canvas */
 
   .scan-status{font-family:'Space Mono',monospace;font-size:12px;letter-spacing:0.3em;color:rgba(0,255,65,0.5);text-transform:uppercase;margin-bottom:16px;transition:color 0.3s ease}
   .scan-status.scanning{color:rgba(0,255,65,0.8);animation:statusPulse 0.5s ease infinite alternate}
@@ -309,47 +307,11 @@
   </div>
   <div class="scan-hands-area" id="scanHandsArea">
     <div class="scan-hand-outline left" id="scanHandLeft">
-      <svg viewBox="-25 -5 310 460" class="hand-svg">
-        <defs>
-          <linearGradient id="chromeL1" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stop-color="rgba(200,220,240,0.6)"/>
-            <stop offset="25%" stop-color="rgba(100,120,140,0.2)"/>
-            <stop offset="50%" stop-color="rgba(220,235,250,0.7)"/>
-            <stop offset="75%" stop-color="rgba(80,100,120,0.15)"/>
-            <stop offset="100%" stop-color="rgba(180,200,220,0.5)"/>
-          </linearGradient>
-          <linearGradient id="chromeL2" x1="100%" y1="0%" x2="0%" y2="100%">
-            <stop offset="0%" stop-color="rgba(255,255,255,0.4)"/>
-            <stop offset="50%" stop-color="rgba(150,170,190,0.1)"/>
-            <stop offset="100%" stop-color="rgba(255,255,255,0.3)"/>
-          </linearGradient>
-        </defs>
-        <path d="M60,440 C30,420 10,385 10,345 L10,260 C-5,250 -12,235 -12,220 C-12,205 -5,190 10,180 L10,100 C10,75 20,60 35,60 C50,60 60,75 60,100 L60,170 L60,80 C60,55 70,40 85,40 C100,40 110,55 110,80 L110,160 L110,50 C110,25 120,10 135,10 C150,10 160,25 160,50 L160,160 L160,80 C160,55 170,40 185,40 C200,40 210,55 210,80 L210,200 L230,170 C240,155 260,155 270,170 C280,185 275,205 260,220 L220,270 C210,285 205,305 205,330 L205,345 C205,385 185,420 155,440 Z" fill="rgba(100,120,140,0.03)" stroke="url(#chromeL1)" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
-        <path d="M60,440 C30,420 10,385 10,345 L10,260 C-5,250 -12,235 -12,220 C-12,205 -5,190 10,180 L10,100 C10,75 20,60 35,60 C50,60 60,75 60,100 L60,170 L60,80 C60,55 70,40 85,40 C100,40 110,55 110,80 L110,160 L110,50 C110,25 120,10 135,10 C150,10 160,25 160,50 L160,160 L160,80 C160,55 170,40 185,40 C200,40 210,55 210,80 L210,200 L230,170 C240,155 260,155 270,170 C280,185 275,205 260,220 L220,270 C210,285 205,305 205,330 L205,345 C205,385 185,420 155,440 Z" fill="none" stroke="url(#chromeL2)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-        <path d="M60,440 C30,420 10,385 10,345 L10,260 C-5,250 -12,235 -12,220 C-12,205 -5,190 10,180 L10,100 C10,75 20,60 35,60 C50,60 60,75 60,100 L60,170 L60,80 C60,55 70,40 85,40 C100,40 110,55 110,80 L110,160 L110,50 C110,25 120,10 135,10 C150,10 160,25 160,50 L160,160 L160,80 C160,55 170,40 185,40 C200,40 210,55 210,80 L210,200 L230,170 C240,155 260,155 270,170 C280,185 275,205 260,220 L220,270 C210,285 205,305 205,330 L205,345 C205,385 185,420 155,440 Z" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>
+      <canvas id="handCanvasLeft" width="300" height="450" class="hand-canvas"></canvas>
       <div class="scan-hand-label">Place your left hand</div>
     </div>
     <div class="scan-hand-outline right" id="scanHandRight">
-      <svg viewBox="-25 -5 310 460" class="hand-svg" style="transform:scaleX(-1)">
-        <defs>
-          <linearGradient id="chromeR1" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stop-color="rgba(200,220,240,0.6)"/>
-            <stop offset="25%" stop-color="rgba(100,120,140,0.2)"/>
-            <stop offset="50%" stop-color="rgba(220,235,250,0.7)"/>
-            <stop offset="75%" stop-color="rgba(80,100,120,0.15)"/>
-            <stop offset="100%" stop-color="rgba(180,200,220,0.5)"/>
-          </linearGradient>
-          <linearGradient id="chromeR2" x1="100%" y1="0%" x2="0%" y2="100%">
-            <stop offset="0%" stop-color="rgba(255,255,255,0.4)"/>
-            <stop offset="50%" stop-color="rgba(150,170,190,0.1)"/>
-            <stop offset="100%" stop-color="rgba(255,255,255,0.3)"/>
-          </linearGradient>
-        </defs>
-        <path d="M60,440 C30,420 10,385 10,345 L10,260 C-5,250 -12,235 -12,220 C-12,205 -5,190 10,180 L10,100 C10,75 20,60 35,60 C50,60 60,75 60,100 L60,170 L60,80 C60,55 70,40 85,40 C100,40 110,55 110,80 L110,160 L110,50 C110,25 120,10 135,10 C150,10 160,25 160,50 L160,160 L160,80 C160,55 170,40 185,40 C200,40 210,55 210,80 L210,200 L230,170 C240,155 260,155 270,170 C280,185 275,205 260,220 L220,270 C210,285 205,305 205,330 L205,345 C205,385 185,420 155,440 Z" fill="rgba(100,120,140,0.03)" stroke="url(#chromeR1)" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
-        <path d="M60,440 C30,420 10,385 10,345 L10,260 C-5,250 -12,235 -12,220 C-12,205 -5,190 10,180 L10,100 C10,75 20,60 35,60 C50,60 60,75 60,100 L60,170 L60,80 C60,55 70,40 85,40 C100,40 110,55 110,80 L110,160 L110,50 C110,25 120,10 135,10 C150,10 160,25 160,50 L160,160 L160,80 C160,55 170,40 185,40 C200,40 210,55 210,80 L210,200 L230,170 C240,155 260,155 270,170 C280,185 275,205 260,220 L220,270 C210,285 205,305 205,330 L205,345 C205,385 185,420 155,440 Z" fill="none" stroke="url(#chromeR2)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-        <path d="M60,440 C30,420 10,385 10,345 L10,260 C-5,250 -12,235 -12,220 C-12,205 -5,190 10,180 L10,100 C10,75 20,60 35,60 C50,60 60,75 60,100 L60,170 L60,80 C60,55 70,40 85,40 C100,40 110,55 110,80 L110,160 L110,50 C110,25 120,10 135,10 C150,10 160,25 160,50 L160,160 L160,80 C160,55 170,40 185,40 C200,40 210,55 210,80 L210,200 L230,170 C240,155 260,155 270,170 C280,185 275,205 260,220 L220,270 C210,285 205,305 205,330 L205,345 C205,385 185,420 155,440 Z" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>
+      <canvas id="handCanvasRight" width="300" height="450" class="hand-canvas"></canvas>
       <div class="scan-hand-label">Place your right hand</div>
     </div>
   </div>
@@ -1443,6 +1405,147 @@
   let scanComplete = false;
   let scanMatrixCols = [];
   let scanMatrixRunning = false;
+
+  // === Wireframe Hand Drawing ===
+  const handCanvasLeft = document.getElementById('handCanvasLeft');
+  const handCanvasRight = document.getElementById('handCanvasRight');
+  let wireframeAnimId = null;
+
+  const handOutline = [
+    [0.15, 1.0], [0.08, 0.75], [0.05, 0.55],
+    [0.05, 0.42], [0.03, 0.32], [0.05, 0.22], [0.10, 0.22], [0.13, 0.32], [0.13, 0.42],
+    [0.17, 0.38], [0.17, 0.18], [0.20, 0.08], [0.25, 0.08], [0.28, 0.18], [0.28, 0.38],
+    [0.32, 0.35], [0.33, 0.12], [0.36, 0.02], [0.42, 0.02], [0.45, 0.12], [0.45, 0.35],
+    [0.48, 0.38], [0.50, 0.15], [0.53, 0.06], [0.58, 0.06], [0.61, 0.15], [0.61, 0.38],
+    [0.65, 0.42], [0.68, 0.45],
+    [0.75, 0.40], [0.85, 0.35], [0.90, 0.38], [0.90, 0.45], [0.82, 0.52], [0.70, 0.55],
+    [0.65, 0.65], [0.60, 0.85], [0.55, 1.0],
+    [0.15, 1.0]
+  ];
+
+  const jointPoints = [
+    [0.05, 0.22], [0.10, 0.22], [0.20, 0.08], [0.25, 0.08],
+    [0.36, 0.02], [0.42, 0.02], [0.53, 0.06], [0.58, 0.06],
+    [0.90, 0.38], [0.90, 0.45], [0.85, 0.35],
+    [0.075, 0.32], [0.225, 0.13], [0.39, 0.02], [0.555, 0.06],
+    [0.35, 0.65], [0.30, 0.80]
+  ];
+
+  function drawWireframeHand(cvs, mirror, time, detected) {
+    const c = cvs.getContext('2d');
+    const w = cvs.width;
+    const h = cvs.height;
+    c.clearRect(0, 0, w, h);
+    c.save();
+
+    if (mirror) {
+      c.translate(w, 0);
+      c.scale(-1, 1);
+    }
+
+    const pulse = 0.7 + 0.3 * Math.sin(time * 0.002);
+    const baseAlpha = detected ? 0.5 * pulse : 0.25 * pulse;
+    const brightAlpha = detected ? 0.8 * pulse : 0.5 * pulse;
+    const glowAlpha = detected ? 0.6 : 0.3;
+
+    // Build clipping path from hand outline
+    c.beginPath();
+    const pts = handOutline.map(p => [p[0] * w, p[1] * h]);
+    c.moveTo(pts[0][0], pts[0][1]);
+    for (let i = 1; i < pts.length; i++) {
+      c.lineTo(pts[i][0], pts[i][1]);
+    }
+    c.closePath();
+    c.save();
+    c.clip();
+
+    // Draw horizontal grid lines with 3D curvature
+    const gridSpacing = 15;
+    c.strokeStyle = `rgba(0, 180, 255, ${baseAlpha * 0.6})`;
+    c.lineWidth = 0.5;
+    c.shadowColor = `rgba(0, 180, 255, ${glowAlpha * 0.3})`;
+    c.shadowBlur = 3;
+
+    for (let y = 0; y < h; y += gridSpacing) {
+      c.beginPath();
+      const curveMag = 8 * Math.sin((y / h) * Math.PI);
+      c.moveTo(0, y);
+      c.quadraticCurveTo(w * 0.5, y + curveMag, w, y);
+      c.stroke();
+    }
+
+    // Draw vertical grid lines with slight convergence
+    for (let x = 0; x < w; x += gridSpacing) {
+      c.beginPath();
+      const normX = (x / w - 0.5) * 2;
+      const curveMag = 6 * normX;
+      c.moveTo(x, 0);
+      c.quadraticCurveTo(x + curveMag, h * 0.5, x, h);
+      c.stroke();
+    }
+
+    c.restore(); // remove clip
+
+    // Draw hand outline
+    c.beginPath();
+    c.moveTo(pts[0][0], pts[0][1]);
+    for (let i = 1; i < pts.length; i++) {
+      c.lineTo(pts[i][0], pts[i][1]);
+    }
+    c.closePath();
+    c.strokeStyle = `rgba(0, 200, 255, ${brightAlpha})`;
+    c.lineWidth = 1.5;
+    c.shadowColor = `rgba(0, 200, 255, ${glowAlpha})`;
+    c.shadowBlur = detected ? 15 : 8;
+    c.stroke();
+
+    // Draw glow points at joints and fingertips
+    c.shadowBlur = detected ? 20 : 10;
+    c.shadowColor = `rgba(0, 220, 255, ${glowAlpha * 0.8})`;
+    for (const jp of jointPoints) {
+      const jx = jp[0] * w;
+      const jy = jp[1] * h;
+      c.beginPath();
+      c.arc(jx, jy, detected ? 3 : 2, 0, Math.PI * 2);
+      c.fillStyle = `rgba(0, 220, 255, ${brightAlpha})`;
+      c.fill();
+    }
+
+    // Draw scan line if detected
+    if (detected) {
+      const scanY = (0.05 + 0.85 * (0.5 + 0.5 * Math.sin(time * 0.003))) * h;
+      c.save();
+      // Clip to hand shape for scan line
+      c.beginPath();
+      c.moveTo(pts[0][0], pts[0][1]);
+      for (let i = 1; i < pts.length; i++) c.lineTo(pts[i][0], pts[i][1]);
+      c.closePath();
+      c.clip();
+
+      const grad = c.createLinearGradient(0, scanY - 1, 0, scanY + 1);
+      grad.addColorStop(0, 'rgba(0,255,65,0)');
+      grad.addColorStop(0.5, 'rgba(0,255,65,0.8)');
+      grad.addColorStop(1, 'rgba(0,255,65,0)');
+      c.fillStyle = grad;
+      c.shadowColor = 'rgba(0,255,65,0.5)';
+      c.shadowBlur = 10;
+      c.fillRect(0, scanY - 2, w, 4);
+      c.restore();
+    }
+
+    c.restore();
+  }
+
+  function animateWireframeHands(time) {
+    const leftDetected = scanHandLeft.classList.contains('detected');
+    const rightDetected = scanHandRight.classList.contains('detected');
+    drawWireframeHand(handCanvasLeft, false, time, leftDetected);
+    drawWireframeHand(handCanvasRight, true, time, rightDetected);
+    wireframeAnimId = requestAnimationFrame(animateWireframeHands);
+  }
+
+  // Start wireframe animation
+  wireframeAnimId = requestAnimationFrame(animateWireframeHands);
 
   // Matrix rain setup
   function initMatrixRain() {
