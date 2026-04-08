@@ -77,11 +77,11 @@
   @keyframes hp{0%,100%{opacity:.3}50%{opacity:.8}}
 
   .gesture-guide{position:fixed;bottom:0;left:0;right:0;z-index:10;display:flex;align-items:center;justify-content:center;gap:28px;opacity:0;animation:fi .8s ease .8s forwards;pointer-events:none;padding-bottom:60px}
-  .gesture-item{display:flex;flex-direction:column;align-items:center;gap:6px}
-  .gesture-icon{color:rgba(255,255,255,.25)}
-  .gesture-label{font-size:10px;letter-spacing:.08em;color:rgba(255,255,255,.3)}
-  .gesture-desc{font-size:9px;letter-spacing:.15em;text-transform:uppercase;color:rgba(255,255,255,.15)}
-  .gesture-divider{width:1px;height:36px;background:rgba(255,255,255,.06)}
+  .gesture-item{display:flex;flex-direction:column;align-items:center;gap:8px}
+  .gesture-icon{color:rgba(0,255,65,.4)}
+  .gesture-label{font-size:11px;letter-spacing:.08em;color:rgba(0,255,65,.5)}
+  .gesture-desc{font-size:9px;letter-spacing:.15em;text-transform:uppercase;color:rgba(0,255,65,.25)}
+  .gesture-divider{width:1px;height:36px;background:rgba(0,255,65,.1)}
 
   .landing-info{position:fixed;z-index:10;text-align:center;pointer-events:none;opacity:0;animation:fi .8s ease 1s forwards;left:0;right:0;display:flex;flex-direction:column;align-items:center}
   .landing-info .info-text{font-size:15px;letter-spacing:.03em;color:rgba(255,255,255,.35);line-height:1.6}
@@ -354,33 +354,18 @@
   <!-- Gesture Guide (above EDDIE) -->
   <div class="gesture-guide" id="gestureGuide">
     <div class="gesture-item">
-      <div class="gesture-icon">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="9" cy="12" r="3"/><circle cx="15" cy="12" r="3"/><path d="M9 12L15 12" opacity="0.3"/>
-        </svg>
-      </div>
-      <div class="gesture-label">핀치 (짧게)</div>
-      <div class="gesture-desc">클릭</div>
+      <div class="gesture-icon" style="font-size:24px">👆</div>
+      <div class="gesture-label">검지로 커서 이동</div>
     </div>
     <div class="gesture-divider"></div>
     <div class="gesture-item">
-      <div class="gesture-icon">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="12" cy="8" r="2.5"/><path d="M12 11v6m0 0l-2-2m2 2l2-2"/>
-        </svg>
-      </div>
-      <div class="gesture-label">핀치 + 드래그</div>
-      <div class="gesture-desc">스크롤</div>
+      <div class="gesture-icon" style="font-size:24px">🤏</div>
+      <div class="gesture-label">핀치 (짧게) → 클릭</div>
     </div>
     <div class="gesture-divider"></div>
     <div class="gesture-item">
-      <div class="gesture-icon">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M5 12h14m0 0l-3-3m3 3l-3 3"/><path d="M12 6v0" opacity="0.3"/>
-        </svg>
-      </div>
-      <div class="gesture-label">손 움직임</div>
-      <div class="gesture-desc">인터랙션</div>
+      <div class="gesture-icon" style="font-size:24px">🤏↕</div>
+      <div class="gesture-label">핀치 + 드래그 → 스크롤</div>
     </div>
   </div>
 
