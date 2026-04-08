@@ -336,7 +336,7 @@
       </div>
     </div>
   </div>
-  <div class="scan-bottom">
+  <div class="scan-bottom" id="scanBottom" style="display:none">
     <div class="scan-status" id="scanStatus">PLACE BOTH HANDS</div>
     <div class="scan-progress-bar" id="scanProgressBar"><div class="scan-progress-fill" id="scanProgressFill"></div></div>
   </div>
@@ -1851,6 +1851,7 @@
     scanTapPrompt.style.display = 'none';
     scanUI.classList.add('visible');
     document.getElementById('scanHandsArea').style.display = '';
+    document.getElementById('scanBottom').style.display = '';
     wireframeAnimId = requestAnimationFrame(animate3DHands);
 
     initCamera().then(() => {
