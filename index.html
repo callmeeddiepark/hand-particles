@@ -1416,45 +1416,71 @@
 
   function createHandShape() {
     const s = new THREE.Shape();
-    // Hand outline — coordinates centered around 0,0; roughly -0.5 to 0.5 wide, -0.7 to 0.7 tall
-    // We map the old 0..1 coords to -0.5..0.5 (x) and flip Y so 0 is top
     function mx(v) { return (v - 0.5) * 1.0; }
     function my(v) { return (0.5 - v) * 1.4; }
 
-    // Bottom left → up left side of palm
-    s.moveTo(mx(0.18), my(0.98));
-    s.bezierCurveTo(mx(0.10), my(0.90), mx(0.06), my(0.78), mx(0.06), my(0.60));
-    // Up to pinky
-    s.bezierCurveTo(mx(0.06), my(0.50), mx(0.04), my(0.44), mx(0.04), my(0.38));
-    s.bezierCurveTo(mx(0.03), my(0.28), mx(0.04), my(0.24), mx(0.075), my(0.22));
-    s.bezierCurveTo(mx(0.11), my(0.20), mx(0.14), my(0.24), mx(0.14), my(0.28));
-    s.bezierCurveTo(mx(0.14), my(0.34), mx(0.14), my(0.40), mx(0.14), my(0.42));
-    // Ring finger
-    s.bezierCurveTo(mx(0.16), my(0.38), mx(0.18), my(0.22), mx(0.19), my(0.14));
-    s.bezierCurveTo(mx(0.20), my(0.08), mx(0.23), my(0.06), mx(0.26), my(0.06));
-    s.bezierCurveTo(mx(0.29), my(0.06), mx(0.31), my(0.08), mx(0.31), my(0.14));
-    s.bezierCurveTo(mx(0.31), my(0.22), mx(0.30), my(0.34), mx(0.30), my(0.38));
-    // Middle finger (tallest)
-    s.bezierCurveTo(mx(0.32), my(0.32), mx(0.34), my(0.14), mx(0.35), my(0.06));
-    s.bezierCurveTo(mx(0.36), my(0.01), mx(0.39), my(0.00), mx(0.42), my(0.00));
-    s.bezierCurveTo(mx(0.45), my(0.00), mx(0.47), my(0.01), mx(0.48), my(0.06));
-    s.bezierCurveTo(mx(0.49), my(0.14), mx(0.48), my(0.30), mx(0.48), my(0.36));
-    // Index finger
-    s.bezierCurveTo(mx(0.50), my(0.30), mx(0.52), my(0.16), mx(0.53), my(0.10));
-    s.bezierCurveTo(mx(0.54), my(0.04), mx(0.57), my(0.03), mx(0.60), my(0.03));
-    s.bezierCurveTo(mx(0.63), my(0.03), mx(0.65), my(0.05), mx(0.65), my(0.10));
-    s.bezierCurveTo(mx(0.65), my(0.18), mx(0.64), my(0.32), mx(0.64), my(0.40));
-    // Side to thumb
-    s.bezierCurveTo(mx(0.66), my(0.42), mx(0.70), my(0.44), mx(0.72), my(0.44));
-    // Thumb
-    s.bezierCurveTo(mx(0.78), my(0.40), mx(0.86), my(0.36), mx(0.90), my(0.38));
-    s.bezierCurveTo(mx(0.94), my(0.40), mx(0.94), my(0.46), mx(0.90), my(0.50));
-    s.bezierCurveTo(mx(0.84), my(0.56), mx(0.76), my(0.58), mx(0.70), my(0.60));
+    // Bottom left of palm
+    s.moveTo(mx(0.20), my(0.98));
+    s.bezierCurveTo(mx(0.12), my(0.92), mx(0.08), my(0.80), mx(0.08), my(0.62));
+
+    // Left side up to pinky base
+    s.bezierCurveTo(mx(0.08), my(0.52), mx(0.07), my(0.48), mx(0.07), my(0.45));
+
+    // PINKY — thin, separated
+    s.lineTo(mx(0.06), my(0.42));
+    s.bezierCurveTo(mx(0.05), my(0.34), mx(0.06), my(0.28), mx(0.08), my(0.24));
+    s.bezierCurveTo(mx(0.09), my(0.22), mx(0.11), my(0.21), mx(0.12), my(0.22));
+    s.bezierCurveTo(mx(0.14), my(0.24), mx(0.15), my(0.28), mx(0.15), my(0.34));
+    s.lineTo(mx(0.15), my(0.42));
+
+    // Gap pinky-ring
+    s.lineTo(mx(0.17), my(0.42));
+
+    // RING FINGER
+    s.lineTo(mx(0.18), my(0.38));
+    s.bezierCurveTo(mx(0.19), my(0.26), mx(0.20), my(0.16), mx(0.22), my(0.10));
+    s.bezierCurveTo(mx(0.23), my(0.07), mx(0.25), my(0.06), mx(0.27), my(0.06));
+    s.bezierCurveTo(mx(0.29), my(0.06), mx(0.31), my(0.07), mx(0.32), my(0.10));
+    s.bezierCurveTo(mx(0.33), my(0.16), mx(0.33), my(0.26), mx(0.33), my(0.38));
+    s.lineTo(mx(0.33), my(0.42));
+
+    // Gap ring-middle
+    s.lineTo(mx(0.35), my(0.42));
+
+    // MIDDLE FINGER (tallest)
+    s.lineTo(mx(0.36), my(0.36));
+    s.bezierCurveTo(mx(0.37), my(0.22), mx(0.38), my(0.10), mx(0.39), my(0.04));
+    s.bezierCurveTo(mx(0.40), my(0.01), mx(0.42), my(0.00), mx(0.44), my(0.00));
+    s.bezierCurveTo(mx(0.46), my(0.00), mx(0.48), my(0.01), mx(0.49), my(0.04));
+    s.bezierCurveTo(mx(0.50), my(0.10), mx(0.50), my(0.22), mx(0.50), my(0.36));
+    s.lineTo(mx(0.50), my(0.42));
+
+    // Gap middle-index
+    s.lineTo(mx(0.52), my(0.42));
+
+    // INDEX FINGER
+    s.lineTo(mx(0.53), my(0.36));
+    s.bezierCurveTo(mx(0.54), my(0.24), mx(0.55), my(0.14), mx(0.56), my(0.08));
+    s.bezierCurveTo(mx(0.57), my(0.05), mx(0.59), my(0.04), mx(0.61), my(0.04));
+    s.bezierCurveTo(mx(0.63), my(0.04), mx(0.65), my(0.05), mx(0.66), my(0.08));
+    s.bezierCurveTo(mx(0.67), my(0.14), mx(0.67), my(0.24), mx(0.67), my(0.36));
+    s.lineTo(mx(0.67), my(0.42));
+
+    // Side down to thumb area
+    s.bezierCurveTo(mx(0.68), my(0.44), mx(0.70), my(0.46), mx(0.72), my(0.46));
+
+    // THUMB — spread out to the right
+    s.bezierCurveTo(mx(0.76), my(0.44), mx(0.82), my(0.38), mx(0.86), my(0.36));
+    s.bezierCurveTo(mx(0.89), my(0.35), mx(0.91), my(0.37), mx(0.91), my(0.40));
+    s.bezierCurveTo(mx(0.91), my(0.43), mx(0.88), my(0.48), mx(0.84), my(0.52));
+    s.bezierCurveTo(mx(0.80), my(0.56), mx(0.74), my(0.58), mx(0.70), my(0.60));
+
     // Right side of palm down
-    s.bezierCurveTo(mx(0.66), my(0.68), mx(0.62), my(0.80), mx(0.58), my(0.90));
-    s.bezierCurveTo(mx(0.55), my(0.96), mx(0.48), my(0.98), mx(0.42), my(0.98));
+    s.bezierCurveTo(mx(0.68), my(0.66), mx(0.64), my(0.78), mx(0.60), my(0.88));
+    s.bezierCurveTo(mx(0.56), my(0.95), mx(0.50), my(0.98), mx(0.44), my(0.98));
+
     // Bottom close
-    s.lineTo(mx(0.18), my(0.98));
+    s.lineTo(mx(0.20), my(0.98));
 
     return s;
   }
