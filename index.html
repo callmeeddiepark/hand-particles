@@ -635,6 +635,7 @@
 <div id="globalModeToggle"><button class="mouse-btn" id="globalModeBtn">마우스 모드</button></div>
 <div class="grain"></div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1675469240/hands.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils@0.3.1675466862/camera_utils.js"></script>
 <script>
@@ -1406,179 +1407,164 @@
   let scanMatrixCols = [];
   let scanMatrixRunning = false;
 
-  // === Wireframe Hand Drawing ===
+  // === 3D Wireframe Hand Drawing (Three.js) ===
   const handCanvasLeft = document.getElementById('handCanvasLeft');
   const handCanvasRight = document.getElementById('handCanvasRight');
   let wireframeAnimId = null;
 
-  // Smooth hand path using cubic bezier — draw as a smooth closed shape
-  function drawHandPath(c, w, h) {
-    c.beginPath();
+  function createHandShape() {
+    const s = new THREE.Shape();
+    // Hand outline — coordinates centered around 0,0; roughly -0.5 to 0.5 wide, -0.7 to 0.7 tall
+    // We map the old 0..1 coords to -0.5..0.5 (x) and flip Y so 0 is top
+    function mx(v) { return (v - 0.5) * 1.0; }
+    function my(v) { return (0.5 - v) * 1.4; }
+
     // Bottom left → up left side of palm
-    c.moveTo(w*0.18, h*0.98);
-    c.bezierCurveTo(w*0.10, h*0.90, w*0.06, h*0.78, w*0.06, h*0.60);
+    s.moveTo(mx(0.18), my(0.98));
+    s.bezierCurveTo(mx(0.10), my(0.90), mx(0.06), my(0.78), mx(0.06), my(0.60));
     // Up to pinky
-    c.bezierCurveTo(w*0.06, h*0.50, w*0.04, h*0.44, w*0.04, h*0.38);
-    c.bezierCurveTo(w*0.03, h*0.28, w*0.04, h*0.24, w*0.075, h*0.22);
-    c.bezierCurveTo(w*0.11, h*0.20, w*0.14, h*0.24, w*0.14, h*0.28);
-    c.bezierCurveTo(w*0.14, h*0.34, w*0.14, h*0.40, w*0.14, h*0.42);
+    s.bezierCurveTo(mx(0.06), my(0.50), mx(0.04), my(0.44), mx(0.04), my(0.38));
+    s.bezierCurveTo(mx(0.03), my(0.28), mx(0.04), my(0.24), mx(0.075), my(0.22));
+    s.bezierCurveTo(mx(0.11), my(0.20), mx(0.14), my(0.24), mx(0.14), my(0.28));
+    s.bezierCurveTo(mx(0.14), my(0.34), mx(0.14), my(0.40), mx(0.14), my(0.42));
     // Ring finger
-    c.bezierCurveTo(w*0.16, h*0.38, w*0.18, h*0.22, w*0.19, h*0.14);
-    c.bezierCurveTo(w*0.20, h*0.08, w*0.23, h*0.06, w*0.26, h*0.06);
-    c.bezierCurveTo(w*0.29, h*0.06, w*0.31, h*0.08, w*0.31, h*0.14);
-    c.bezierCurveTo(w*0.31, h*0.22, w*0.30, h*0.34, w*0.30, h*0.38);
+    s.bezierCurveTo(mx(0.16), my(0.38), mx(0.18), my(0.22), mx(0.19), my(0.14));
+    s.bezierCurveTo(mx(0.20), my(0.08), mx(0.23), my(0.06), mx(0.26), my(0.06));
+    s.bezierCurveTo(mx(0.29), my(0.06), mx(0.31), my(0.08), mx(0.31), my(0.14));
+    s.bezierCurveTo(mx(0.31), my(0.22), mx(0.30), my(0.34), mx(0.30), my(0.38));
     // Middle finger (tallest)
-    c.bezierCurveTo(w*0.32, h*0.32, w*0.34, h*0.14, w*0.35, h*0.06);
-    c.bezierCurveTo(w*0.36, h*0.01, w*0.39, h*0.00, w*0.42, h*0.00);
-    c.bezierCurveTo(w*0.45, h*0.00, w*0.47, h*0.01, w*0.48, h*0.06);
-    c.bezierCurveTo(w*0.49, h*0.14, w*0.48, h*0.30, w*0.48, h*0.36);
+    s.bezierCurveTo(mx(0.32), my(0.32), mx(0.34), my(0.14), mx(0.35), my(0.06));
+    s.bezierCurveTo(mx(0.36), my(0.01), mx(0.39), my(0.00), mx(0.42), my(0.00));
+    s.bezierCurveTo(mx(0.45), my(0.00), mx(0.47), my(0.01), mx(0.48), my(0.06));
+    s.bezierCurveTo(mx(0.49), my(0.14), mx(0.48), my(0.30), mx(0.48), my(0.36));
     // Index finger
-    c.bezierCurveTo(w*0.50, h*0.30, w*0.52, h*0.16, w*0.53, h*0.10);
-    c.bezierCurveTo(w*0.54, h*0.04, w*0.57, h*0.03, w*0.60, h*0.03);
-    c.bezierCurveTo(w*0.63, h*0.03, w*0.65, h*0.05, w*0.65, h*0.10);
-    c.bezierCurveTo(w*0.65, h*0.18, w*0.64, h*0.32, w*0.64, h*0.40);
+    s.bezierCurveTo(mx(0.50), my(0.30), mx(0.52), my(0.16), mx(0.53), my(0.10));
+    s.bezierCurveTo(mx(0.54), my(0.04), mx(0.57), my(0.03), mx(0.60), my(0.03));
+    s.bezierCurveTo(mx(0.63), my(0.03), mx(0.65), my(0.05), mx(0.65), my(0.10));
+    s.bezierCurveTo(mx(0.65), my(0.18), mx(0.64), my(0.32), mx(0.64), my(0.40));
     // Side to thumb
-    c.bezierCurveTo(w*0.66, h*0.42, w*0.70, h*0.44, w*0.72, h*0.44);
+    s.bezierCurveTo(mx(0.66), my(0.42), mx(0.70), my(0.44), mx(0.72), my(0.44));
     // Thumb
-    c.bezierCurveTo(w*0.78, h*0.40, w*0.86, h*0.36, w*0.90, h*0.38);
-    c.bezierCurveTo(w*0.94, h*0.40, w*0.94, h*0.46, w*0.90, h*0.50);
-    c.bezierCurveTo(w*0.84, h*0.56, w*0.76, h*0.58, w*0.70, h*0.60);
+    s.bezierCurveTo(mx(0.78), my(0.40), mx(0.86), my(0.36), mx(0.90), my(0.38));
+    s.bezierCurveTo(mx(0.94), my(0.40), mx(0.94), my(0.46), mx(0.90), my(0.50));
+    s.bezierCurveTo(mx(0.84), my(0.56), mx(0.76), my(0.58), mx(0.70), my(0.60));
     // Right side of palm down
-    c.bezierCurveTo(w*0.66, h*0.68, w*0.62, h*0.80, w*0.58, h*0.90);
-    c.bezierCurveTo(w*0.55, h*0.96, w*0.48, h*0.98, w*0.42, h*0.98);
+    s.bezierCurveTo(mx(0.66), my(0.68), mx(0.62), my(0.80), mx(0.58), my(0.90));
+    s.bezierCurveTo(mx(0.55), my(0.96), mx(0.48), my(0.98), mx(0.42), my(0.98));
     // Bottom close
-    c.lineTo(w*0.18, h*0.98);
-    c.closePath();
+    s.lineTo(mx(0.18), my(0.98));
+
+    return s;
   }
 
-  const jointPoints = [
-    [0.075, 0.22], [0.26, 0.06], [0.42, 0.00], [0.60, 0.03], [0.90, 0.38],
-    [0.09, 0.30], [0.25, 0.12], [0.41, 0.04], [0.59, 0.06], [0.90, 0.44],
-    [0.14, 0.42], [0.30, 0.38], [0.48, 0.36], [0.64, 0.40], [0.72, 0.44],
-    [0.35, 0.60], [0.35, 0.75], [0.30, 0.85]
-  ];
+  function createHandMesh(mirror) {
+    const shape = createHandShape();
+    const extrudeSettings = {
+      depth: 0.1,
+      bevelEnabled: true,
+      bevelThickness: 0.03,
+      bevelSize: 0.03,
+      bevelSegments: 4,
+      curveSegments: 16
+    };
+    const geometry = new THREE.ExtrudeGeometry(shape, extrudeSettings);
+    geometry.center();
 
-  function drawWireframeHand(cvs, mirror, time, detected) {
-    const c = cvs.getContext('2d');
-    const w = cvs.width;
-    const h = cvs.height;
-    c.clearRect(0, 0, w, h);
-    c.save();
-
+    const material = new THREE.MeshBasicMaterial({
+      color: 0x00bbff,
+      wireframe: true,
+      transparent: true,
+      opacity: 0.25
+    });
+    const mesh = new THREE.Mesh(geometry, material);
     if (mirror) {
-      c.translate(w, 0);
-      c.scale(-1, 1);
+      mesh.scale.x = -1;
     }
-
-    const pulse = 0.7 + 0.3 * Math.sin(time * 0.002);
-    const baseAlpha = detected ? 0.45 * pulse : 0.2 * pulse;
-    const brightAlpha = detected ? 0.7 * pulse : 0.4 * pulse;
-    const glowAlpha = detected ? 0.6 : 0.3;
-
-    // Clip to hand shape
-    drawHandPath(c, w, h);
-    c.save();
-    c.clip();
-
-    // Draw 3D grid — horizontal lines curve outward (convex for 3D depth)
-    const gridH = 12;
-    c.lineWidth = 0.6;
-    for (let y = 0; y < h; y += gridH) {
-      const ny = y / h;
-      // Stronger curve in palm area (0.4-0.8), less in fingers
-      const curveMag = 20 * Math.sin(ny * Math.PI) * (0.5 + 0.5 * Math.sin(ny * Math.PI * 0.8));
-      c.beginPath();
-      c.strokeStyle = `rgba(0,180,255,${baseAlpha * (0.3 + 0.4 * Math.sin(ny * Math.PI))})`;
-      c.moveTo(0, y);
-      c.bezierCurveTo(w * 0.3, y + curveMag, w * 0.7, y + curveMag * 0.8, w, y);
-      c.stroke();
-    }
-
-    // Vertical lines — converge at top/bottom, bow outward in middle
-    const gridV = 12;
-    for (let x = 0; x < w; x += gridV) {
-      const nx = x / w;
-      const curveMag = 15 * Math.sin(nx * Math.PI) * (nx < 0.5 ? 1 : -0.5);
-      const convergeFactor = 0.92 + 0.08 * Math.sin(nx * Math.PI);
-      c.beginPath();
-      c.strokeStyle = `rgba(0,180,255,${baseAlpha * (0.3 + 0.3 * Math.sin(nx * Math.PI))})`;
-      c.moveTo(x, 0);
-      c.bezierCurveTo(x + curveMag, h * 0.35, x - curveMag * 0.5, h * 0.65, x * convergeFactor + (1 - convergeFactor) * w * 0.4, h);
-      c.stroke();
-    }
-
-    // Extra diagonal cross-hatch for more 3D mesh feel
-    c.strokeStyle = `rgba(0,160,255,${baseAlpha * 0.15})`;
-    c.lineWidth = 0.3;
-    for (let i = -h; i < w + h; i += gridH * 3) {
-      c.beginPath();
-      c.moveTo(i, 0);
-      c.lineTo(i + h * 0.3, h);
-      c.stroke();
-    }
-
-    c.restore(); // remove clip
-
-    // Draw smooth hand outline with glow
-    drawHandPath(c, w, h);
-    c.strokeStyle = `rgba(0,200,255,${brightAlpha})`;
-    c.lineWidth = 1.8;
-    c.shadowColor = `rgba(0,200,255,${glowAlpha})`;
-    c.shadowBlur = detected ? 18 : 10;
-    c.stroke();
-
-    // Second outline pass — inner bright highlight
-    drawHandPath(c, w, h);
-    c.strokeStyle = `rgba(150,230,255,${brightAlpha * 0.3})`;
-    c.lineWidth = 0.8;
-    c.shadowBlur = 0;
-    c.stroke();
-
-    // Glow points at joints/fingertips
-    c.shadowBlur = detected ? 20 : 12;
-    c.shadowColor = `rgba(0,220,255,${glowAlpha * 0.8})`;
-    for (const jp of jointPoints) {
-      const jx = jp[0] * w;
-      const jy = jp[1] * h;
-      c.beginPath();
-      c.arc(jx, jy, detected ? 3.5 : 2, 0, Math.PI * 2);
-      c.fillStyle = `rgba(100,230,255,${brightAlpha})`;
-      c.fill();
-    }
-    c.shadowBlur = 0;
-
-    // Scan line when detected
-    if (detected) {
-      const scanY = (0.05 + 0.85 * (0.5 + 0.5 * Math.sin(time * 0.003))) * h;
-      c.save();
-      drawHandPath(c, w, h);
-      c.clip();
-      const grad = c.createLinearGradient(0, scanY - 8, 0, scanY + 8);
-      grad.addColorStop(0, 'rgba(0,255,65,0)');
-      grad.addColorStop(0.4, 'rgba(0,255,65,0.4)');
-      grad.addColorStop(0.5, 'rgba(0,255,65,0.9)');
-      grad.addColorStop(0.6, 'rgba(0,255,65,0.4)');
-      grad.addColorStop(1, 'rgba(0,255,65,0)');
-      c.fillStyle = grad;
-      c.shadowColor = 'rgba(0,255,65,0.6)';
-      c.shadowBlur = 15;
-      c.fillRect(0, scanY - 8, w, 16);
-      c.restore();
-    }
-
-    c.restore();
+    return mesh;
   }
 
-  function animateWireframeHands(time) {
+  function createScanPlane() {
+    const geo = new THREE.PlaneGeometry(2.5, 0.02);
+    const mat = new THREE.MeshBasicMaterial({
+      color: 0x00ff41,
+      transparent: true,
+      opacity: 0.0,
+      side: THREE.DoubleSide
+    });
+    const plane = new THREE.Mesh(geo, mat);
+    plane.position.z = 0.15;
+    return plane;
+  }
+
+  function createHandScene(canvas, mirror) {
+    const scene = new THREE.Scene();
+    const aspect = canvas.width / canvas.height;
+    const camera = new THREE.PerspectiveCamera(40, aspect, 0.1, 100);
+    camera.position.set(0, 0, 2.8);
+
+    const renderer = new THREE.WebGLRenderer({ canvas: canvas, alpha: true, antialias: true });
+    renderer.setSize(canvas.width, canvas.height);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setClearColor(0x000000, 0);
+
+    const hand = createHandMesh(mirror);
+    scene.add(hand);
+
+    const scanPlane = createScanPlane();
+    scene.add(scanPlane);
+
+    return { scene, camera, renderer, hand, scanPlane };
+  }
+
+  const leftHandScene = createHandScene(handCanvasLeft, false);
+  const rightHandScene = createHandScene(handCanvasRight, true);
+
+  function animate3DHands(time) {
     const leftDetected = scanHandLeft.classList.contains('detected');
     const rightDetected = scanHandRight.classList.contains('detected');
-    drawWireframeHand(handCanvasLeft, false, time, leftDetected);
-    drawWireframeHand(handCanvasRight, true, time, rightDetected);
-    wireframeAnimId = requestAnimationFrame(animateWireframeHands);
+
+    [
+      { hs: leftHandScene, detected: leftDetected },
+      { hs: rightHandScene, detected: rightDetected }
+    ].forEach(({ hs, detected }) => {
+      const { scene, camera, renderer, hand, scanPlane } = hs;
+      const pulse = 0.7 + 0.3 * Math.sin(time * 0.002);
+
+      // Subtle Y rotation oscillation
+      const rotRange = detected ? 0.15 : 0.08;
+      hand.rotation.y = Math.sin(time * 0.0008) * rotRange;
+      // Very subtle X tilt
+      hand.rotation.x = Math.sin(time * 0.0006 + 1.0) * 0.04;
+
+      // Opacity and color based on detection
+      const targetOpacity = detected ? 0.45 * pulse : 0.22 * pulse;
+      hand.material.opacity += (targetOpacity - hand.material.opacity) * 0.08;
+
+      if (detected) {
+        hand.material.color.setHex(0x33ccff);
+      } else {
+        hand.material.color.setHex(0x00bbff);
+      }
+
+      // Scan plane — visible only when detected
+      if (detected) {
+        const scanTargetOpacity = 0.7 * pulse;
+        scanPlane.material.opacity += (scanTargetOpacity - scanPlane.material.opacity) * 0.1;
+        scanPlane.position.y = Math.sin(time * 0.003) * 0.55;
+        scanPlane.visible = true;
+      } else {
+        scanPlane.material.opacity *= 0.92;
+        if (scanPlane.material.opacity < 0.01) scanPlane.visible = false;
+      }
+
+      renderer.render(scene, camera);
+    });
+
+    wireframeAnimId = requestAnimationFrame(animate3DHands);
   }
 
-  // Start wireframe animation
-  wireframeAnimId = requestAnimationFrame(animateWireframeHands);
+  // Start 3D wireframe animation
+  wireframeAnimId = requestAnimationFrame(animate3DHands);
 
   // Matrix rain setup
   function initMatrixRain() {
