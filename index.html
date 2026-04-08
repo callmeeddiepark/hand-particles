@@ -35,16 +35,17 @@
   .scan-guide-icon{font-size:24px}
   .scan-guide-text{font-family:'Space Mono',monospace;font-size:9px;color:rgba(0,255,65,0.5);letter-spacing:0.1em;text-transform:uppercase}
 
-  .scan-hands-area{display:flex;gap:80px;margin-bottom:30px}
-  .scan-hand-outline{width:160px;height:220px;border:1px solid rgba(0,255,65,0.15);border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;transition:all 0.5s ease}
-  .scan-hand-outline.detected{border-color:rgba(0,255,65,0.6);box-shadow:0 0 30px rgba(0,255,65,0.15),inset 0 0 30px rgba(0,255,65,0.05)}
-  .scan-hand-label{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:0.3em;color:rgba(0,255,65,0.3);margin-top:12px}
-  .hand-svg{width:100px;height:140px;opacity:0.15}
-  .scan-hand-outline.detected .hand-svg{opacity:0.5}
-  .scan-hand-outline.detected .scan-hand-label{color:rgba(0,255,65,0.7)}
+  .scan-hands-area{position:fixed;inset:0;z-index:3;pointer-events:none}
+  .scan-hand-outline{position:absolute;top:50%;transform:translateY(-50%);width:180px;height:260px;display:flex;flex-direction:column;align-items:center;justify-content:center;transition:all 0.5s ease}
+  .scan-hand-outline.left{left:8%}
+  .scan-hand-outline.right{right:8%}
+  .scan-hand-outline.detected .hand-svg{opacity:0.6;filter:drop-shadow(0 0 15px rgba(0,255,65,0.4))}
+  .scan-hand-label{font-family:'Space Mono',monospace;font-size:8px;letter-spacing:0.2em;color:rgba(0,255,65,0.25);position:absolute;bottom:-5px;text-align:center;width:100%}
+  .scan-hand-outline.detected .scan-hand-label{color:rgba(0,255,65,0.6)}
+  .hand-svg{width:160px;height:230px;opacity:0.12;transition:opacity 0.5s ease,filter 0.5s ease}
 
-  .scan-hand-outline.detected::after{content:'';position:absolute;left:10%;right:10%;height:2px;background:linear-gradient(90deg,transparent,rgba(0,255,65,0.8),transparent);animation:scanLine 1.5s ease-in-out infinite;box-shadow:0 0 10px rgba(0,255,65,0.5)}
-  @keyframes scanLine{0%{top:10%}50%{top:85%}100%{top:10%}}
+  .scan-hand-outline.detected::after{content:'';position:absolute;left:15%;right:15%;height:2px;background:linear-gradient(90deg,transparent,rgba(0,255,65,0.8),transparent);animation:scanLine 1.5s ease-in-out infinite;box-shadow:0 0 10px rgba(0,255,65,0.5)}
+  @keyframes scanLine{0%{top:5%}50%{top:90%}100%{top:5%}}
 
   .scan-status{font-family:'Space Mono',monospace;font-size:12px;letter-spacing:0.3em;color:rgba(0,255,65,0.5);text-transform:uppercase;margin-bottom:16px;transition:color 0.3s ease}
   .scan-status.scanning{color:rgba(0,255,65,0.8);animation:statusPulse 0.5s ease infinite alternate}
@@ -306,6 +307,20 @@
     <div class="tap-text">Camera Access Required</div>
     <div class="tap-sub">Click to Experience</div>
   </div>
+  <div class="scan-hands-area" id="scanHandsArea">
+    <div class="scan-hand-outline left" id="scanHandLeft">
+      <svg viewBox="0 0 200 300" class="hand-svg">
+        <path d="M85,290 C50,285 25,255 25,220 L25,140 C25,128 35,122 42,130 L42,170 L42,95 C42,83 52,77 59,85 L59,165 L59,70 C59,58 69,52 76,60 L76,155 L76,55 C76,43 86,37 93,45 L93,155 L93,50 C93,38 103,32 110,40 L110,180 C110,180 130,155 145,155 C160,155 165,168 155,178 L120,215 C120,215 130,260 100,280 Z" fill="none" stroke="rgba(0,255,65,0.3)" stroke-width="1.5" stroke-dasharray="4,3"/>
+      </svg>
+      <div class="scan-hand-label">Place your left hand</div>
+    </div>
+    <div class="scan-hand-outline right" id="scanHandRight">
+      <svg viewBox="0 0 200 300" class="hand-svg" style="transform:scaleX(-1)">
+        <path d="M85,290 C50,285 25,255 25,220 L25,140 C25,128 35,122 42,130 L42,170 L42,95 C42,83 52,77 59,85 L59,165 L59,70 C59,58 69,52 76,60 L76,155 L76,55 C76,43 86,37 93,45 L93,155 L93,50 C93,38 103,32 110,40 L110,180 C110,180 130,155 145,155 C160,155 165,168 155,178 L120,215 C120,215 130,260 100,280 Z" fill="none" stroke="rgba(0,255,65,0.3)" stroke-width="1.5" stroke-dasharray="4,3"/>
+      </svg>
+      <div class="scan-hand-label">Place your right hand</div>
+    </div>
+  </div>
   <div class="scan-ui" id="scanUI">
     <div class="scan-howto">
       <p class="scan-howto-main">이곳에서는 당신의 손짓이 마우스가 됩니다.</p>
@@ -323,20 +338,6 @@
           <div class="scan-guide-icon">🤏↕</div>
           <div class="scan-guide-text">핀치 + 드래그 → 스크롤</div>
         </div>
-      </div>
-    </div>
-    <div class="scan-hands-area">
-      <div class="scan-hand-outline left" id="scanHandLeft">
-        <svg viewBox="0 0 200 280" class="hand-svg">
-          <path d="M100,270 C60,270 30,240 30,200 L30,120 C30,110 38,105 43,110 L43,160 C43,160 43,100 43,80 C43,70 51,65 56,70 L56,150 C56,150 56,70 56,55 C56,45 64,40 69,45 L69,140 C69,140 69,60 69,50 C69,40 77,35 82,40 L82,140 L82,40 C82,30 90,25 95,30 L95,170 C95,170 120,140 135,140 C150,140 155,150 145,160 L110,200 C110,200 140,270 100,270Z" fill="none" stroke="rgba(0,255,65,0.4)" stroke-width="1.5"/>
-        </svg>
-        <div class="scan-hand-label">LEFT</div>
-      </div>
-      <div class="scan-hand-outline right" id="scanHandRight">
-        <svg viewBox="0 0 200 280" class="hand-svg" style="transform:scaleX(-1)">
-          <path d="M100,270 C60,270 30,240 30,200 L30,120 C30,110 38,105 43,110 L43,160 C43,160 43,100 43,80 C43,70 51,65 56,70 L56,150 C56,150 56,70 56,55 C56,45 64,40 69,45 L69,140 C69,140 69,60 69,50 C69,40 77,35 82,40 L82,140 L82,40 C82,30 90,25 95,30 L95,170 C95,170 120,140 135,140 C150,140 155,150 145,160 L110,200 C110,200 140,270 100,270Z" fill="none" stroke="rgba(0,255,65,0.4)" stroke-width="1.5"/>
-        </svg>
-        <div class="scan-hand-label">RIGHT</div>
       </div>
     </div>
     <div class="scan-status" id="scanStatus">PLACE BOTH HANDS</div>
