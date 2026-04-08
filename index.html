@@ -1607,7 +1607,10 @@
     wireframeAnimId = requestAnimationFrame(animate3DHands);
   }
 
-  // 3D wireframe animation starts after Click to Experience
+  // Start matrix rain immediately on page load
+  initMatrixRain();
+  scanMatrixRunning = true;
+  requestAnimationFrame(drawMatrixRain);
 
   // Matrix rain setup
   function initMatrixRain() {
@@ -1844,9 +1847,6 @@
   // Tap to begin handler
   scanTapPrompt.addEventListener('click', () => {
     scanTapPrompt.style.display = 'none';
-    initMatrixRain();
-    scanMatrixRunning = true;
-    requestAnimationFrame(drawMatrixRain);
     scanUI.classList.add('visible');
     document.getElementById('scanHandsArea').style.display = '';
     wireframeAnimId = requestAnimationFrame(animate3DHands);
