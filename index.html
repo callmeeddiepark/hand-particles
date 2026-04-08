@@ -36,7 +36,7 @@
   .scan-guide-text{font-family:'Space Mono',monospace;font-size:9px;color:rgba(0,255,65,0.5);letter-spacing:0.1em;text-transform:uppercase}
 
   .scan-hands-area{position:fixed;inset:0;z-index:3;pointer-events:none}
-  .scan-hand-outline{position:absolute;top:50%;transform:translateY(-50%);width:540px;height:780px;display:flex;flex-direction:column;align-items:center;justify-content:center;transition:all 0.5s ease}
+  .scan-hand-outline{position:absolute;top:50%;transform:translateY(-50%);width:810px;height:1170px;display:flex;flex-direction:column;align-items:center;justify-content:center;transition:all 0.5s ease}
   .scan-hand-outline.left{left:8%}
   .scan-hand-outline.right{right:8%}
   .scan-hand-label{font-family:'Space Mono',monospace;font-size:8px;letter-spacing:0.2em;color:rgba(0,255,65,0.25);position:absolute;bottom:-5px;text-align:center;width:100%}
@@ -1499,8 +1499,8 @@
   function createHandScene(canvas, mirror) {
     const scene = new THREE.Scene();
     const aspect = canvas.width / canvas.height;
-    const camera = new THREE.PerspectiveCamera(65, aspect, 0.1, 100);
-    camera.position.set(0, -0.1, 1.4);
+    const camera = new THREE.PerspectiveCamera(50, aspect, 0.1, 100);
+    camera.position.set(0, -0.05, 2.0);
 
     const renderer = new THREE.WebGLRenderer({ canvas: canvas, alpha: true, antialias: true });
     renderer.setSize(canvas.width, canvas.height);
