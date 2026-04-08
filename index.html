@@ -1533,7 +1533,7 @@
   function createHandScene(canvas, mirror) {
     const scene = new THREE.Scene();
     const aspect = canvas.width / canvas.height;
-    const frustumH = 1.07;
+    const frustumH = 1.3;
     const frustumW = frustumH * aspect;
     const camera = new THREE.OrthographicCamera(-frustumW, frustumW, frustumH, -frustumH, 0.1, 100);
     camera.position.set(0, 0, 5);
