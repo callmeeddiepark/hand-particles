@@ -1499,8 +1499,8 @@
   function createHandScene(canvas, mirror) {
     const scene = new THREE.Scene();
     const aspect = canvas.width / canvas.height;
-    const camera = new THREE.PerspectiveCamera(40, aspect, 0.1, 100);
-    camera.position.set(0, 0, 1.4);
+    const camera = new THREE.PerspectiveCamera(50, aspect, 0.1, 100);
+    camera.position.set(0, -0.1, 2.0);
 
     const renderer = new THREE.WebGLRenderer({ canvas: canvas, alpha: true, antialias: true });
     renderer.setSize(canvas.width, canvas.height);
