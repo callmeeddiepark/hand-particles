@@ -1468,7 +1468,12 @@
       curveSegments: 16
     };
     const geometry = new THREE.ExtrudeGeometry(shape, extrudeSettings);
-    geometry.center();
+    geometry.computeBoundingBox();
+    const bb = geometry.boundingBox;
+    const cx = (bb.max.x + bb.min.x) / 2;
+    const cy = (bb.max.y + bb.min.y) / 2;
+    const cz = (bb.max.z + bb.min.z) / 2;
+    geometry.translate(-cx, -cy, -cz);
 
     const material = new THREE.MeshBasicMaterial({
       color: 0x00bbff,
