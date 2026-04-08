@@ -21,8 +21,8 @@
   #scanCanvas{position:absolute;inset:0;width:100%;height:100%;z-index:0}
 
   .scan-tap-prompt{position:absolute;inset:0;z-index:5;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-direction:column;gap:16px}
-  .scan-tap-prompt .tap-text{font-family:'Space Mono',monospace;font-size:13px;letter-spacing:.4em;text-transform:uppercase;color:rgba(0,255,65,0.5);animation:statusPulse 1s ease infinite alternate}
-  .scan-tap-prompt .tap-sub{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.2em;color:rgba(0,255,65,0.2)}
+  .scan-tap-prompt .tap-text{font-family:'Syne',sans-serif;font-size:16px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:rgba(0,255,65,0.6)}
+  .scan-tap-prompt .tap-sub{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.3em;color:rgba(0,255,65,0.35);animation:statusPulse 1s ease infinite alternate}
 
   .scan-ui{position:relative;z-index:2;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none;opacity:0;transition:opacity .8s ease}
   .scan-ui.visible{opacity:1}
@@ -303,8 +303,8 @@
 <div id="page-attention">
   <canvas id="scanCanvas"></canvas>
   <div class="scan-tap-prompt" id="scanTapPrompt">
-    <div class="tap-text">TAP TO BEGIN</div>
-    <div class="tap-sub">camera access required</div>
+    <div class="tap-text">Camera Access Required</div>
+    <div class="tap-sub">Click to Experience</div>
   </div>
   <div class="scan-ui" id="scanUI">
     <div class="scan-howto">
