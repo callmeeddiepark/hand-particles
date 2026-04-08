@@ -1725,9 +1725,21 @@
 
     scanCtx.font = fontSize + 'px monospace';
 
-    // Get hand canvas positions to avoid
-    const leftRect = handCanvasLeft ? handCanvasLeft.getBoundingClientRect() : null;
-    const rightRect = handCanvasRight ? handCanvasRight.getBoundingClientRect() : null;
+    // Calculate hand areas to avoid (based on CSS positioning)
+    const sw = scanCanvas.width;
+    const sh = scanCanvas.height;
+    const handW = 810;
+    const handH = 1170;
+    // Left hand: left:-5%, centered vertically
+    const leftX1 = sw * -0.05;
+    const leftX2 = leftX1 + handW;
+    const leftY1 = (sh - handH) / 2;
+    const leftY2 = leftY1 + handH;
+    // Right hand: right:-5%, centered vertically
+    const rightX2 = sw * 1.05;
+    const rightX1 = rightX2 - handW;
+    const rightY1 = leftY1;
+    const rightY2 = leftY2;
 
     for (let i = 0; i < scanMatrixCols.length; i++) {
       const col = scanMatrixCols[i];
@@ -1736,11 +1748,10 @@
       const y = col.y * fontSize;
 
       // Skip columns that overlap with hand areas
-      let inHand = false;
-      if (leftRect && x >= leftRect.left && x <= leftRect.right && y >= leftRect.top && y <= leftRect.bottom) inHand = true;
-      if (rightRect && x >= rightRect.left && x <= rightRect.right && y >= rightRect.top && y <= rightRect.bottom) inHand = true;
+      const inLeftHand = x >= leftX1 && x <= leftX2 && y >= leftY1 && y <= leftY2;
+      const inRightHand = x >= rightX1 && x <= rightX2 && y >= rightY1 && y <= rightY2;
 
-      if (!inHand) {
+      if (!inLeftHand && !inRightHand) {
         const alpha = 0.05 + Math.random() * 0.15;
         scanCtx.fillStyle = `rgba(0,255,65,${alpha})`;
         scanCtx.fillText(char, x, y);
