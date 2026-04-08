@@ -1563,8 +1563,8 @@
     return { scene, camera, renderer, hand, scanPlane };
   }
 
-  const leftHandScene = createHandScene(handCanvasLeft, false);
-  const rightHandScene = createHandScene(handCanvasRight, true);
+  const leftHandScene = createHandScene(handCanvasLeft, true);
+  const rightHandScene = createHandScene(handCanvasRight, false);
 
   function animate3DHands(time) {
     const leftDetected = scanHandLeft.classList.contains('detected');
