@@ -36,13 +36,13 @@
   .scan-guide-text{font-family:'Space Mono',monospace;font-size:9px;color:rgba(0,255,65,0.5);letter-spacing:0.1em;text-transform:uppercase}
 
   .scan-hands-area{position:fixed;inset:0;z-index:3;pointer-events:none}
-  .scan-hand-outline{position:absolute;top:50%;transform:translateY(-50%);width:180px;height:260px;display:flex;flex-direction:column;align-items:center;justify-content:center;transition:all 0.5s ease}
+  .scan-hand-outline{position:absolute;top:50%;transform:translateY(-50%);width:540px;height:780px;display:flex;flex-direction:column;align-items:center;justify-content:center;transition:all 0.5s ease}
   .scan-hand-outline.left{left:8%}
   .scan-hand-outline.right{right:8%}
   .scan-hand-outline.detected .hand-svg{opacity:0.6;filter:drop-shadow(0 0 15px rgba(0,255,65,0.4))}
   .scan-hand-label{font-family:'Space Mono',monospace;font-size:8px;letter-spacing:0.2em;color:rgba(0,255,65,0.25);position:absolute;bottom:-5px;text-align:center;width:100%}
   .scan-hand-outline.detected .scan-hand-label{color:rgba(0,255,65,0.6)}
-  .hand-svg{width:160px;height:230px;opacity:0.12;transition:opacity 0.5s ease,filter 0.5s ease}
+  .hand-svg{width:480px;height:690px;opacity:0.12;transition:opacity 0.5s ease,filter 0.5s ease}
 
   .scan-hand-outline.detected::after{content:'';position:absolute;left:15%;right:15%;height:2px;background:linear-gradient(90deg,transparent,rgba(0,255,65,0.8),transparent);animation:scanLine 1.5s ease-in-out infinite;box-shadow:0 0 10px rgba(0,255,65,0.5)}
   @keyframes scanLine{0%{top:5%}50%{top:90%}100%{top:5%}}
