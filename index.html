@@ -1477,7 +1477,7 @@
 
     // Solid slightly transparent fill for depth
     const fillMat = new THREE.MeshBasicMaterial({
-      color: 0x001a33,
+      color: 0x002a0a,
       transparent: true,
       opacity: 0.3,
       side: THREE.DoubleSide
@@ -1487,7 +1487,7 @@
     // Clean edges only (no ugly internal triangulation)
     const edges = new THREE.EdgesGeometry(geometry, 15);
     const lineMat = new THREE.LineBasicMaterial({
-      color: 0x00bbff,
+      color: 0x00ff41,
       transparent: true,
       opacity: 0.5
     });
@@ -1495,7 +1495,7 @@
 
     // Also add a wireframe but very faint (for grid density)
     const wireMat = new THREE.MeshBasicMaterial({
-      color: 0x00bbff,
+      color: 0x00ff41,
       wireframe: true,
       transparent: true,
       opacity: 0.06
@@ -1583,11 +1583,11 @@
       fillMat.opacity += (targetFillOpacity - fillMat.opacity) * 0.08;
 
       if (detected) {
-        lineMat.color.setHex(0x33ccff);
-        wireMat.color.setHex(0x33ccff);
+        lineMat.color.setHex(0x33ff66);
+        wireMat.color.setHex(0x33ff66);
       } else {
-        lineMat.color.setHex(0x00bbff);
-        wireMat.color.setHex(0x00bbff);
+        lineMat.color.setHex(0x00ff41);
+        wireMat.color.setHex(0x00ff41);
       }
 
       // Scan plane — visible only when detected
@@ -1725,14 +1725,26 @@
 
     scanCtx.font = fontSize + 'px monospace';
 
+    // Get hand canvas positions to avoid
+    const leftRect = handCanvasLeft ? handCanvasLeft.getBoundingClientRect() : null;
+    const rightRect = handCanvasRight ? handCanvasRight.getBoundingClientRect() : null;
+
     for (let i = 0; i < scanMatrixCols.length; i++) {
       const col = scanMatrixCols[i];
       const char = matrixChars[Math.floor(Math.random() * matrixChars.length)];
       const x = i * fontSize;
       const y = col.y * fontSize;
-      const alpha = 0.05 + Math.random() * 0.15;
-      scanCtx.fillStyle = `rgba(0,255,65,${alpha})`;
-      scanCtx.fillText(char, x, y);
+
+      // Skip columns that overlap with hand areas
+      let inHand = false;
+      if (leftRect && x >= leftRect.left && x <= leftRect.right && y >= leftRect.top && y <= leftRect.bottom) inHand = true;
+      if (rightRect && x >= rightRect.left && x <= rightRect.right && y >= rightRect.top && y <= rightRect.bottom) inHand = true;
+
+      if (!inHand) {
+        const alpha = 0.05 + Math.random() * 0.15;
+        scanCtx.fillStyle = `rgba(0,255,65,${alpha})`;
+        scanCtx.fillText(char, x, y);
+      }
       col.y += col.speed;
       if (col.y * fontSize > scanCanvas.height && Math.random() > 0.975) {
         col.y = 0;
