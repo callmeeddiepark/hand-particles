@@ -305,7 +305,7 @@
     <div class="tap-text">Camera Access Required</div>
     <div class="tap-sub">Click to Experience</div>
   </div>
-  <div class="scan-hands-area" id="scanHandsArea">
+  <div class="scan-hands-area" id="scanHandsArea" style="display:none">
     <div class="scan-hand-outline left" id="scanHandLeft">
       <canvas id="handCanvasLeft" width="300" height="450" class="hand-canvas"></canvas>
       <div class="scan-hand-label">Place your left hand</div>
@@ -1607,8 +1607,7 @@
     wireframeAnimId = requestAnimationFrame(animate3DHands);
   }
 
-  // Start 3D wireframe animation
-  wireframeAnimId = requestAnimationFrame(animate3DHands);
+  // 3D wireframe animation starts after Click to Experience
 
   // Matrix rain setup
   function initMatrixRain() {
@@ -1849,6 +1848,8 @@
     scanMatrixRunning = true;
     requestAnimationFrame(drawMatrixRain);
     scanUI.classList.add('visible');
+    document.getElementById('scanHandsArea').style.display = '';
+    wireframeAnimId = requestAnimationFrame(animate3DHands);
 
     initCamera().then(() => {
       requestAnimationFrame(updateScanProgress);
