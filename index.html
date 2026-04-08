@@ -1460,12 +1460,12 @@
   function createHandMesh(mirror) {
     const shape = createHandShape();
     const extrudeSettings = {
-      depth: 0.1,
+      depth: 0.12,
       bevelEnabled: true,
-      bevelThickness: 0.03,
-      bevelSize: 0.03,
-      bevelSegments: 4,
-      curveSegments: 16
+      bevelThickness: 0.04,
+      bevelSize: 0.04,
+      bevelSegments: 6,
+      curveSegments: 24
     };
     const geometry = new THREE.ExtrudeGeometry(shape, extrudeSettings);
     geometry.computeBoundingBox();
@@ -1475,19 +1475,46 @@
     const cz = (bb.max.z + bb.min.z) / 2;
     geometry.translate(-cx, -cy, -cz);
 
-    const material = new THREE.MeshBasicMaterial({
+    // Solid slightly transparent fill for depth
+    const fillMat = new THREE.MeshBasicMaterial({
+      color: 0x001a33,
+      transparent: true,
+      opacity: 0.3,
+      side: THREE.DoubleSide
+    });
+    const fillMesh = new THREE.Mesh(geometry, fillMat);
+
+    // Clean edges only (no ugly internal triangulation)
+    const edges = new THREE.EdgesGeometry(geometry, 15);
+    const lineMat = new THREE.LineBasicMaterial({
+      color: 0x00bbff,
+      transparent: true,
+      opacity: 0.5
+    });
+    const linesMesh = new THREE.LineSegments(edges, lineMat);
+
+    // Also add a wireframe but very faint (for grid density)
+    const wireMat = new THREE.MeshBasicMaterial({
       color: 0x00bbff,
       wireframe: true,
       transparent: true,
-      opacity: 0.25
+      opacity: 0.06
     });
-    const mesh = new THREE.Mesh(geometry, material);
-    mesh.position.set(0, 0, 0);
-    mesh.scale.set(1.5, 1.5, 1.5);
+    const wireMesh = new THREE.Mesh(geometry.clone(), wireMat);
+
+    // Group everything
+    const group = new THREE.Group();
+    group.add(fillMesh);
+    group.add(wireMesh);
+    group.add(linesMesh);
+    group.position.set(0, 0, 0);
+    group.scale.set(1.5, 1.5, 1.5);
     if (mirror) {
-      mesh.scale.x = -1.5;
+      group.scale.x = -1.5;
     }
-    return mesh;
+    // Expose materials for animation
+    group.userData = { fillMat, lineMat, wireMat };
+    return group;
   }
 
   function createScanPlane() {
@@ -1547,13 +1574,20 @@
       hand.rotation.x = Math.sin(time * 0.0006 + 1.0) * 0.04;
 
       // Opacity and color based on detection
-      const targetOpacity = detected ? 0.45 * pulse : 0.22 * pulse;
-      hand.material.opacity += (targetOpacity - hand.material.opacity) * 0.08;
+      const { fillMat, lineMat, wireMat } = hand.userData;
+      const targetLineOpacity = detected ? 0.7 * pulse : 0.4 * pulse;
+      const targetWireOpacity = detected ? 0.12 * pulse : 0.05 * pulse;
+      const targetFillOpacity = detected ? 0.4 * pulse : 0.25 * pulse;
+      lineMat.opacity += (targetLineOpacity - lineMat.opacity) * 0.08;
+      wireMat.opacity += (targetWireOpacity - wireMat.opacity) * 0.08;
+      fillMat.opacity += (targetFillOpacity - fillMat.opacity) * 0.08;
 
       if (detected) {
-        hand.material.color.setHex(0x33ccff);
+        lineMat.color.setHex(0x33ccff);
+        wireMat.color.setHex(0x33ccff);
       } else {
-        hand.material.color.setHex(0x00bbff);
+        lineMat.color.setHex(0x00bbff);
+        wireMat.color.setHex(0x00bbff);
       }
 
       // Scan plane — visible only when detected
