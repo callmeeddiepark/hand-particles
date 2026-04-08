@@ -1477,6 +1477,7 @@
       opacity: 0.25
     });
     const mesh = new THREE.Mesh(geometry, material);
+    mesh.position.set(0, 0, 0);
     mesh.scale.set(1.5, 1.5, 1.5);
     if (mirror) {
       mesh.scale.x = -1.5;
@@ -1504,6 +1505,7 @@
     const frustumW = frustumH * aspect;
     const camera = new THREE.OrthographicCamera(-frustumW, frustumW, frustumH, -frustumH, 0.1, 100);
     camera.position.set(0, 0, 5);
+    camera.lookAt(0, 0, 0);
 
     const renderer = new THREE.WebGLRenderer({ canvas: canvas, alpha: true, antialias: true });
     renderer.setSize(canvas.width, canvas.height);
