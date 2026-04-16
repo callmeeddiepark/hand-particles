@@ -105,14 +105,30 @@
   @keyframes fi{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 
   /* PORTFOLIO PAGE */
-  #page-portfolio{position:fixed;inset:0;z-index:60;display:none;opacity:0;transition:opacity .6s ease;background:var(--bg);overflow-y:auto;overflow-x:hidden}
+  #page-portfolio{position:fixed;inset:0;z-index:60;display:none;opacity:0;transition:opacity .6s ease;background:var(--bg);overflow:hidden}
   #page-portfolio.active{display:block;opacity:1}
-  canvas#portfolioCanvas{position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none}
-  .portfolio-inner{position:relative;z-index:1;max-width:960px;margin:0 auto;padding:100px 32px 80px}
-  .portfolio-title{font-family:'Syne',sans-serif;font-weight:800;font-size:clamp(32px,6vw,56px);letter-spacing:.12em;text-transform:uppercase;color:var(--fg);margin-bottom:12px;position:relative}
-  .portfolio-subtitle{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.3em;text-transform:uppercase;color:rgba(255,255,255,.2);margin-bottom:56px}
-  .portfolio-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:28px}
-  @media(max-width:700px){.portfolio-grid{grid-template-columns:1fr}}
+  #globeContainer{position:absolute;inset:0;z-index:0;transition:opacity .6s ease}
+  #globeContainer canvas{display:block}
+  .globe-labels{position:absolute;inset:0;z-index:2;pointer-events:none}
+  .globe-label{position:absolute;pointer-events:auto;cursor:pointer;display:flex;align-items:center;gap:8px;transform:translate(-50%,-50%);transition:opacity .3s ease;opacity:0;user-select:none}
+  .globe-label.visible{opacity:1}
+  .globe-label-dot{width:6px;height:6px;border-radius:50%;background:rgba(192,255,0,0.8);box-shadow:0 0 8px rgba(192,255,0,0.4),0 0 20px rgba(192,255,0,0.15);transition:all .3s ease;animation:globePulse 2s ease-in-out infinite}
+  @keyframes globePulse{0%,100%{box-shadow:0 0 8px rgba(192,255,0,0.4),0 0 20px rgba(192,255,0,0.15)}50%{box-shadow:0 0 12px rgba(192,255,0,0.6),0 0 30px rgba(192,255,0,0.25)}}
+  .globe-label:hover .globe-label-dot{background:var(--accent);transform:scale(1.5)}
+  .globe-label-info{display:flex;flex-direction:column;gap:2px}
+  .globe-label-name{font-family:'Syne',sans-serif;font-weight:700;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,0.7);white-space:nowrap;transition:color .3s ease}
+  .globe-label:hover .globe-label-name{color:var(--accent)}
+  .globe-label-count{font-family:'Space Mono',monospace;font-size:9px;color:rgba(255,255,255,0.2);letter-spacing:.1em}
+  .country-panel{position:absolute;inset:0;z-index:10;background:var(--bg);display:none;opacity:0;transition:opacity .5s ease;overflow-y:auto;overflow-x:hidden}
+  .country-panel.active{display:block;opacity:1}
+  .country-panel-header{position:sticky;top:0;z-index:5;display:flex;align-items:center;gap:16px;padding:24px 40px;background:linear-gradient(180deg,var(--bg) 80%,transparent)}
+  .country-back{width:36px;height:36px;border:1px solid rgba(255,255,255,0.1);border-radius:2px;background:transparent;color:var(--fg);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .3s ease;font-family:'Space Mono',monospace}
+  .country-back:hover,.country-back.pinch-hover{border-color:rgba(192,255,0,0.5);color:var(--accent)}
+  .country-title{font-family:'Syne',sans-serif;font-weight:700;font-size:24px;color:var(--fg);letter-spacing:.08em;text-transform:uppercase;flex:1}
+  .country-count{font-family:'Space Mono',monospace;font-size:10px;color:rgba(255,255,255,0.2);letter-spacing:.15em}
+  .country-projects{max-width:960px;margin:0 auto;padding:20px 32px 80px}
+  .country-projects-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:28px}
+  @media(max-width:700px){.country-projects-grid{grid-template-columns:1fr}}
 
   /* Card with media art styling */
   .project-card{background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);border-radius:4px;overflow:hidden;cursor:pointer;transition:border-color .4s ease,transform .4s cubic-bezier(.16,1,.3,1),box-shadow .4s ease;opacity:0;transform:translateY(40px);position:relative}
@@ -389,7 +405,8 @@
 </div>
 
 <div id="page-portfolio">
-  <canvas id="portfolioCanvas"></canvas>
+  <div id="globeContainer"></div>
+  <div class="globe-labels" id="globeLabels"></div>
   <div class="portfolio-light" id="portfolioLight"></div>
   <nav class="landing-nav">
     <a href="#" class="nav-item" data-page="home">Home</a>
@@ -398,8 +415,15 @@
     <a href="#" class="nav-item" data-page="about">About</a>
     <a href="#" class="nav-item" data-page="contact">Contact</a>
   </nav>
-  <div class="portfolio-inner">
-    <div class="portfolio-grid" id="portfolioGrid"></div>
+  <div class="country-panel" id="countryPanel">
+    <div class="country-panel-header">
+      <button class="country-back" id="countryBack">&larr;</button>
+      <div class="country-title" id="countryTitle"></div>
+      <span class="country-count" id="countryCount"></span>
+    </div>
+    <div class="country-projects">
+      <div class="country-projects-grid" id="portfolioGrid"></div>
+    </div>
   </div>
 </div>
 
@@ -883,8 +907,8 @@
             const scrollAmount = -(cursorY - prevCursorY) * 2.5;
             if (projectModal.classList.contains('active')) {
               projectModal.querySelector('.project-modal').scrollBy(0, scrollAmount);
-            } else if (portfolioActive) {
-              portfolioPage.scrollBy(0, scrollAmount);
+            } else if (portfolioActive && countryPanelOpen) {
+              countryPanel.scrollBy(0, scrollAmount);
             } else if (aboutActive) {
               aboutPage.scrollBy(0, scrollAmount);
             } else {
@@ -934,8 +958,8 @@
     canvas.style.pointerEvents = '';
 
     if (el) {
-      // Walk up to find clickable ancestor (project-card, nav-item, button, a)
-      const clickable = el.closest('.project-card, .nav-item, .modal-close, button, a') || el;
+      // Walk up to find clickable ancestor (project-card, nav-item, globe-label, button, a)
+      const clickable = el.closest('.project-card, .nav-item, .globe-label, .modal-close, button, a') || el;
       clickable.classList.add('pinch-hover');
       clickable.click();
       setTimeout(() => clickable.classList.remove('pinch-hover'), 300);
@@ -1939,25 +1963,61 @@
   });
 
   // === Portfolio Data & Logic ===
-  const PROJECTS = [
-    { id:1, title:'Neon Drift', desc:'A short film exploring urban nightscapes through experimental color grading and long exposure techniques.', role:'Director / Editor', videoType:'youtube', videoSrc:'' },
-    { id:2, title:'Pulse', desc:'Music video for an electronic artist featuring real-time generative visuals synced to audio frequencies.', role:'Director', videoType:'youtube', videoSrc:'' },
-    { id:3, title:'Mono', desc:'Minimalist documentary about the craft of black-and-white film photography in the digital age.', role:'Director / Producer', videoType:'direct', videoSrc:'' },
-    { id:4, title:'Waveform', desc:'Interactive installation piece capturing the movement of sound waves translated into physical sculpture.', role:'Creative Director', videoType:'youtube', videoSrc:'' },
-    { id:5, title:'After Hours', desc:'A cinematic portrait of Seoul\'s hidden late-night culture, shot entirely between midnight and dawn.', role:'Director / Editor', videoType:'direct', videoSrc:'' },
-    { id:6, title:'Fragment', desc:'Experimental short combining analog glitch art with modern motion graphics techniques.', role:'Editor', videoType:'youtube', videoSrc:'' },
-    { id:7, title:'Bloom', desc:'Commercial campaign for a luxury skincare brand, emphasizing texture and organic movement.', role:'Producer', videoType:'direct', videoSrc:'' },
-    { id:8, title:'Echo Chamber', desc:'Podcast visual series translating long-form audio conversations into abstract motion design.', role:'Motion Designer', videoType:'youtube', videoSrc:'' },
-    { id:9, title:'Static', desc:'A meditation on digital noise — generative art piece exhibited at Seoul Digital Art Festival.', role:'Artist / Developer', videoType:'direct', videoSrc:'' },
-    { id:10, title:'Daybreak', desc:'Brand film for a tech startup, capturing the energy of building something new from nothing.', role:'Director / Editor', videoType:'youtube', videoSrc:'' },
+  // === GLOBE PORTFOLIO DATA ===
+  const GLOBE_COUNTRIES = [
+    {
+      name: 'TURKEY', nameKr: '터키', lat: 39.9, lng: 32.9,
+      projects: [
+        { id:1, title:'Project TK-01', desc:'Placeholder description for Turkey project 1.', role:'Art Director', videoType:'youtube', videoSrc:'' },
+        { id:2, title:'Project TK-02', desc:'Placeholder description for Turkey project 2.', role:'Director', videoType:'youtube', videoSrc:'' },
+      ]
+    },
+    {
+      name: 'DUBAI', nameKr: '두바이', lat: 25.2, lng: 55.3,
+      projects: [
+        { id:3, title:'Project DB-01', desc:'Placeholder description for Dubai project 1.', role:'Art Director', videoType:'youtube', videoSrc:'' },
+        { id:4, title:'Project DB-02', desc:'Placeholder description for Dubai project 2.', role:'Creative Director', videoType:'youtube', videoSrc:'' },
+        { id:5, title:'Project DB-03', desc:'Placeholder description for Dubai project 3.', role:'Director / Editor', videoType:'youtube', videoSrc:'' },
+        { id:6, title:'Project DB-04', desc:'Placeholder description for Dubai project 4.', role:'Art Director', videoType:'direct', videoSrc:'' },
+        { id:7, title:'Project DB-05', desc:'Placeholder description for Dubai project 5.', role:'Director', videoType:'youtube', videoSrc:'' },
+        { id:8, title:'Project DB-06', desc:'Placeholder description for Dubai project 6.', role:'Producer', videoType:'direct', videoSrc:'' },
+        { id:9, title:'Project DB-07', desc:'Placeholder description for Dubai project 7.', role:'Art Director', videoType:'youtube', videoSrc:'' },
+      ]
+    },
+    {
+      name: 'EGYPT', nameKr: '이집트', lat: 30.0, lng: 31.2,
+      projects: [
+        { id:10, title:'Project EG-01', desc:'Placeholder description for Egypt project 1.', role:'Director / Editor', videoType:'youtube', videoSrc:'' },
+      ]
+    },
+    {
+      name: 'KOREA', nameKr: '한국', lat: 37.5, lng: 127.0,
+      projects: [
+        { id:11, title:'Project KR-01', desc:'Placeholder description for Korea project 1.', role:'Art Director', videoType:'youtube', videoSrc:'' },
+        { id:12, title:'Project KR-02', desc:'Placeholder description for Korea project 2.', role:'Director', videoType:'youtube', videoSrc:'' },
+      ]
+    },
   ];
+
+  const SPHERE_RADIUS = 2;
+
+  function latLngToVec3(lat, lng, r) {
+    const phi = (90 - lat) * Math.PI / 180;
+    const theta = (lng + 180) * Math.PI / 180;
+    return new THREE.Vector3(
+      -r * Math.sin(phi) * Math.cos(theta),
+      r * Math.cos(phi),
+      r * Math.sin(phi) * Math.sin(theta)
+    );
+  }
 
   const portfolioPage = document.getElementById('page-portfolio');
   const portfolioGrid = document.getElementById('portfolioGrid');
   const projectModal = document.getElementById('projectModal');
-  const portfolioCanvas = document.getElementById('portfolioCanvas');
-  const pCtx = portfolioCanvas.getContext('2d');
   const portfolioLight = document.getElementById('portfolioLight');
+  const globeContainer = document.getElementById('globeContainer');
+  const globeLabelsEl = document.getElementById('globeLabels');
+  const countryPanel = document.getElementById('countryPanel');
   let portfolioActive = false;
   let labsActive = false;
   let contactActive = false;
@@ -1968,20 +2028,196 @@
   const labsLight = document.getElementById('labsLight');
   let pMouseX = 0, pMouseY = 0;
 
-  // === Generative thumb patterns ===
-  const THUMB_PATTERNS = [
-    // Each fn receives (ctx, w, h, t, seed) and draws a generative pattern
-    (ctx,w,h,t,s)=>{/* flow field */ctx.fillStyle='#0a0a0a';ctx.fillRect(0,0,w,h);for(let i=0;i<120;i++){const x=(((s*73+i*37)%w));const y=(((s*91+i*53)%h));const a=Math.sin(x*0.02+t+s)*Math.cos(y*0.02+t)*Math.PI;const len=15+Math.sin(i+t*2)*8;ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+Math.cos(a)*len,y+Math.sin(a)*len);ctx.strokeStyle=`rgba(192,255,0,${0.08+Math.sin(i*0.5+t)*0.04})`;ctx.lineWidth=1;ctx.stroke();}},
-    (ctx,w,h,t,s)=>{/* circles */ctx.fillStyle='#0a0a0a';ctx.fillRect(0,0,w,h);for(let i=0;i<8;i++){const r=20+i*18+Math.sin(t+i+s)*10;ctx.beginPath();ctx.arc(w/2+Math.sin(t*0.7+i+s)*30,h/2+Math.cos(t*0.5+i+s)*20,r,0,Math.PI*2);ctx.strokeStyle=`rgba(0,255,255,${0.06+i*0.01})`;ctx.lineWidth=0.8;ctx.stroke();}},
-    (ctx,w,h,t,s)=>{/* grid warp */ctx.fillStyle='#0a0a0a';ctx.fillRect(0,0,w,h);const g=20;for(let x=0;x<w;x+=g){for(let y=0;y<h;y+=g){const ox=Math.sin(y*0.03+t+s)*6;const oy=Math.cos(x*0.03+t+s)*6;ctx.fillStyle=`rgba(255,0,255,${0.04+Math.sin(x*0.05+y*0.05+t)*0.03})`;ctx.fillRect(x+ox,y+oy,2,2);}}},
-    (ctx,w,h,t,s)=>{/* wave */ctx.fillStyle='#0a0a0a';ctx.fillRect(0,0,w,h);for(let i=0;i<5;i++){ctx.beginPath();for(let x=0;x<w;x+=2){const y=h/2+Math.sin(x*0.015+t+i*0.8+s)*((h/4)-i*8)+Math.sin(x*0.04+t*2)*5;if(x===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);}ctx.strokeStyle=`rgba(192,255,0,${0.05+i*0.015})`;ctx.lineWidth=1.2;ctx.stroke();}},
-    (ctx,w,h,t,s)=>{/* noise dots */ctx.fillStyle='#0a0a0a';ctx.fillRect(0,0,w,h);for(let i=0;i<200;i++){const x=((s*31+i*97+Math.sin(t+i)*20)%w+w)%w;const y=((s*47+i*63+Math.cos(t+i*0.7)*20)%h+h)%h;const sz=1+Math.sin(i+t*3)*1;const c=i%3===0?'192,255,0':i%3===1?'0,255,255':'255,0,255';ctx.fillStyle=`rgba(${c},${0.1+Math.sin(i+t)*0.06})`;ctx.fillRect(x,y,sz,sz);}},
-  ];
+  // Three.js globe state
+  let globeScene, globeCamera, globeRenderer, globeGroup;
+  let globeAnimId = null;
+  let globeTargetRotY = 0, globeTargetRotX = 0.3;
+  let globeCurrentRotY = 0, globeCurrentRotX = 0.3;
+  let globeAutoRotate = true;
+  let globeDragging = false;
+  let globeDragStart = { x: 0, y: 0 };
+  let globeAutoResumeTimer = null;
+  let countryMarkers = [];
+  let countryPanelOpen = false;
 
-  // Build cards with generative thumbnails
-  function buildPortfolioCards() {
+  // Compat stubs for cleanup in other show* functions
+  let thumbAnimId = null;
+  let pBgAnimId = null;
+
+  function initGlobe() {
+    if (globeRenderer) {
+      globeContainer.removeChild(globeRenderer.domElement);
+      globeRenderer.dispose();
+    }
+    globeScene = new THREE.Scene();
+    globeCamera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+    globeCamera.position.z = 5.5;
+
+    globeRenderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    globeRenderer.setSize(window.innerWidth, window.innerHeight);
+    globeRenderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    globeRenderer.setClearColor(0x000000, 0);
+    globeContainer.appendChild(globeRenderer.domElement);
+
+    globeGroup = new THREE.Group();
+
+    // Dotted latitude lines
+    for (let lat = -80; lat <= 80; lat += 20) {
+      const pts = [];
+      for (let lng = 0; lng < 360; lng += 3) pts.push(latLngToVec3(lat, lng, SPHERE_RADIUS));
+      const geo = new THREE.BufferGeometry().setFromPoints(pts);
+      globeGroup.add(new THREE.Points(geo, new THREE.PointsMaterial({ color: 0xffffff, size: 1.5, sizeAttenuation: true, transparent: true, opacity: 0.08 })));
+    }
+    // Dotted longitude lines
+    for (let lng = 0; lng < 360; lng += 30) {
+      const pts = [];
+      for (let lat = -90; lat <= 90; lat += 3) pts.push(latLngToVec3(lat, lng, SPHERE_RADIUS));
+      const geo = new THREE.BufferGeometry().setFromPoints(pts);
+      globeGroup.add(new THREE.Points(geo, new THREE.PointsMaterial({ color: 0xffffff, size: 1.5, sizeAttenuation: true, transparent: true, opacity: 0.06 })));
+    }
+    // Scattered surface dots
+    const scatterPts = [];
+    for (let i = 0; i < 600; i++) {
+      const lat = Math.asin(Math.random() * 2 - 1) * 180 / Math.PI;
+      const lng = Math.random() * 360 - 180;
+      scatterPts.push(latLngToVec3(lat, lng, SPHERE_RADIUS));
+    }
+    globeGroup.add(new THREE.Points(
+      new THREE.BufferGeometry().setFromPoints(scatterPts),
+      new THREE.PointsMaterial({ color: 0xffffff, size: 1, sizeAttenuation: true, transparent: true, opacity: 0.03 })
+    ));
+
+    // Country markers
+    countryMarkers = [];
+    GLOBE_COUNTRIES.forEach(country => {
+      const pos = latLngToVec3(country.lat, country.lng, SPHERE_RADIUS);
+      const marker = new THREE.Mesh(
+        new THREE.SphereGeometry(0.035, 12, 12),
+        new THREE.MeshBasicMaterial({ color: 0xc0ff00, transparent: true, opacity: 0.9 })
+      );
+      marker.position.copy(pos);
+      globeGroup.add(marker);
+      const ring = new THREE.Mesh(
+        new THREE.RingGeometry(0.05, 0.07, 32),
+        new THREE.MeshBasicMaterial({ color: 0xc0ff00, transparent: true, opacity: 0.3, side: THREE.DoubleSide })
+      );
+      ring.position.copy(pos);
+      ring.lookAt(new THREE.Vector3(0, 0, 0));
+      globeGroup.add(ring);
+      countryMarkers.push({ marker, ring, country });
+    });
+
+    globeGroup.rotation.x = globeCurrentRotX;
+    globeGroup.rotation.y = globeCurrentRotY;
+    globeScene.add(globeGroup);
+
+    buildGlobeLabels();
+
+    // Mouse interaction on globe
+    globeContainer.addEventListener('mousedown', onGlobeMouseDown);
+    globeContainer.addEventListener('mousemove', onGlobeMouseMove);
+    globeContainer.addEventListener('mouseup', onGlobeMouseUp);
+    globeContainer.addEventListener('mouseleave', onGlobeMouseUp);
+  }
+
+  function buildGlobeLabels() {
+    globeLabelsEl.innerHTML = '';
+    GLOBE_COUNTRIES.forEach(country => {
+      const label = document.createElement('div');
+      label.className = 'globe-label';
+      label.innerHTML = `<div class="globe-label-dot"></div><div class="globe-label-info"><span class="globe-label-name">${country.name}</span><span class="globe-label-count">${country.projects.length} PROJECTS</span></div>`;
+      label.addEventListener('click', () => openCountryPanel(country));
+      globeLabelsEl.appendChild(label);
+    });
+  }
+
+  function updateGlobeLabels() {
+    if (!globeCamera || !globeGroup) return;
+    const labels = globeLabelsEl.children;
+    GLOBE_COUNTRIES.forEach((country, i) => {
+      const pos3 = latLngToVec3(country.lat, country.lng, SPHERE_RADIUS * 1.08);
+      const worldPos = pos3.clone().applyMatrix4(globeGroup.matrixWorld);
+      const projected = worldPos.clone().project(globeCamera);
+      const x = (projected.x * 0.5 + 0.5) * window.innerWidth;
+      const y = (-projected.y * 0.5 + 0.5) * window.innerHeight;
+      const label = labels[i];
+      if (!label) return;
+      label.style.left = x + 'px';
+      label.style.top = y + 'px';
+      // Hide if behind the globe
+      const camDir = new THREE.Vector3(0, 0, -1);
+      const markerDir = worldPos.clone().normalize();
+      label.classList.toggle('visible', camDir.dot(markerDir) < -0.15 && !countryPanelOpen);
+    });
+  }
+
+  function onGlobeMouseDown(e) {
+    if (countryPanelOpen) return;
+    globeDragging = true;
+    globeDragStart = { x: e.clientX, y: e.clientY };
+    globeAutoRotate = false;
+    if (globeAutoResumeTimer) clearTimeout(globeAutoResumeTimer);
+  }
+  function onGlobeMouseMove(e) {
+    if (!globeDragging) return;
+    const dx = e.clientX - globeDragStart.x;
+    const dy = e.clientY - globeDragStart.y;
+    globeTargetRotY += dx * 0.005;
+    globeTargetRotX += dy * 0.005;
+    globeTargetRotX = Math.max(-1.2, Math.min(1.2, globeTargetRotX));
+    globeDragStart = { x: e.clientX, y: e.clientY };
+  }
+  function onGlobeMouseUp() {
+    if (!globeDragging) return;
+    globeDragging = false;
+    globeAutoResumeTimer = setTimeout(() => { globeAutoRotate = true; }, 3000);
+  }
+
+  function animateGlobe() {
+    if (!portfolioActive) { globeAnimId = null; return; }
+    if (globeAutoRotate) globeTargetRotY += 0.002;
+    globeCurrentRotY += (globeTargetRotY - globeCurrentRotY) * 0.05;
+    globeCurrentRotX += (globeTargetRotX - globeCurrentRotX) * 0.05;
+    globeGroup.rotation.y = globeCurrentRotY;
+    globeGroup.rotation.x = globeCurrentRotX;
+    // Pulse markers
+    const t = performance.now() * 0.001;
+    countryMarkers.forEach((cm, i) => {
+      cm.ring.material.opacity = 0.2 + Math.sin(t * 2 + i) * 0.15;
+      const s = 1 + Math.sin(t * 2 + i) * 0.2;
+      cm.ring.scale.set(s, s, s);
+    });
+    updateGlobeLabels();
+    globeRenderer.render(globeScene, globeCamera);
+    globeAnimId = requestAnimationFrame(animateGlobe);
+  }
+
+  function disposeGlobe() {
+    if (globeAnimId) { cancelAnimationFrame(globeAnimId); globeAnimId = null; }
+    if (globeRenderer) {
+      globeContainer.removeChild(globeRenderer.domElement);
+      globeRenderer.dispose();
+      globeRenderer = null;
+    }
+    globeScene = null; globeCamera = null; globeGroup = null;
+  }
+
+  // Resize handler
+  window.addEventListener('resize', () => {
+    if (globeRenderer && globeCamera) {
+      globeCamera.aspect = window.innerWidth / window.innerHeight;
+      globeCamera.updateProjectionMatrix();
+      globeRenderer.setSize(window.innerWidth, window.innerHeight);
+    }
+  });
+
+  // === Country Panel ===
+  function openCountryPanel(country) {
+    countryPanelOpen = true;
+    document.getElementById('countryTitle').textContent = country.nameKr + ' \u2014 ' + country.name;
+    document.getElementById('countryCount').textContent = country.projects.length + ' PROJECTS';
     portfolioGrid.innerHTML = '';
-    PROJECTS.forEach((p, idx) => {
+    country.projects.forEach((p, idx) => {
       const card = document.createElement('div');
       card.className = 'project-card';
       card.dataset.projectId = p.id;
@@ -1991,13 +2227,47 @@
       card.addEventListener('click', () => openProjectModal(p));
       portfolioGrid.appendChild(card);
     });
+    globeContainer.style.opacity = '0';
+    globeLabelsEl.style.display = 'none';
+    countryPanel.style.display = 'block';
+    requestAnimationFrame(() => {
+      countryPanel.classList.add('active');
+      countryPanel.scrollTop = 0;
+      setTimeout(() => {
+        const obs = new IntersectionObserver((entries) => {
+          entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+        }, { threshold: 0.1, root: countryPanel });
+        portfolioGrid.querySelectorAll('.project-card').forEach(c => obs.observe(c));
+        if (!thumbAnimId) animateThumbs();
+      }, 100);
+    });
   }
-  buildPortfolioCards();
 
-  // Animate thumb canvases
-  let thumbAnimId = null;
+  function closeCountryPanel() {
+    countryPanelOpen = false;
+    if (thumbAnimId) { cancelAnimationFrame(thumbAnimId); thumbAnimId = null; }
+    countryPanel.classList.remove('active');
+    setTimeout(() => {
+      countryPanel.style.display = 'none';
+      portfolioGrid.innerHTML = '';
+    }, 500);
+    globeContainer.style.opacity = '1';
+    globeLabelsEl.style.display = '';
+  }
+
+  document.getElementById('countryBack').addEventListener('click', closeCountryPanel);
+
+  // === Generative thumb patterns ===
+  const THUMB_PATTERNS = [
+    (ctx,w,h,t,s)=>{ctx.fillStyle='#0a0a0a';ctx.fillRect(0,0,w,h);for(let i=0;i<120;i++){const x=(((s*73+i*37)%w));const y=(((s*91+i*53)%h));const a=Math.sin(x*0.02+t+s)*Math.cos(y*0.02+t)*Math.PI;const len=15+Math.sin(i+t*2)*8;ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+Math.cos(a)*len,y+Math.sin(a)*len);ctx.strokeStyle=`rgba(192,255,0,${0.08+Math.sin(i*0.5+t)*0.04})`;ctx.lineWidth=1;ctx.stroke();}},
+    (ctx,w,h,t,s)=>{ctx.fillStyle='#0a0a0a';ctx.fillRect(0,0,w,h);for(let i=0;i<8;i++){const r=20+i*18+Math.sin(t+i+s)*10;ctx.beginPath();ctx.arc(w/2+Math.sin(t*0.7+i+s)*30,h/2+Math.cos(t*0.5+i+s)*20,r,0,Math.PI*2);ctx.strokeStyle=`rgba(0,255,255,${0.06+i*0.01})`;ctx.lineWidth=0.8;ctx.stroke();}},
+    (ctx,w,h,t,s)=>{ctx.fillStyle='#0a0a0a';ctx.fillRect(0,0,w,h);const g=20;for(let x=0;x<w;x+=g){for(let y=0;y<h;y+=g){const ox=Math.sin(y*0.03+t+s)*6;const oy=Math.cos(x*0.03+t+s)*6;ctx.fillStyle=`rgba(255,0,255,${0.04+Math.sin(x*0.05+y*0.05+t)*0.03})`;ctx.fillRect(x+ox,y+oy,2,2);}}},
+    (ctx,w,h,t,s)=>{ctx.fillStyle='#0a0a0a';ctx.fillRect(0,0,w,h);for(let i=0;i<5;i++){ctx.beginPath();for(let x=0;x<w;x+=2){const y=h/2+Math.sin(x*0.015+t+i*0.8+s)*((h/4)-i*8)+Math.sin(x*0.04+t*2)*5;if(x===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);}ctx.strokeStyle=`rgba(192,255,0,${0.05+i*0.015})`;ctx.lineWidth=1.2;ctx.stroke();}},
+    (ctx,w,h,t,s)=>{ctx.fillStyle='#0a0a0a';ctx.fillRect(0,0,w,h);for(let i=0;i<200;i++){const x=((s*31+i*97+Math.sin(t+i)*20)%w+w)%w;const y=((s*47+i*63+Math.cos(t+i*0.7)*20)%h+h)%h;const sz=1+Math.sin(i+t*3)*1;const c=i%3===0?'192,255,0':i%3===1?'0,255,255':'255,0,255';ctx.fillStyle=`rgba(${c},${0.1+Math.sin(i+t)*0.06})`;ctx.fillRect(x,y,sz,sz);}},
+  ];
+
   function animateThumbs() {
-    if (!portfolioActive) { thumbAnimId = null; return; }
+    if (!portfolioActive || !countryPanelOpen) { thumbAnimId = null; return; }
     const t = performance.now() * 0.001;
     portfolioGrid.querySelectorAll('.card-thumb canvas').forEach(c => {
       if (!c._ready) {
@@ -2014,78 +2284,7 @@
     thumbAnimId = requestAnimationFrame(animateThumbs);
   }
 
-  // Intersection observer for card entrance animation
-  function observeCards() {
-    const obs = new IntersectionObserver((entries) => {
-      entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
-    }, { threshold: 0.1, root: portfolioPage });
-    portfolioGrid.querySelectorAll('.project-card').forEach(c => obs.observe(c));
-  }
-
-  // Portfolio background canvas - floating particles
-  let pParticles = [];
-  function initPortfolioParticles() {
-    pParticles = [];
-    const pw = portfolioCanvas.width = window.innerWidth;
-    const ph = portfolioCanvas.height = window.innerHeight;
-    for (let i = 0; i < 60; i++) {
-      pParticles.push({
-        x: Math.random() * pw, y: Math.random() * ph,
-        vx: (Math.random() - 0.5) * 0.3, vy: (Math.random() - 0.5) * 0.3,
-        r: 1 + Math.random() * 1.5,
-        color: ['192,255,0','0,255,255','255,0,255'][i % 3],
-        alpha: 0.03 + Math.random() * 0.04
-      });
-    }
-  }
-
-  let pBgAnimId = null;
-  function animatePortfolioBg() {
-    if (!portfolioActive) { pBgAnimId = null; return; }
-    const pw = portfolioCanvas.width;
-    const ph = portfolioCanvas.height;
-    pCtx.fillStyle = 'rgba(25,25,25,0.15)';
-    pCtx.fillRect(0, 0, pw, ph);
-
-    for (const p of pParticles) {
-      // Gentle drift toward mouse/hand
-      const dx = pMouseX - p.x;
-      const dy = pMouseY - p.y;
-      const dist = Math.sqrt(dx*dx + dy*dy) || 1;
-      if (dist < 300) {
-        p.vx += dx / dist * 0.02;
-        p.vy += dy / dist * 0.02;
-      }
-      p.vx *= 0.99; p.vy *= 0.99;
-      p.x += p.vx; p.y += p.vy;
-      if (p.x < 0) p.x = pw; if (p.x > pw) p.x = 0;
-      if (p.y < 0) p.y = ph; if (p.y > ph) p.y = 0;
-
-      pCtx.beginPath();
-      pCtx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-      pCtx.fillStyle = `rgba(${p.color},${p.alpha})`;
-      pCtx.fill();
-    }
-
-    // Draw connection lines between nearby particles
-    for (let i = 0; i < pParticles.length; i++) {
-      for (let j = i + 1; j < pParticles.length; j++) {
-        const a = pParticles[i], b = pParticles[j];
-        const d = Math.sqrt((a.x-b.x)**2 + (a.y-b.y)**2);
-        if (d < 120) {
-          pCtx.beginPath();
-          pCtx.moveTo(a.x, a.y);
-          pCtx.lineTo(b.x, b.y);
-          pCtx.strokeStyle = `rgba(192,255,0,${0.015 * (1 - d/120)})`;
-          pCtx.lineWidth = 0.5;
-          pCtx.stroke();
-        }
-      }
-    }
-    pBgAnimId = requestAnimationFrame(animatePortfolioBg);
-  }
-
-  // Portfolio mouse/hand tracking for light trail
+  // Portfolio mouse tracking for light trail
   portfolioPage.addEventListener('mousemove', (e) => {
     pMouseX = e.clientX; pMouseY = e.clientY;
     portfolioLight.style.display = 'block';
@@ -2163,19 +2362,20 @@
     // Show portfolio
     portfolioPage.style.display = 'block';
     requestAnimationFrame(() => { portfolioPage.style.opacity = '1'; });
-    portfolioPage.scrollTop = 0;
     // Update nav active states in portfolio nav
     portfolioPage.querySelectorAll('.nav-item').forEach(n => n.classList.toggle('active', n.dataset.page === 'portfolio'));
-    // Reset card visibility for stagger animation
-    portfolioGrid.querySelectorAll('.project-card').forEach(c => { c.classList.remove('visible'); c._ready && (c._ready = false); });
-    // Start generative animations
-    initPortfolioParticles();
-    if (!pBgAnimId) animatePortfolioBg();
-    if (!thumbAnimId) animateThumbs();
+    // Reset to globe view
+    countryPanelOpen = false;
+    countryPanel.style.display = 'none';
+    countryPanel.classList.remove('active');
+    globeContainer.style.opacity = '1';
+    globeLabelsEl.style.display = '';
+    portfolioGrid.innerHTML = '';
+    // Init globe
+    initGlobe();
+    if (!globeAnimId) animateGlobe();
     // Ensure cursor matches current mode
     document.body.style.cursor = mouseMode ? 'default' : 'none';
-    // Observe cards for entrance animation
-    setTimeout(() => observeCards(), 100);
   }
 
   function showLanding() {
@@ -2191,7 +2391,7 @@
     setTimeout(() => { contactPage.style.display = 'none'; }, 600);
     // Stop portfolio animations
     if (thumbAnimId) { cancelAnimationFrame(thumbAnimId); thumbAnimId = null; }
-    if (pBgAnimId) { cancelAnimationFrame(pBgAnimId); pBgAnimId = null; }
+    if (globeAnimId) { cancelAnimationFrame(globeAnimId); globeAnimId = null; }
     // Stop labs animations
     if (labsAnimId) { cancelAnimationFrame(labsAnimId); labsAnimId = null; }
     tattooStop();
@@ -2201,6 +2401,7 @@
     // Reset thumb canvases
     portfolioGrid.querySelectorAll('.card-thumb canvas').forEach(c => { c._ready = false; });
     // Hide portfolio
+    if (countryPanelOpen) closeCountryPanel();
     portfolioPage.style.opacity = '0';
     setTimeout(() => { portfolioPage.style.display = 'none'; }, 600);
     // Hide labs
@@ -2299,7 +2500,7 @@
 
     // Hover detection
     const el = document.elementFromPoint(smoothCursorX, smoothCursorY);
-    const hoverable = el ? el.closest('.project-card, .nav-item, .modal-close, button, a') : null;
+    const hoverable = el ? el.closest('.project-card, .nav-item, .globe-label, .modal-close, button, a') : null;
     if (hoverable !== prevHoverEl) {
       if (prevHoverEl) prevHoverEl.classList.remove('pinch-hover');
       if (hoverable) hoverable.classList.add('pinch-hover');
@@ -2823,7 +3024,7 @@
     closeProjectModal();
     // Stop portfolio animations
     if (thumbAnimId) { cancelAnimationFrame(thumbAnimId); thumbAnimId = null; }
-    if (pBgAnimId) { cancelAnimationFrame(pBgAnimId); pBgAnimId = null; }
+    if (globeAnimId) { cancelAnimationFrame(globeAnimId); globeAnimId = null; }
     portfolioGrid.querySelectorAll('.card-thumb canvas').forEach(c => { c._ready = false; });
     // Stop labs animations
     if (labsAnimId) { cancelAnimationFrame(labsAnimId); labsAnimId = null; }
@@ -2871,7 +3072,7 @@
     closeProjectModal();
     // Stop portfolio animations
     if (thumbAnimId) { cancelAnimationFrame(thumbAnimId); thumbAnimId = null; }
-    if (pBgAnimId) { cancelAnimationFrame(pBgAnimId); pBgAnimId = null; }
+    if (globeAnimId) { cancelAnimationFrame(globeAnimId); globeAnimId = null; }
     portfolioGrid.querySelectorAll('.card-thumb canvas').forEach(c => { c._ready = false; });
     // Stop contact animations
     if (contactAnimId) { cancelAnimationFrame(contactAnimId); contactAnimId = null; }
@@ -3136,7 +3337,7 @@
     closeProjectModal();
     // Stop portfolio animations
     if (thumbAnimId) { cancelAnimationFrame(thumbAnimId); thumbAnimId = null; }
-    if (pBgAnimId) { cancelAnimationFrame(pBgAnimId); pBgAnimId = null; }
+    if (globeAnimId) { cancelAnimationFrame(globeAnimId); globeAnimId = null; }
     portfolioGrid.querySelectorAll('.card-thumb canvas').forEach(c => { c._ready = false; });
     // Stop labs animations
     if (labsAnimId) { cancelAnimationFrame(labsAnimId); labsAnimId = null; }
