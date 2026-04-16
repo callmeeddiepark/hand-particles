@@ -106,7 +106,10 @@
   @keyframes fi{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 
   /* PORTFOLIO PAGE */
-  #page-portfolio{position:fixed;inset:0;z-index:60;display:none;opacity:0;transition:opacity .6s ease;background:var(--bg);overflow:hidden}
+  #page-portfolio{position:fixed;inset:0;z-index:60;display:none;opacity:0;transition:opacity .6s ease;background:#000;overflow:hidden}
+  #portfolioHandCanvas{position:absolute;inset:0;width:100%;height:100%;z-index:1}
+  .portfolio-hand-guide{position:absolute;inset:0;z-index:2;display:flex;align-items:center;justify-content:center;pointer-events:none;opacity:1;transition:opacity .5s ease}
+  .portfolio-hand-guide.hidden{opacity:0}
   #page-portfolio.active{display:block;opacity:1}
   #globeContainer{position:absolute;inset:0;z-index:0;transition:opacity .6s ease}
   #globeContainer canvas{display:block}
@@ -407,6 +410,10 @@
 </div>
 
 <div id="page-portfolio">
+  <canvas id="portfolioHandCanvas"></canvas>
+  <div id="portfolioHandGuide" class="portfolio-hand-guide">
+    <p style="font-family:'Space Mono',monospace;font-size:12px;letter-spacing:.15em;color:rgba(255,255,255,.3);text-transform:uppercase">Raise your hands to explore projects</p>
+  </div>
   <div id="globeContainer"></div>
   <div class="globe-labels" id="globeLabels"></div>
   <div class="portfolio-light" id="portfolioLight"></div>
@@ -1922,6 +1929,7 @@
       scanCanvas.width = window.innerWidth;
       scanCanvas.height = window.innerHeight;
     }
+    if (portfolioActive) resizePfCanvas();
   });
 
   // === Mouse Mode ===
@@ -2033,6 +2041,184 @@
   const globeContainer = document.getElementById('globeContainer');
   const globeLabelsEl = document.getElementById('globeLabels');
   const countryPanel = document.getElementById('countryPanel');
+  const pfHandCanvas = document.getElementById('portfolioHandCanvas');
+  const pfHandCtx = pfHandCanvas.getContext('2d');
+  const pfHandGuide = document.getElementById('portfolioHandGuide');
+  let pfHandAnimId = null;
+
+  // All projects flat list for fingertip assignment
+  const ALL_PROJECTS = GLOBE_COUNTRIES.flatMap(c => c.projects);
+
+  // Placeholder colors for project circles
+  const PF_CIRCLE_COLORS = [
+    '#e74c3c','#3498db','#2ecc71','#f39c12','#9b59b6',
+    '#1abc9c','#e67e22','#2980b9','#27ae60','#c0392b'
+  ];
+
+  // MediaPipe hand connections
+  const HAND_CONNECTIONS = [
+    [0,1],[1,2],[2,3],[3,4],
+    [0,5],[5,6],[6,7],[7,8],
+    [0,9],[9,10],[10,11],[11,12],
+    [0,13],[13,14],[14,15],[15,16],
+    [0,17],[17,18],[18,19],[19,20],
+    [5,9],[9,13],[13,17]
+  ];
+
+  // Fingertip landmark indices
+  const FINGERTIPS = [4, 8, 12, 16, 20];
+
+  // Static guide hand positions (normalized 0-1, mirrored for display)
+  const GUIDE_LEFT = [
+    {x:0.62,y:0.65},{x:0.60,y:0.55},{x:0.58,y:0.45},{x:0.55,y:0.38},{x:0.50,y:0.32},// thumb
+    {x:0.55,y:0.60},{x:0.52,y:0.45},{x:0.50,y:0.35},{x:0.48,y:0.26},// index
+    {x:0.50,y:0.60},{x:0.48,y:0.43},{x:0.47,y:0.33},{x:0.46,y:0.24},// middle
+    {x:0.46,y:0.61},{x:0.45,y:0.46},{x:0.44,y:0.37},{x:0.43,y:0.29},// ring
+    {x:0.42,y:0.63},{x:0.41,y:0.50},{x:0.40,y:0.43},{x:0.39,y:0.36} // pinky
+  ];
+  const GUIDE_RIGHT = GUIDE_LEFT.map(p => ({x: 1 - p.x + 0.04, y: p.y}));
+
+  // Smooth positions for tracked hands
+  let pfSmooth = [null, null]; // [leftHand, rightHand]
+
+  function resizePfCanvas() {
+    pfHandCanvas.width = window.innerWidth;
+    pfHandCanvas.height = window.innerHeight;
+  }
+
+  function drawHandSkeleton(ctx, landmarks, w, h, color) {
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 1.5;
+    for (const [a, b] of HAND_CONNECTIONS) {
+      const ax = (1 - landmarks[a].x) * w, ay = landmarks[a].y * h;
+      const bx = (1 - landmarks[b].x) * w, by = landmarks[b].y * h;
+      ctx.beginPath();
+      ctx.moveTo(ax, ay);
+      ctx.lineTo(bx, by);
+      ctx.stroke();
+    }
+    // Joint dots
+    for (let i = 0; i < 21; i++) {
+      if (FINGERTIPS.includes(i)) continue;
+      const px = (1 - landmarks[i].x) * w, py = landmarks[i].y * h;
+      ctx.beginPath();
+      ctx.arc(px, py, 3, 0, Math.PI * 2);
+      ctx.fillStyle = color;
+      ctx.fill();
+    }
+  }
+
+  function drawGuideHand(ctx, pts, w, h, label) {
+    const connections = [
+      [0,1],[1,2],[2,3],[3,4],
+      [5,6],[6,7],[7,8],
+      [9,10],[10,11],[11,12],
+      [13,14],[14,15],[15,16],
+      [17,18],[18,19],[19,20],
+      [0,5],[5,9],[9,13],[13,17],[0,17]
+    ];
+    ctx.strokeStyle = 'rgba(255,255,255,0.08)';
+    ctx.lineWidth = 1;
+    for (const [a, b] of connections) {
+      ctx.beginPath();
+      ctx.moveTo(pts[a].x * w, pts[a].y * h);
+      ctx.lineTo(pts[b].x * w, pts[b].y * h);
+      ctx.stroke();
+    }
+    // Fingertip circles (guide)
+    const tips = [4, 8, 12, 16, 20];
+    for (const t of tips) {
+      const px = pts[t].x * w, py = pts[t].y * h;
+      ctx.beginPath();
+      ctx.arc(px, py, 28, 0, Math.PI * 2);
+      ctx.strokeStyle = 'rgba(255,255,255,0.1)';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.arc(px, py, 4, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(255,255,255,0.15)';
+      ctx.fill();
+    }
+    // Label
+    ctx.font = '9px "Space Mono", monospace';
+    ctx.fillStyle = 'rgba(255,255,255,0.15)';
+    ctx.textAlign = 'center';
+    const wristX = pts[0].x * w, wristY = pts[0].y * h + 30;
+    ctx.fillText(label, wristX, wristY);
+  }
+
+  function drawFingertipCircle(ctx, x, y, radius, project, colorIdx) {
+    // Filled circle
+    ctx.beginPath();
+    ctx.arc(x, y, radius, 0, Math.PI * 2);
+    ctx.fillStyle = PF_CIRCLE_COLORS[colorIdx % PF_CIRCLE_COLORS.length];
+    ctx.fill();
+
+    // Project title initial
+    ctx.font = `bold ${Math.round(radius * 0.9)}px 'Syne', sans-serif`;
+    ctx.fillStyle = '#fff';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(project.title.split('-')[0].replace('Project ',''), x, y);
+
+    // Label below
+    ctx.font = '8px "Space Mono", monospace';
+    ctx.fillStyle = 'rgba(255,255,255,0.5)';
+    ctx.textBaseline = 'top';
+    ctx.fillText(project.role, x, y + radius + 6);
+  }
+
+  function animatePortfolioHands() {
+    if (!portfolioActive) { pfHandAnimId = null; return; }
+    const w = pfHandCanvas.width;
+    const h = pfHandCanvas.height;
+    pfHandCtx.clearRect(0, 0, w, h);
+
+    const hasHands = allHandLandmarks && allHandLandmarks.length > 0;
+
+    if (!hasHands) {
+      // Draw static guide hands
+      pfHandGuide.classList.remove('hidden');
+      drawGuideHand(pfHandCtx, GUIDE_LEFT, w, h, 'LEFT');
+      drawGuideHand(pfHandCtx, GUIDE_RIGHT, w, h, 'RIGHT');
+    } else {
+      pfHandGuide.classList.add('hidden');
+
+      for (let hi = 0; hi < allHandLandmarks.length; hi++) {
+        const lm = allHandLandmarks[hi];
+        // Initialize smooth positions
+        if (!pfSmooth[hi]) {
+          pfSmooth[hi] = lm.map(p => ({x: p.x, y: p.y}));
+        }
+        // Smooth tracking
+        for (let j = 0; j < 21; j++) {
+          pfSmooth[hi][j].x += (lm[j].x - pfSmooth[hi][j].x) * 0.35;
+          pfSmooth[hi][j].y += (lm[j].y - pfSmooth[hi][j].y) * 0.35;
+        }
+
+        // Draw skeleton
+        drawHandSkeleton(pfHandCtx, pfSmooth[hi], w, h, 'rgba(255,255,255,0.2)');
+
+        // Draw fingertip project circles
+        for (let fi = 0; fi < FINGERTIPS.length; fi++) {
+          const tip = FINGERTIPS[fi];
+          const tx = (1 - pfSmooth[hi][tip].x) * w;
+          const ty = pfSmooth[hi][tip].y * h;
+          const projIdx = hi * 5 + fi;
+          if (projIdx < ALL_PROJECTS.length) {
+            drawFingertipCircle(pfHandCtx, tx, ty, 35, ALL_PROJECTS[projIdx], projIdx);
+          }
+        }
+      }
+      // Clear smooth data for hands no longer present
+      for (let hi = allHandLandmarks.length; hi < 2; hi++) {
+        pfSmooth[hi] = null;
+      }
+    }
+
+    pfHandAnimId = requestAnimationFrame(animatePortfolioHands);
+  }
+
   let portfolioActive = false;
   let labsActive = false;
   let contactActive = false;
@@ -2373,7 +2559,9 @@
       el.style.pointerEvents = 'none';
     });
     canvas.style.display = 'none';
-    video.style.display = 'none';
+    // Keep video running for hand tracking but hidden visually
+    video.style.opacity = '0';
+    video.style.display = '';
     // Show portfolio
     portfolioPage.style.display = 'block';
     requestAnimationFrame(() => { portfolioPage.style.opacity = '1'; });
@@ -2383,12 +2571,15 @@
     countryPanelOpen = false;
     countryPanel.style.display = 'none';
     countryPanel.classList.remove('active');
-    globeContainer.style.opacity = '1';
-    globeLabelsEl.style.display = '';
+    globeContainer.style.opacity = '0';
+    globeContainer.style.display = 'none';
+    globeLabelsEl.style.display = 'none';
     portfolioGrid.innerHTML = '';
-    // Init globe
-    initGlobe();
-    if (!globeAnimId) animateGlobe();
+    // Start hand tracking canvas
+    resizePfCanvas();
+    pfSmooth = [null, null];
+    pfHandGuide.classList.remove('hidden');
+    if (!pfHandAnimId) animatePortfolioHands();
     // Ensure cursor matches current mode
     document.body.style.cursor = mouseMode ? 'default' : 'none';
   }
@@ -2404,6 +2595,8 @@
     // Hide contact
     contactPage.style.opacity = '0';
     setTimeout(() => { contactPage.style.display = 'none'; }, 600);
+    // Stop portfolio hand animations
+    if (pfHandAnimId) { cancelAnimationFrame(pfHandAnimId); pfHandAnimId = null; }
     // Stop portfolio animations
     if (thumbAnimId) { cancelAnimationFrame(thumbAnimId); thumbAnimId = null; }
     if (globeAnimId) { cancelAnimationFrame(globeAnimId); globeAnimId = null; }
@@ -2428,6 +2621,7 @@
     // Restore landing content
     canvas.style.display = '';
     video.style.display = '';
+    video.style.opacity = '';
     document.querySelectorAll('.landing-nav, .landing-ui, .gesture-guide, .landing-info').forEach(el => {
       if (el.closest('#page-portfolio') || el.closest('#page-labs') || el.closest('#page-about')) return;
       el.style.opacity = '';
