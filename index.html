@@ -369,7 +369,7 @@
     <a href="#" class="nav-item" data-page="about">About</a>
     <a href="#" class="nav-item" data-page="contact">Contact</a>
   </nav>
-  <div class="landing-ui landing-bottom-left"><div class="status-dot" id="statusDot"></div><span id="statusText">Initializing</span></div>
+  <div class="landing-ui landing-bottom-left"><div class="status-dot" id="statusDot"></div><span id="statusText">Initializing</span><span class="wind-divider" style="width:1px;height:12px;background:rgba(255,255,255,0.08);margin:0 12px"></span><svg id="windArrow" width="12" height="12" viewBox="0 0 12 12" style="opacity:0;transition:opacity .5s ease;transform-origin:center"><path d="M6 1L6 11M6 1L3 4M6 1L9 4" stroke="rgba(80,180,80,0.5)" stroke-width="1.2" fill="none" stroke-linecap="round"/></svg><span id="windInfo" style="color:rgba(80,180,80,0.35);font-size:9px;letter-spacing:.15em"></span></div>
   <!-- Gesture Guide (above EDDIE) -->
   <div class="gesture-guide" id="gestureGuide">
     <div class="gesture-item">
@@ -1054,19 +1054,62 @@
     }
   }
 
+  // === Real-time Seoul Wind ===
+  let seoulWindSpeed = 0;   // m/s
+  let seoulWindDir = 0;     // degrees (meteorological: 0=N, 90=E, 180=S, 270=W)
+  let seoulWindDirX = 0;    // computed direction vector
+  let seoulWindDirY = 0;
+  let windDataReady = false;
+
+  async function fetchSeoulWind() {
+    try {
+      const res = await fetch('https://api.open-meteo.com/v1/forecast?latitude=37.5665&longitude=126.978&current=wind_speed_10m,wind_direction_10m&wind_speed_unit=ms');
+      const data = await res.json();
+      seoulWindSpeed = data.current.wind_speed_10m || 0;
+      seoulWindDir = data.current.wind_direction_10m || 0;
+      // Convert meteorological direction to screen vector
+      // Wind direction = where wind comes FROM, so we flip it
+      const rad = (seoulWindDir + 180) * Math.PI / 180;
+      seoulWindDirX = Math.sin(rad);  // screen X
+      seoulWindDirY = -Math.cos(rad); // screen Y (up is negative)
+      windDataReady = true;
+      // Update wind UI
+      const arrow = document.getElementById('windArrow');
+      const info = document.getElementById('windInfo');
+      if (arrow) { arrow.style.opacity = '1'; arrow.style.transform = `rotate(${seoulWindDir}deg)`; }
+      if (info) info.textContent = `SEOUL ${seoulWindSpeed.toFixed(1)}M/S`;
+    } catch (e) {
+      console.warn('Wind fetch failed, using default breeze');
+      seoulWindSpeed = 2;
+      seoulWindDirX = 1;
+      seoulWindDirY = 0;
+      windDataReady = true;
+    }
+  }
+  fetchSeoulWind();
+  setInterval(fetchSeoulWind, 5 * 60 * 1000); // refresh every 5 min
+
   // === Update Pins (Grass) ===
   let windTime = 0;
   function updatePins() {
     const handActive = handPresent && handX >= 0;
     windTime += 0.016;
 
+    // Real wind force: scale wind speed to a reasonable force
+    // Light breeze ~2m/s → subtle, strong wind ~10m/s → dramatic
+    const baseForce = windDataReady ? Math.min(seoulWindSpeed, 15) * 0.006 : 0.03;
+    // Add natural gusting and turbulence
+    const gust = 1 + Math.sin(windTime * 1.2) * 0.3 + Math.sin(windTime * 3.7) * 0.1;
+    const windForce = baseForce * gust;
+
     for (let i = 0; i < pins.length; i++) {
       const p = pins[i];
 
-      // Ambient wind — gentle breeze through grass
-      const windStr = 0.03;
-      const windX = Math.sin(windTime * 0.8 + p.windPhase + p.bx * 0.003) * windStr;
-      const windY = Math.sin(windTime * 0.5 + p.windPhase + p.by * 0.004) * windStr * 0.3;
+      // Wind with per-blade variation (ripple effect across the field)
+      const ripple = Math.sin(windTime * 1.5 + p.windPhase + p.bx * 0.004 + p.by * 0.003);
+      const bladeWind = windForce * (0.7 + ripple * 0.3);
+      const windX = seoulWindDirX * bladeWind + Math.sin(windTime * 0.8 + p.windPhase) * windForce * 0.15;
+      const windY = seoulWindDirY * bladeWind + Math.sin(windTime * 0.5 + p.windPhase) * windForce * 0.08;
       p.vx += windX;
       p.vy += windY;
 
