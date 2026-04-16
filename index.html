@@ -969,12 +969,12 @@
   }
 
   // === Pin Grid (Grass Field) ===
-  const SPACING = 6;
-  const PIN_RADIUS = 1.2;
+  const SPACING = 8;
+  const PIN_RADIUS = 1.4;
   const ROD_LENGTH = 200;
   const INFLUENCE_RADIUS = 280;
-  const SPRING = 0.12;      // fast snap-back
-  const DAMPING = 0.85;     // quick settling
+  const SPRING = 0.15;      // fast snap-back
+  const DAMPING = 0.82;     // quick settling
 
   // Lush warm green palette
   const NEON_COLORS = [
@@ -1196,10 +1196,8 @@
     ctx.fillStyle = '#1a2a15';
     ctx.fillRect(0, 0, W, H);
 
-    const sorted = pins.slice().sort((a, b) => (a.by + a.ty) - (b.by + b.ty));
-
-    for (let i = 0; i < sorted.length; i++) {
-      const p = sorted[i];
+    for (let i = 0; i < pins.length; i++) {
+      const p = pins[i];
       const tiltMag = Math.sqrt(p.tx * p.tx + p.ty * p.ty);
       const maxTilt = ROD_LENGTH * p.grassH;
       const tiltNorm = Math.min(1, tiltMag / maxTilt);
