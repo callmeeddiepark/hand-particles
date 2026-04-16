@@ -967,23 +967,23 @@
   }
 
   // === Pin Grid (Grass Field) ===
-  const SPACING = 16;
-  const PIN_RADIUS = 2.0;
+  const SPACING = 10;
+  const PIN_RADIUS = 1.8;
   const ROD_LENGTH = 200;
   const INFLUENCE_RADIUS = 280;
-  const SPRING = 0.012;     // slightly stronger spring — grass sways back
-  const DAMPING = 0.96;     // natural bounce-back
+  const SPRING = 0.015;     // gentle spring — sways back softly
+  const DAMPING = 0.955;    // smooth, peaceful settling
 
-  // Grass green palette
+  // Lush warm green palette
   const NEON_COLORS = [
-    [34, 139, 34],     // forest green
-    [50, 180, 50],     // fresh green
-    [60, 200, 60],     // bright grass
-    [40, 160, 70],     // emerald
-    [80, 200, 80],     // light grass
-    [30, 120, 50],     // dark grass
-    [70, 180, 40],     // lime grass
-    [45, 150, 60],     // meadow green
+    [80, 180, 50],     // fresh grass
+    [95, 195, 60],     // bright meadow
+    [70, 170, 55],     // spring green
+    [100, 200, 70],    // sunlit grass
+    [85, 185, 45],     // lawn green
+    [110, 210, 80],    // light grass
+    [75, 175, 65],     // clover green
+    [90, 190, 55],     // field green
   ];
 
   let pins = [];
@@ -1025,14 +1025,14 @@
     return textMask.data[(py * W + px) * 4] > 128;
   }
 
-  // Mowed grass colors (darker, shorter)
+  // Mowed grass colors (slightly darker, trimmed)
   const MOWED_COLORS = [
-    [20, 80, 25],
-    [25, 90, 30],
-    [18, 70, 22],
-    [22, 85, 28],
-    [28, 95, 32],
-    [15, 65, 20],
+    [50, 130, 40],
+    [55, 140, 45],
+    [45, 120, 38],
+    [60, 145, 50],
+    [52, 135, 42],
+    [48, 125, 36],
   ];
 
   function initPins() {
@@ -1051,24 +1051,24 @@
         const inText = isInText(bx, by);
 
         if (inText) {
-          // Tall grass inside EDDIE — 1.5x bigger
+          // Tall grass inside EDDIE — lush and full
           pins.push({
             bx, by,
             tx: 0, ty: 0,
             vx: 0, vy: 0,
             neon: NEON_COLORS[Math.floor(Math.random() * NEON_COLORS.length)],
-            grassH: (0.7 + Math.random() * 0.6) * 1.5,
+            grassH: 1.0 + Math.random() * 0.8,
             windPhase: Math.random() * Math.PI * 2,
             mowed: false,
           });
         } else {
-          // Short mowed grass outside — subtle, low
+          // Short trimmed grass — visible but shorter
           pins.push({
             bx, by,
             tx: 0, ty: 0,
             vx: 0, vy: 0,
             neon: MOWED_COLORS[Math.floor(Math.random() * MOWED_COLORS.length)],
-            grassH: 0.15 + Math.random() * 0.15,
+            grassH: 0.2 + Math.random() * 0.2,
             windPhase: Math.random() * Math.PI * 2,
             mowed: true,
           });
@@ -1118,11 +1118,10 @@
     const handActive = handPresent && handX >= 0;
     windTime += 0.016;
 
-    // Real wind force: scale wind speed to a reasonable force
-    // Light breeze ~2m/s → subtle, strong wind ~10m/s → dramatic
-    const baseForce = windDataReady ? Math.min(seoulWindSpeed, 15) * 0.006 : 0.03;
-    // Add natural gusting and turbulence
-    const gust = 1 + Math.sin(windTime * 1.2) * 0.3 + Math.sin(windTime * 3.7) * 0.1;
+    // Real wind force — gentle and peaceful
+    const baseForce = windDataReady ? Math.min(seoulWindSpeed, 12) * 0.004 : 0.02;
+    // Slow, gentle gusting — like a calm breeze
+    const gust = 1 + Math.sin(windTime * 0.7) * 0.25 + Math.sin(windTime * 2.1) * 0.08;
     const windForce = baseForce * gust;
 
     for (let i = 0; i < pins.length; i++) {
@@ -1186,12 +1185,13 @@
   const lLen = Math.sqrt(LIGHT_X*LIGHT_X + LIGHT_Y*LIGHT_Y + LIGHT_Z*LIGHT_Z);
   const lx = LIGHT_X/lLen, ly = LIGHT_Y/lLen, lz = LIGHT_Z/lLen;
 
-  const ROD_WIDTH = 3.5;
-  const ROD_COLOR_BASE = 30;
-  const TOP_COLOR = 60;
+  const ROD_WIDTH = 3;
+  const ROD_COLOR_BASE = 40;
+  const TOP_COLOR = 70;
 
   function draw() {
-    ctx.fillStyle = '#0f1a0f';
+    // Warm earthy green background
+    ctx.fillStyle = '#1a2a15';
     ctx.fillRect(0, 0, W, H);
 
     const sorted = pins.slice().sort((a, b) => (a.by + a.ty) - (b.by + b.ty));
@@ -1204,16 +1204,30 @@
 
       const topX = p.bx + p.tx;
       const topY = p.by + p.ty;
-
       const nc = p.neon;
 
       if (p.mowed) {
-        // === Mowed grass — just a small dot, subtle sway ===
-        const mowedRadius = 1.2 + p.grassH * 0.8;
-        const bright = 0.6 + tiltNorm * 0.2;
+        // === Mowed grass — short blade shape ===
+        const angle = Math.atan2(p.ty, p.tx);
+        const bpx = Math.cos(angle + Math.PI/2);
+        const bpy = Math.sin(angle + Math.PI/2);
+        const bw = 1.2;
+        const tw = 0.3;
+
         ctx.beginPath();
-        ctx.arc(topX, topY, mowedRadius, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(${Math.round(nc[0]*bright)},${Math.round(nc[1]*bright)},${Math.round(nc[2]*bright)},${0.4 + tiltNorm * 0.15})`;
+        ctx.moveTo(p.bx + bpx * bw, p.by + bpy * bw);
+        ctx.lineTo(topX + bpx * tw, topY + bpy * tw);
+        ctx.lineTo(topX - bpx * tw, topY - bpy * tw);
+        ctx.lineTo(p.bx - bpx * bw, p.by - bpy * bw);
+        ctx.closePath();
+        const mb = 0.7 + tiltNorm * 0.15;
+        ctx.fillStyle = `rgba(${Math.round(nc[0]*mb)},${Math.round(nc[1]*mb)},${Math.round(nc[2]*mb)},0.55)`;
+        ctx.fill();
+
+        // Tiny tip dot
+        ctx.beginPath();
+        ctx.arc(topX, topY, 0.8, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(${Math.min(255,nc[0]+20)},${Math.min(255,nc[1]+30)},${Math.min(255,nc[2]+10)},0.5)`;
         ctx.fill();
         continue;
       }
@@ -1225,82 +1239,72 @@
       const sideX = -rny;
       const sideY = rnx;
       const sideLen = Math.sqrt(sideX*sideX + sideY*sideY) || 1;
-      const rodDiffuse = Math.max(0, sideX/sideLen * lx + sideY/sideLen * ly) * 0.5 + 0.5;
-      const topDiffuse = Math.max(0, rnx * lx + rny * ly + rodZ * lz) * 0.4 + 0.6;
+      const rodDiffuse = Math.max(0, sideX/sideLen * lx + sideY/sideLen * ly) * 0.4 + 0.6;
+      const topDiffuse = Math.max(0, rnx * lx + rny * ly + rodZ * lz) * 0.3 + 0.7;
 
-      if (tiltNorm > 0.03) {
-        // Soft grass shadow
-        const shadowOffX = p.tx * 0.3;
-        const shadowOffY = p.ty * 0.3 + tiltNorm * 3;
+      if (tiltNorm > 0.02) {
+        // Soft shadow
         ctx.beginPath();
         ctx.ellipse(
-          p.bx + shadowOffX, p.by + shadowOffY,
-          ROD_WIDTH * 0.3 + tiltNorm * tiltMag * 0.08,
-          ROD_WIDTH * 0.2,
+          p.bx + p.tx * 0.25, p.by + p.ty * 0.25 + tiltNorm * 2,
+          1.5 + tiltNorm * tiltMag * 0.05, 1,
           Math.atan2(p.ty, p.tx), 0, Math.PI * 2
         );
-        ctx.fillStyle = `rgba(0,10,0,${tiltNorm * 0.2})`;
+        ctx.fillStyle = `rgba(10,30,10,${tiltNorm * 0.15})`;
         ctx.fill();
 
-        // Grass blade — tapered from base to tip
+        // Grass blade — organic tapered shape
         const angle = Math.atan2(p.ty, p.tx);
         const bpx = Math.cos(angle + Math.PI/2);
         const bpy = Math.sin(angle + Math.PI/2);
-        const baseW = ROD_WIDTH * 0.5 * Math.min(p.grassH, 1.5);
-        const tipW = ROD_WIDTH * 0.06;
+        const baseW = ROD_WIDTH * 0.45 * Math.min(p.grassH, 1.6);
+        const midW = baseW * 0.6;
+        const tipW = ROD_WIDTH * 0.04;
+        const midX = p.bx + p.tx * 0.5;
+        const midY = p.by + p.ty * 0.5;
 
+        // Curved blade with quadratic bezier-like shape
         ctx.beginPath();
         ctx.moveTo(p.bx + bpx * baseW, p.by + bpy * baseW);
-        ctx.lineTo(topX + bpx * tipW, topY + bpy * tipW);
+        ctx.quadraticCurveTo(midX + bpx * midW, midY + bpy * midW, topX + bpx * tipW, topY + bpy * tipW);
         ctx.lineTo(topX - bpx * tipW, topY - bpy * tipW);
-        ctx.lineTo(p.bx - bpx * baseW, p.by - bpy * baseW);
+        ctx.quadraticCurveTo(midX - bpx * midW, midY - bpy * midW, p.bx - bpx * baseW, p.by - bpy * baseW);
         ctx.closePath();
 
-        const bright = rodDiffuse * 0.8 + 0.2;
-        const bladeR = Math.round(nc[0] * bright * 0.7);
-        const bladeG = Math.round(nc[1] * bright * 0.8);
-        const bladeB = Math.round(nc[2] * bright * 0.5);
-        ctx.fillStyle = `rgb(${Math.min(255,bladeR)},${Math.min(255,bladeG)},${Math.min(255,bladeB)})`;
+        const bright = rodDiffuse;
+        ctx.fillStyle = `rgb(${Math.min(255,Math.round(nc[0]*bright))},${Math.min(255,Math.round(nc[1]*bright))},${Math.min(255,Math.round(nc[2]*bright*0.7))})`;
         ctx.fill();
 
-        // Light highlight on blade center
+        // Subtle center vein highlight
         ctx.beginPath();
         ctx.moveTo(p.bx, p.by);
-        ctx.lineTo(topX, topY);
-        ctx.strokeStyle = `rgba(${Math.min(255,nc[0]+40)},${Math.min(255,nc[1]+60)},${Math.min(255,nc[2]+20)},${0.15 + tiltNorm * 0.1})`;
-        ctx.lineWidth = ROD_WIDTH * 0.15;
-        ctx.stroke();
-
-        // Subtle bright edge
-        ctx.beginPath();
-        ctx.moveTo(p.bx + bpx * baseW, p.by + bpy * baseW);
-        ctx.lineTo(topX + bpx * tipW, topY + bpy * tipW);
-        ctx.strokeStyle = `rgba(${Math.min(255,nc[0]+60)},${Math.min(255,nc[1]+80)},${Math.min(255,nc[2]+30)},${0.08})`;
-        ctx.lineWidth = 0.5;
+        ctx.quadraticCurveTo(midX, midY, topX, topY);
+        ctx.strokeStyle = `rgba(${Math.min(255,nc[0]+50)},${Math.min(255,nc[1]+70)},${Math.min(255,nc[2]+30)},${0.1 + tiltNorm * 0.08})`;
+        ctx.lineWidth = 0.6;
         ctx.stroke();
       }
 
-      // Top dot (grass tip)
-      const capRadius = PIN_RADIUS * (0.7 + p.grassH * 0.25) * (1 - tiltNorm * 0.3);
+      // Grass tip — soft round dot
+      const capRadius = PIN_RADIUS * (0.6 + p.grassH * 0.2) * (1 - tiltNorm * 0.25);
       const tiltAngle = Math.atan2(p.ty, p.tx);
-      const ellipseRatio = 1 - tiltNorm * 0.6;
+      const ellipseRatio = 1 - tiltNorm * 0.5;
 
       ctx.save();
       ctx.translate(topX, topY);
       ctx.rotate(tiltAngle);
-      ctx.scale(1, Math.max(0.3, ellipseRatio));
+      ctx.scale(1, Math.max(0.4, ellipseRatio));
 
-      const tipBright = topDiffuse;
+      const tb = topDiffuse;
       ctx.beginPath();
       ctx.arc(0, 0, capRadius, 0, Math.PI * 2);
-      ctx.fillStyle = `rgb(${Math.min(255,Math.round(nc[0]*tipBright*0.9))},${Math.min(255,Math.round(nc[1]*tipBright))},${Math.min(255,Math.round(nc[2]*tipBright*0.6))})`;
+      ctx.fillStyle = `rgb(${Math.min(255,Math.round(nc[0]*tb*1.1))},${Math.min(255,Math.round(nc[1]*tb*1.15))},${Math.min(255,Math.round(nc[2]*tb*0.7))})`;
       ctx.fill();
 
-      // Subtle green glow when swaying
-      if (tiltNorm > 0.15) {
+      // Warm glow when swaying
+      if (tiltNorm > 0.12) {
         ctx.beginPath();
-        ctx.arc(0, 0, capRadius * 2.5, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(${nc[0]},${nc[1]},${nc[2]},${tiltNorm * 0.04})`;
+        ctx.arc(0, 0, capRadius * 2, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(${Math.min(255,nc[0]+30)},${Math.min(255,nc[1]+40)},${nc[2]},${tiltNorm * 0.035})`;
         ctx.fill();
       }
 
