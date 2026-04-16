@@ -966,24 +966,24 @@
     }
   }
 
-  // === Pin Grid ===
+  // === Pin Grid (Grass Field) ===
   const SPACING = 16;
-  const PIN_RADIUS = 2.5;
-  const ROD_LENGTH = 200; // visual length when fully tilted
-  const INFLUENCE_RADIUS = 250;
-  const SPRING = 0.008;    // very slow spring back — rods stay fallen
-  const DAMPING = 0.97;    // high inertia — rods carry momentum
+  const PIN_RADIUS = 2.0;
+  const ROD_LENGTH = 200;
+  const INFLUENCE_RADIUS = 280;
+  const SPRING = 0.012;     // slightly stronger spring — grass sways back
+  const DAMPING = 0.96;     // natural bounce-back
 
-  // Vivid neon color palette
+  // Grass green palette
   const NEON_COLORS = [
-    [57, 255, 20],     // neon green
-    [0, 255, 255],     // electric cyan
-    [255, 0, 255],     // hot magenta
-    [255, 165, 0],     // neon orange
-    [191, 0, 255],     // electric purple
-    [255, 255, 0],     // neon yellow
-    [255, 20, 147],    // deep pink
-    [0, 255, 150],     // spring green
+    [34, 139, 34],     // forest green
+    [50, 180, 50],     // fresh green
+    [60, 200, 60],     // bright grass
+    [40, 160, 70],     // emerald
+    [80, 200, 80],     // light grass
+    [30, 120, 50],     // dark grass
+    [70, 180, 40],     // lime grass
+    [45, 150, 60],     // meadow green
   ];
 
   let pins = [];
@@ -1047,17 +1047,28 @@
           tx: 0, ty: 0,
           vx: 0, vy: 0,
           neon: NEON_COLORS[Math.floor(Math.random() * NEON_COLORS.length)],
+          grassH: 0.7 + Math.random() * 0.6,   // height variation
+          windPhase: Math.random() * Math.PI * 2, // ambient wind offset
         });
       }
     }
   }
 
-  // === Update Pins ===
+  // === Update Pins (Grass) ===
+  let windTime = 0;
   function updatePins() {
     const handActive = handPresent && handX >= 0;
+    windTime += 0.016;
 
     for (let i = 0; i < pins.length; i++) {
       const p = pins[i];
+
+      // Ambient wind — gentle breeze through grass
+      const windStr = 0.03;
+      const windX = Math.sin(windTime * 0.8 + p.windPhase + p.bx * 0.003) * windStr;
+      const windY = Math.sin(windTime * 0.5 + p.windPhase + p.by * 0.004) * windStr * 0.3;
+      p.vx += windX;
+      p.vy += windY;
 
       if (handActive) {
         const dx = p.bx - handX;
@@ -1067,22 +1078,15 @@
         if (dist < INFLUENCE_RADIUS) {
           const falloff = 1 - dist / INFLUENCE_RADIUS;
           const strength = falloff * falloff;
-
-          // Hand velocity magnitude
           const velMag = Math.sqrt(handVelX * handVelX + handVelY * handVelY);
-
-          // Sweeping: mostly follow hand movement direction (like pushing dominos)
-          // Plus a small "away from hand" force
           const awayX = dist > 1 ? dx / dist : 0;
           const awayY = dist > 1 ? dy / dist : 0;
 
-          // Velocity-dominant push — this is the "sweep"
-          const sweepX = handVelX * 0.15 * strength;
-          const sweepY = handVelY * 0.15 * strength;
-
-          // Radial push (away from hand center)
-          const radialX = awayX * 0.6 * strength * (1 + velMag * 0.02);
-          const radialY = awayY * 0.6 * strength * (1 + velMag * 0.02);
+          // Gentle sweep — like brushing through grass
+          const sweepX = handVelX * 0.12 * strength;
+          const sweepY = handVelY * 0.12 * strength;
+          const radialX = awayX * 0.4 * strength * (1 + velMag * 0.015);
+          const radialY = awayY * 0.4 * strength * (1 + velMag * 0.015);
 
           p.vx += sweepX + radialX;
           p.vy += sweepY + radialY;
@@ -1103,7 +1107,7 @@
 
       // Clamp max tilt
       const tiltMag = Math.sqrt(p.tx * p.tx + p.ty * p.ty);
-      const maxTilt = ROD_LENGTH;
+      const maxTilt = ROD_LENGTH * p.grassH;
       if (tiltMag > maxTilt) {
         p.tx = (p.tx / tiltMag) * maxTilt;
         p.ty = (p.ty / tiltMag) * maxTilt;
@@ -1111,195 +1115,122 @@
     }
   }
 
-  // === Draw ===
-  // Light direction (from upper-left)
+  // === Draw (Grass Field) ===
   const LIGHT_X = -0.5, LIGHT_Y = -0.7, LIGHT_Z = 0.5;
   const lLen = Math.sqrt(LIGHT_X*LIGHT_X + LIGHT_Y*LIGHT_Y + LIGHT_Z*LIGHT_Z);
   const lx = LIGHT_X/lLen, ly = LIGHT_Y/lLen, lz = LIGHT_Z/lLen;
 
-  const ROD_WIDTH = 4;        // width of the rod (cylinder diameter)
-  const ROD_COLOR_BASE = 55;  // base grey for rod body
-  const TOP_COLOR = 90;       // top circle brightness
+  const ROD_WIDTH = 3.5;
+  const ROD_COLOR_BASE = 30;
+  const TOP_COLOR = 60;
 
   function draw() {
-    ctx.fillStyle = '#191919';
+    ctx.fillStyle = '#0f1a0f';
     ctx.fillRect(0, 0, W, H);
 
-    // Sort by tilt (draw upright pins last so they appear on top)
-    // Actually sort by Y position of top for depth — tilted down = drawn first
-    const sorted = pins.slice().sort((a, b) => {
-      const ay = a.by + a.ty;
-      const by2 = b.by + b.ty;
-      return ay - by2;
-    });
+    const sorted = pins.slice().sort((a, b) => (a.by + a.ty) - (b.by + b.ty));
 
     for (let i = 0; i < sorted.length; i++) {
       const p = sorted[i];
       const tiltMag = Math.sqrt(p.tx * p.tx + p.ty * p.ty);
-      const tiltNorm = Math.min(1, tiltMag / ROD_LENGTH);
+      const maxTilt = ROD_LENGTH * p.grassH;
+      const tiltNorm = Math.min(1, tiltMag / maxTilt);
 
       const topX = p.bx + p.tx;
       const topY = p.by + p.ty;
 
-      // === Rod normal (pointing along the rod from base to top, in 3D) ===
-      // When upright: rod points straight up (0, 0, 1)
-      // When tilted: rod points towards (tx, ty, remaining_z)
       const rodZ = Math.sqrt(Math.max(0, 1 - tiltNorm * tiltNorm));
       const rnx = tiltNorm > 0.001 ? p.tx / tiltMag * tiltNorm : 0;
       const rny = tiltNorm > 0.001 ? p.ty / tiltMag * tiltNorm : 0;
-      const rnz = rodZ;
-
-      // Side normal (perpendicular to rod direction, facing light)
-      // For the visible side of the cylinder
       const sideX = -rny;
       const sideY = rnx;
       const sideLen = Math.sqrt(sideX*sideX + sideY*sideY) || 1;
-
-      // Lighting on the rod surface
       const rodDiffuse = Math.max(0, sideX/sideLen * lx + sideY/sideLen * ly) * 0.5 + 0.5;
-      // Lighting on the top face
-      const topDiffuse = Math.max(0, rnx * lx + rny * ly + rnz * lz) * 0.4 + 0.6;
+      const topDiffuse = Math.max(0, rnx * lx + rny * ly + rodZ * lz) * 0.4 + 0.6;
+
+      const nc = p.neon;
 
       if (tiltNorm > 0.03) {
-        // === Shadow on the ground ===
-        const shadowOffX = p.tx * 0.4;
-        const shadowOffY = p.ty * 0.4 + tiltNorm * 4;
+        // Soft grass shadow
+        const shadowOffX = p.tx * 0.3;
+        const shadowOffY = p.ty * 0.3 + tiltNorm * 3;
         ctx.beginPath();
         ctx.ellipse(
           p.bx + shadowOffX, p.by + shadowOffY,
-          ROD_WIDTH * 0.4 + tiltNorm * tiltMag * 0.15,
-          ROD_WIDTH * 0.25,
+          ROD_WIDTH * 0.3 + tiltNorm * tiltMag * 0.08,
+          ROD_WIDTH * 0.2,
           Math.atan2(p.ty, p.tx), 0, Math.PI * 2
         );
-        ctx.fillStyle = `rgba(0,0,0,${tiltNorm * 0.25})`;
+        ctx.fillStyle = `rgba(0,10,0,${tiltNorm * 0.2})`;
         ctx.fill();
 
-        // === Rod body (cylinder seen from above = thick line from base to top) ===
+        // Grass blade — tapered from base to tip
         const angle = Math.atan2(p.ty, p.tx);
-        const perpX = Math.cos(angle + Math.PI/2) * ROD_WIDTH * 0.5;
-        const perpY = Math.sin(angle + Math.PI/2) * ROD_WIDTH * 0.5;
-
-        // Rod body as a quadrilateral (trapezoid — wider at base)
-        const baseW = ROD_WIDTH * 0.5;
-        const topW = ROD_WIDTH * 0.45;
         const bpx = Math.cos(angle + Math.PI/2);
         const bpy = Math.sin(angle + Math.PI/2);
+        const baseW = ROD_WIDTH * 0.5 * p.grassH;
+        const tipW = ROD_WIDTH * 0.08; // very thin tip
 
         ctx.beginPath();
         ctx.moveTo(p.bx + bpx * baseW, p.by + bpy * baseW);
-        ctx.lineTo(topX + bpx * topW, topY + bpy * topW);
-        ctx.lineTo(topX - bpx * topW, topY - bpy * topW);
+        ctx.lineTo(topX + bpx * tipW, topY + bpy * tipW);
+        ctx.lineTo(topX - bpx * tipW, topY - bpy * tipW);
         ctx.lineTo(p.bx - bpx * baseW, p.by - bpy * baseW);
         ctx.closePath();
 
-        // Rod color — vivid neon
-        const nc = p.neon;
-        const neonAmt = tiltNorm * 0.7;
-        const rodBright = ROD_COLOR_BASE * rodDiffuse;
-        const rodR = Math.round(rodBright * (1 - neonAmt) + nc[0] * neonAmt * 0.6);
-        const rodG = Math.round(rodBright * (1 - neonAmt) + nc[1] * neonAmt * 0.6);
-        const rodB = Math.round(rodBright * (1 - neonAmt) + nc[2] * neonAmt * 0.6);
-        ctx.fillStyle = `rgb(${Math.min(255,rodR)},${Math.min(255,rodG)},${Math.min(255,rodB)})`;
+        // Green blade color with natural variation
+        const bright = rodDiffuse * 0.8 + 0.2;
+        const bladeR = Math.round(nc[0] * bright * 0.7);
+        const bladeG = Math.round(nc[1] * bright * 0.8);
+        const bladeB = Math.round(nc[2] * bright * 0.5);
+        ctx.fillStyle = `rgb(${Math.min(255,bladeR)},${Math.min(255,bladeG)},${Math.min(255,bladeB)})`;
         ctx.fill();
 
-        // Bright neon core stripe
+        // Light highlight on blade center
         ctx.beginPath();
         ctx.moveTo(p.bx, p.by);
         ctx.lineTo(topX, topY);
-        ctx.strokeStyle = `rgba(${nc[0]},${nc[1]},${nc[2]},${tiltNorm * 0.5})`;
-        ctx.lineWidth = ROD_WIDTH * 0.25;
+        ctx.strokeStyle = `rgba(${Math.min(255,nc[0]+40)},${Math.min(255,nc[1]+60)},${Math.min(255,nc[2]+20)},${0.15 + tiltNorm * 0.1})`;
+        ctx.lineWidth = ROD_WIDTH * 0.15;
         ctx.stroke();
 
-        // Medium glow
-        if (tiltNorm > 0.1) {
-          ctx.beginPath();
-          ctx.moveTo(p.bx, p.by);
-          ctx.lineTo(topX, topY);
-          ctx.strokeStyle = `rgba(${nc[0]},${nc[1]},${nc[2]},${tiltNorm * 0.12})`;
-          ctx.lineWidth = ROD_WIDTH * 2;
-          ctx.stroke();
-        }
-
-        // Wide outer glow
-        if (tiltNorm > 0.2) {
-          ctx.beginPath();
-          ctx.moveTo(p.bx, p.by);
-          ctx.lineTo(topX, topY);
-          ctx.strokeStyle = `rgba(${nc[0]},${nc[1]},${nc[2]},${(tiltNorm - 0.2) * 0.05})`;
-          ctx.lineWidth = ROD_WIDTH * 5;
-          ctx.stroke();
-        }
-
-        // Dark edge on shadow side
+        // Subtle bright edge on light side
         ctx.beginPath();
-        ctx.moveTo(p.bx - bpx * baseW, p.by - bpy * baseW);
-        ctx.lineTo(topX - bpx * topW, topY - bpy * topW);
-        ctx.strokeStyle = `rgba(0,0,0,${tiltNorm * 0.2})`;
+        ctx.moveTo(p.bx + bpx * baseW, p.by + bpy * baseW);
+        ctx.lineTo(topX + bpx * tipW, topY + bpy * tipW);
+        ctx.strokeStyle = `rgba(${Math.min(255,nc[0]+60)},${Math.min(255,nc[1]+80)},${Math.min(255,nc[2]+30)},${0.08})`;
         ctx.lineWidth = 0.5;
         ctx.stroke();
       }
 
-      // === Top cap (circle = top of the cylinder) ===
-      // When upright: full circle, bright
-      // When tilted: slightly elliptical, brightness based on angle to light
-      const capRadius = PIN_RADIUS * (1 - tiltNorm * 0.15);
-
-      // Ellipse when tilted (foreshortening)
-      const ellipseRatio = 1 - tiltNorm * 0.6; // squishes as it tilts
+      // Top dot (grass tip) — small bright green dot
+      const capRadius = PIN_RADIUS * (0.6 + p.grassH * 0.2) * (1 - tiltNorm * 0.3);
       const tiltAngle = Math.atan2(p.ty, p.tx);
+      const ellipseRatio = 1 - tiltNorm * 0.6;
 
       ctx.save();
       ctx.translate(topX, topY);
       ctx.rotate(tiltAngle);
       ctx.scale(1, Math.max(0.3, ellipseRatio));
 
-      // Top face — vivid neon
-      const nc = p.neon;
-      const neonTop = tiltNorm * 0.6;
-      const topBright = TOP_COLOR * topDiffuse;
-      const capR = Math.min(255, Math.round(topBright * (1 - neonTop) + nc[0] * neonTop * 0.7));
-      const capG = Math.min(255, Math.round(topBright * (1 - neonTop) + nc[1] * neonTop * 0.7));
-      const capB = Math.min(255, Math.round(topBright * (1 - neonTop) + nc[2] * neonTop * 0.7));
+      const tipBright = topDiffuse;
+      const capR = Math.min(255, Math.round(nc[0] * tipBright * 0.9));
+      const capG = Math.min(255, Math.round(nc[1] * tipBright));
+      const capB = Math.min(255, Math.round(nc[2] * tipBright * 0.6));
       ctx.beginPath();
       ctx.arc(0, 0, capRadius, 0, Math.PI * 2);
       ctx.fillStyle = `rgb(${capR},${capG},${capB})`;
       ctx.fill();
 
-      // Wide neon glow halo
-      if (tiltNorm > 0.08) {
+      // Subtle green glow when swaying
+      if (tiltNorm > 0.15) {
         ctx.beginPath();
-        ctx.arc(0, 0, capRadius * 3.5, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(${nc[0]},${nc[1]},${nc[2]},${tiltNorm * 0.06})`;
-        ctx.fill();
-
-        ctx.beginPath();
-        ctx.arc(0, 0, capRadius * 2, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(${nc[0]},${nc[1]},${nc[2]},${tiltNorm * 0.1})`;
+        ctx.arc(0, 0, capRadius * 2.5, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(${nc[0]},${nc[1]},${nc[2]},${tiltNorm * 0.04})`;
         ctx.fill();
       }
-
-      // Bright center highlight
-      ctx.beginPath();
-      ctx.arc(0, 0, capRadius * 0.5, 0, Math.PI * 2);
-      ctx.fillStyle = `rgba(${Math.min(255,nc[0]+80)},${Math.min(255,nc[1]+80)},${Math.min(255,nc[2]+80)},${tiltNorm * 0.35})`;
-      ctx.fill();
-
-      // Edge ring
-      ctx.beginPath();
-      ctx.arc(0, 0, capRadius, 0, Math.PI * 2);
-      ctx.strokeStyle = `rgba(255,255,255,${0.06 * (1 - tiltNorm * 0.5)})`;
-      ctx.lineWidth = 0.5;
-      ctx.stroke();
 
       ctx.restore();
-
-      // === Base hole (where the rod sits) — dark circle at base ===
-      if (tiltNorm > 0.1) {
-        ctx.beginPath();
-        ctx.arc(p.bx, p.by, PIN_RADIUS * 0.5, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(10,10,10,${tiltNorm * 0.5})`;
-        ctx.fill();
-      }
     }
   }
 
