@@ -67,27 +67,27 @@
   .landing-ui{position:fixed;z-index:10;pointer-events:none}
   .landing-top-left{top:28px;left:32px;font-size:9px;letter-spacing:.25em;text-transform:uppercase;color:rgba(255,255,255,.15)}
   .landing-nav{position:fixed;top:28px;left:10%;right:10%;z-index:10;display:flex;justify-content:space-between;opacity:0;animation:fi .8s ease .5s forwards}
-  .nav-item{font-size:20px;letter-spacing:.12em;text-transform:uppercase;color:rgba(0,0,0,.3);text-decoration:none;transition:color .3s ease;padding:6px 0;pointer-events:auto}
-  .nav-item:hover,.nav-item.pinch-hover{color:rgba(0,0,0,.6)}
-  .nav-item.active{color:rgba(0,0,0,.75)}
+  .nav-item{font-size:20px;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.45);text-decoration:none;transition:color .3s ease;padding:6px 0;pointer-events:auto}
+  .nav-item:hover,.nav-item.pinch-hover{color:rgba(255,255,255,.75)}
+  .nav-item.active{color:rgba(255,255,255,.9)}
 
-  .landing-bottom-left{bottom:28px;left:32px;display:flex;align-items:center;gap:10px;font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:rgba(0,0,0,.25)}
-  .landing-bottom-center{bottom:28px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:8px;font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:rgba(0,0,0,.25)}
-  .status-dot{width:5px;height:5px;border-radius:50%;background:rgba(0,0,0,.15);transition:all .5s ease}
+  .landing-bottom-left{bottom:28px;left:32px;display:flex;align-items:center;gap:10px;font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:rgba(255,255,255,.4)}
+  .landing-bottom-center{bottom:28px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:8px;font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:rgba(255,255,255,.4)}
+  .status-dot{width:5px;height:5px;border-radius:50%;background:rgba(255,255,255,.3);transition:all .5s ease}
   .status-dot.active{background:var(--accent);box-shadow:0 0 8px var(--accent)}
-  .info-hint{font-size:12px;letter-spacing:.15em;text-transform:uppercase;color:rgba(0,0,0,.2);margin-top:8px;animation:hp 3s ease-in-out infinite}
+  .info-hint{font-size:12px;letter-spacing:.15em;text-transform:uppercase;color:rgba(255,255,255,.35);margin-top:8px;animation:hp 3s ease-in-out infinite}
   @keyframes hp{0%,100%{opacity:.3}50%{opacity:.8}}
 
   .gesture-guide{position:fixed;bottom:0;left:0;right:0;z-index:10;display:flex;align-items:center;justify-content:center;gap:28px;opacity:0;animation:fi .8s ease .8s forwards;pointer-events:none;padding-bottom:60px}
   .gesture-item{display:flex;flex-direction:column;align-items:center;gap:8px}
-  .gesture-icon{color:rgba(0,0,0,.35)}
-  .gesture-label{font-size:11px;letter-spacing:.08em;color:rgba(0,0,0,.4)}
-  .gesture-desc{font-size:9px;letter-spacing:.15em;text-transform:uppercase;color:rgba(0,0,0,.25)}
+  .gesture-icon{color:rgba(255,255,255,.45)}
+  .gesture-label{font-size:11px;letter-spacing:.08em;color:rgba(255,255,255,.5)}
+  .gesture-desc{font-size:9px;letter-spacing:.15em;text-transform:uppercase;color:rgba(255,255,255,.35)}
   .gesture-divider{width:1px;height:36px;background:rgba(0,0,0,.1)}
 
   .landing-info{position:fixed;z-index:10;text-align:center;pointer-events:none;opacity:0;animation:fi .8s ease 1s forwards;left:0;right:0;display:flex;flex-direction:column;align-items:center}
-  .landing-info .info-text{font-size:15px;letter-spacing:.03em;color:rgba(0,0,0,.4);line-height:1.6}
-  .landing-info .info-sub{font-size:10px;letter-spacing:.03em;color:rgba(0,0,0,.25);margin-top:6px;line-height:1.6}
+  .landing-info .info-text{font-size:15px;letter-spacing:.03em;color:rgba(255,255,255,.5);line-height:1.6}
+  .landing-info .info-sub{font-size:10px;letter-spacing:.03em;color:rgba(255,255,255,.35);margin-top:6px;line-height:1.6}
   .mode-toggle{margin-top:16px;pointer-events:auto}
   .gesture-mode-bottom{position:fixed;bottom:60px;left:0;right:0;z-index:10;display:flex;justify-content:center;pointer-events:auto}
   .mouse-btn{padding:10px 24px;background:transparent;border:1px solid rgba(0,0,0,.12);color:rgba(0,0,0,.35);font-family:'Space Mono',monospace;font-size:13px;letter-spacing:.15em;cursor:pointer;transition:all .3s ease}
@@ -371,7 +371,7 @@
     <a href="#" class="nav-item" data-page="contact">Contact</a>
   </nav>
   <div class="landing-ui landing-bottom-left"><div class="status-dot" id="statusDot"></div><span id="statusText">Initializing</span></div>
-  <div class="landing-ui landing-bottom-center"><svg id="windArrow" width="12" height="12" viewBox="0 0 12 12" style="opacity:0;transition:opacity .5s ease;transform-origin:center"><path d="M6 1L6 11M6 1L3 4M6 1L9 4" stroke="rgba(0,0,0,0.5)" stroke-width="1.2" fill="none" stroke-linecap="round"/></svg><span id="windInfo" style="color:rgba(0,0,0,0.35);font-size:9px;letter-spacing:.15em"></span></div>
+  <div class="landing-ui landing-bottom-center"><svg id="windArrow" width="12" height="12" viewBox="0 0 12 12" style="opacity:0;transition:opacity .5s ease;transform-origin:center"><path d="M6 1L6 11M6 1L3 4M6 1L9 4" stroke="rgba(255,255,255,0.5)" stroke-width="1.2" fill="none" stroke-linecap="round"/></svg><span id="windInfo" style="color:rgba(255,255,255,0.4);font-size:9px;letter-spacing:.15em"></span></div>
   <!-- Gesture Guide (above EDDIE) -->
   <div class="gesture-guide" id="gestureGuide">
     <div class="gesture-item">
@@ -973,8 +973,8 @@
   const PIN_RADIUS = 1.2;
   const ROD_LENGTH = 200;
   const INFLUENCE_RADIUS = 280;
-  const SPRING = 0.015;     // gentle spring — sways back softly
-  const DAMPING = 0.955;    // smooth, peaceful settling
+  const SPRING = 0.045;     // responsive spring — snaps back naturally
+  const DAMPING = 0.91;     // smooth but quick settling
 
   // Lush warm green palette
   const NEON_COLORS = [
