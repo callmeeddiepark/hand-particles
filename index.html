@@ -72,7 +72,7 @@
   .nav-item.active{color:rgba(255,255,255,.9)}
 
   .landing-bottom-left{bottom:28px;left:32px;display:flex;align-items:center;gap:10px;font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:rgba(255,255,255,.4)}
-  .landing-bottom-center{bottom:28px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:8px;font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:rgba(255,255,255,.4)}
+  .landing-bottom-center{left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:8px;font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:rgba(255,255,255,.4)}
   .status-dot{width:5px;height:5px;border-radius:50%;background:rgba(255,255,255,.3);transition:all .5s ease}
   .status-dot.active{background:var(--accent);box-shadow:0 0 8px var(--accent)}
   .info-hint{font-size:12px;letter-spacing:.15em;text-transform:uppercase;color:rgba(255,255,255,.35);margin-top:8px;animation:hp 3s ease-in-out infinite}
@@ -374,7 +374,7 @@
     <a href="#" class="nav-item" data-page="contact">Contact</a>
   </nav>
   <div class="landing-ui landing-bottom-left"><div class="status-dot" id="statusDot"></div><span id="statusText">Initializing</span></div>
-  <div class="landing-ui landing-bottom-center"><svg id="windArrow" width="12" height="12" viewBox="0 0 12 12" style="opacity:0;transition:opacity .5s ease;transform-origin:center"><path d="M6 1L6 11M6 1L3 4M6 1L9 4" stroke="rgba(255,255,255,0.5)" stroke-width="1.2" fill="none" stroke-linecap="round"/></svg><span id="windInfo" style="color:rgba(255,255,255,0.4);font-size:9px;letter-spacing:.15em"></span></div>
+  <div class="landing-ui landing-bottom-center" id="windContainer"><svg id="windArrow" width="12" height="12" viewBox="0 0 12 12" style="opacity:0;transition:opacity .5s ease;transform-origin:center"><path d="M6 1L6 11M6 1L3 4M6 1L9 4" stroke="rgba(255,255,255,0.5)" stroke-width="1.2" fill="none" stroke-linecap="round"/></svg><span id="windInfo" style="color:rgba(255,255,255,0.4);font-size:9px;letter-spacing:.15em"></span></div>
   <!-- Gesture Guide (above EDDIE) -->
   <div class="gesture-guide" id="gestureGuide">
     <div class="gesture-item">
@@ -1023,6 +1023,12 @@
       const eddieTop = H / 2 - fontSize / 2;
       infoEl.style.top = (eddieTop - 50) + 'px';
       infoEl.style.transform = 'translateY(-100%)';
+    }
+    // Position wind indicator below EDDIE
+    const windEl = document.getElementById('windContainer');
+    if (windEl) {
+      const eddieBottom = H / 2 + fontSize / 2;
+      windEl.style.top = (eddieBottom + 40) + 'px';
     }
   }
 
