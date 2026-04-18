@@ -2203,11 +2203,74 @@
     ctx.fillText(project.role, x, y + radius + 6);
   }
 
+  // Floating target circle state
+  const TARGET_RADIUS = 60;
+  let targetX = 0, targetY = 0;
+  let targetVx = 0, targetVy = 0;
+  let targetInitialized = false;
+  let targetCooldown = 0; // frames to wait after project opens
+
+  function initTarget(w, h) {
+    targetX = w * 0.3 + Math.random() * w * 0.4;
+    targetY = h * 0.3 + Math.random() * h * 0.4;
+    pickTargetDirection();
+    targetInitialized = true;
+  }
+
+  function pickTargetDirection() {
+    const angle = Math.random() * Math.PI * 2;
+    const speed = 0.8 + Math.random() * 0.6;
+    targetVx = Math.cos(angle) * speed;
+    targetVy = Math.sin(angle) * speed;
+  }
+
+  function updateTarget(w, h) {
+    if (targetCooldown > 0) { targetCooldown--; return; }
+    targetX += targetVx;
+    targetY += targetVy;
+    // Bounce off edges with padding
+    const pad = TARGET_RADIUS + 40;
+    if (targetX < pad) { targetX = pad; targetVx = Math.abs(targetVx); }
+    if (targetX > w - pad) { targetX = w - pad; targetVx = -Math.abs(targetVx); }
+    if (targetY < pad + 60) { targetY = pad + 60; targetVy = Math.abs(targetVy); }
+    if (targetY > h - pad) { targetY = h - pad; targetVy = -Math.abs(targetVy); }
+    // Slight random drift
+    if (Math.random() < 0.02) pickTargetDirection();
+  }
+
+  function drawTarget(ctx) {
+    if (targetCooldown > 0) return;
+    // Outer ring
+    ctx.beginPath();
+    ctx.arc(targetX, targetY, TARGET_RADIUS, 0, Math.PI * 2);
+    ctx.strokeStyle = 'rgba(255,255,255,0.25)';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+    // Inner crosshair
+    const ch = 8;
+    ctx.strokeStyle = 'rgba(255,255,255,0.15)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(targetX - ch, targetY); ctx.lineTo(targetX + ch, targetY);
+    ctx.moveTo(targetX, targetY - ch); ctx.lineTo(targetX, targetY + ch);
+    ctx.stroke();
+    // Pulsing glow
+    const pulse = 0.5 + Math.sin(performance.now() * 0.003) * 0.5;
+    ctx.beginPath();
+    ctx.arc(targetX, targetY, TARGET_RADIUS + 4, 0, Math.PI * 2);
+    ctx.strokeStyle = `rgba(255,255,255,${0.05 + pulse * 0.08})`;
+    ctx.lineWidth = 1;
+    ctx.stroke();
+  }
+
   function animatePortfolioHands() {
     if (!portfolioActive) { pfHandAnimId = null; return; }
     const w = pfHandCanvas.width;
     const h = pfHandCanvas.height;
     pfHandCtx.clearRect(0, 0, w, h);
+
+    if (!targetInitialized) initTarget(w, h);
+    updateTarget(w, h);
 
     const hasHands = allHandLandmarks && allHandLandmarks.length > 0;
 
@@ -2231,7 +2294,7 @@
         // Draw skeleton
         drawHandSkeleton(pfHandCtx, pfSmooth[hi], w, h, 'rgba(255,255,255,0.2)');
 
-        // Draw fingertip project circles
+        // Draw fingertip project circles + check collision with target
         for (let fi = 0; fi < FINGERTIPS.length; fi++) {
           const tip = FINGERTIPS[fi];
           const tx = (1 - pfSmooth[hi][tip].x) * w;
@@ -2239,6 +2302,22 @@
           const projIdx = hi * 5 + fi;
           if (projIdx < ALL_PROJECTS.length) {
             drawFingertipCircle(pfHandCtx, tx, ty, 35, ALL_PROJECTS[projIdx], projIdx);
+
+            // Check if fingertip is inside target circle
+            if (targetCooldown <= 0) {
+              const dx = tx - targetX, dy = ty - targetY;
+              const dist = Math.sqrt(dx * dx + dy * dy);
+              if (dist < TARGET_RADIUS) {
+                openProjectModal(ALL_PROJECTS[projIdx]);
+                targetCooldown = 120; // 2 seconds cooldown
+                // Reposition target after cooldown
+                setTimeout(() => {
+                  targetX = 100 + Math.random() * (w - 200);
+                  targetY = 120 + Math.random() * (h - 240);
+                  pickTargetDirection();
+                }, 2000);
+              }
+            }
           }
         }
       }
@@ -2247,6 +2326,9 @@
         pfSmooth[hi] = null;
       }
     }
+
+    // Draw floating target circle
+    drawTarget(pfHandCtx);
 
     pfHandAnimId = requestAnimationFrame(animatePortfolioHands);
   }
