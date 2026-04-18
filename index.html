@@ -2102,22 +2102,54 @@
   }
 
   function drawGuideHand(ctx, pts, w, h, label) {
-    const connections = [
-      [0,1],[1,2],[2,3],[3,4],
-      [0,5],[5,6],[6,7],[7,8],
-      [0,9],[9,10],[10,11],[11,12],
-      [0,13],[13,14],[14,15],[15,16],
-      [0,17],[17,18],[18,19],[19,20],
-      [5,9],[9,13],[13,17]
-    ];
+    // Draw palm skeleton shape (filled polygon)
+    const palmIndices = [0, 17, 13, 9, 5, 1, 0];
+    ctx.beginPath();
+    ctx.moveTo(pts[palmIndices[0]].x * w, pts[palmIndices[0]].y * h);
+    for (let i = 1; i < palmIndices.length; i++) {
+      ctx.lineTo(pts[palmIndices[i]].x * w, pts[palmIndices[i]].y * h);
+    }
+    ctx.closePath();
+    ctx.fillStyle = 'rgba(255,255,255,0.03)';
+    ctx.fill();
     ctx.strokeStyle = 'rgba(255,255,255,0.08)';
     ctx.lineWidth = 1;
-    for (const [a, b] of connections) {
+    ctx.stroke();
+
+    // Palm cross-connections
+    const palmConns = [[5,9],[9,13],[13,17]];
+    for (const [a, b] of palmConns) {
       ctx.beginPath();
       ctx.moveTo(pts[a].x * w, pts[a].y * h);
       ctx.lineTo(pts[b].x * w, pts[b].y * h);
       ctx.stroke();
     }
+
+    // Finger bones (from MCP outward only)
+    const fingerConns = [
+      [1,2],[2,3],[3,4],
+      [5,6],[6,7],[7,8],
+      [9,10],[10,11],[11,12],
+      [13,14],[14,15],[15,16],
+      [17,18],[18,19],[19,20]
+    ];
+    for (const [a, b] of fingerConns) {
+      ctx.beginPath();
+      ctx.moveTo(pts[a].x * w, pts[a].y * h);
+      ctx.lineTo(pts[b].x * w, pts[b].y * h);
+      ctx.stroke();
+    }
+
+    // Joint dots
+    for (let i = 0; i < 21; i++) {
+      if (FINGERTIPS.includes(i)) continue;
+      const px = pts[i].x * w, py = pts[i].y * h;
+      ctx.beginPath();
+      ctx.arc(px, py, 2.5, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(255,255,255,0.12)';
+      ctx.fill();
+    }
+
     // Fingertip circles (guide)
     const tips = [4, 8, 12, 16, 20];
     for (const t of tips) {
