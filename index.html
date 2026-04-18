@@ -2059,14 +2059,16 @@
   const FINGERTIPS = [4, 8, 12, 16, 20];
 
   // Static guide hand positions (normalized 0-1, mirrored for display)
+  // Left hand guide — positioned on the left side of screen
   const GUIDE_LEFT = [
-    {x:0.62,y:0.65},{x:0.60,y:0.55},{x:0.58,y:0.45},{x:0.55,y:0.38},{x:0.50,y:0.32},// thumb
-    {x:0.55,y:0.60},{x:0.52,y:0.45},{x:0.50,y:0.35},{x:0.48,y:0.26},// index
-    {x:0.50,y:0.60},{x:0.48,y:0.43},{x:0.47,y:0.33},{x:0.46,y:0.24},// middle
-    {x:0.46,y:0.61},{x:0.45,y:0.46},{x:0.44,y:0.37},{x:0.43,y:0.29},// ring
-    {x:0.42,y:0.63},{x:0.41,y:0.50},{x:0.40,y:0.43},{x:0.39,y:0.36} // pinky
+    {x:0.38,y:0.68},{x:0.36,y:0.58},{x:0.34,y:0.48},{x:0.32,y:0.40},{x:0.28,y:0.35},// thumb 0-4
+    {x:0.32,y:0.62},{x:0.30,y:0.47},{x:0.28,y:0.37},{x:0.27,y:0.28},// index 5-8
+    {x:0.28,y:0.63},{x:0.26,y:0.47},{x:0.25,y:0.37},{x:0.24,y:0.27},// middle 9-12
+    {x:0.24,y:0.64},{x:0.23,y:0.49},{x:0.22,y:0.40},{x:0.21,y:0.32},// ring 13-16
+    {x:0.20,y:0.66},{x:0.19,y:0.53},{x:0.18,y:0.46},{x:0.17,y:0.39} // pinky 17-20
   ];
-  const GUIDE_RIGHT = GUIDE_LEFT.map(p => ({x: 1 - p.x + 0.04, y: p.y}));
+  // Right hand guide — mirrored to the right side
+  const GUIDE_RIGHT = GUIDE_LEFT.map(p => ({x: 1 - p.x, y: p.y}));
 
   // Smooth positions for tracked hands
   let pfSmooth = [null, null]; // [leftHand, rightHand]
