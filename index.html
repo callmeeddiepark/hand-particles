@@ -2101,23 +2101,48 @@
     }
   }
 
-  function drawGuideHand(ctx, pts, w, h, label) {
-    // Draw palm skeleton shape (filled polygon)
-    const palmIndices = [0, 17, 13, 9, 5, 1, 0];
+  function drawBone(ctx, x1, y1, x2, y2, boneWidth, color) {
+    const dx = x2 - x1, dy = y2 - y1;
+    const len = Math.sqrt(dx * dx + dy * dy);
+    if (len < 1) return;
+    const nx = -dy / len * boneWidth, ny = dx / len * boneWidth;
+    // Bone shape: narrow middle, wider at joints
+    const mx = (x1 + x2) / 2, my = (y1 + y2) / 2;
     ctx.beginPath();
-    ctx.moveTo(pts[palmIndices[0]].x * w, pts[palmIndices[0]].y * h);
-    for (let i = 1; i < palmIndices.length; i++) {
-      ctx.lineTo(pts[palmIndices[i]].x * w, pts[palmIndices[i]].y * h);
-    }
+    ctx.moveTo(x1 + nx * 1.2, y1 + ny * 1.2);
+    ctx.quadraticCurveTo(mx + nx * 0.5, my + ny * 0.5, x2 + nx * 1.2, y2 + ny * 1.2);
+    ctx.quadraticCurveTo(x2 - nx * 1.2, y2 - ny * 1.2, x2 - nx * 1.2, y2 - ny * 1.2);
+    ctx.quadraticCurveTo(mx - nx * 0.5, my - ny * 0.5, x1 - nx * 1.2, y1 - ny * 1.2);
     ctx.closePath();
-    ctx.fillStyle = 'rgba(255,255,255,0.03)';
+    ctx.fillStyle = color;
     ctx.fill();
-    ctx.strokeStyle = 'rgba(255,255,255,0.08)';
-    ctx.lineWidth = 1;
-    ctx.stroke();
+  }
 
-    // Palm cross-connections
+  function drawGuideHand(ctx, pts, w, h, label) {
+    const boneColor = 'rgba(255,255,255,0.06)';
+    const jointColor = 'rgba(255,255,255,0.10)';
+
+    // All bone connections
+    const allBones = [
+      [0,1],[1,2],[2,3],[3,4],
+      [0,5],[5,6],[6,7],[7,8],
+      [0,9],[9,10],[10,11],[11,12],
+      [0,13],[13,14],[14,15],[15,16],
+      [0,17],[17,18],[18,19],[19,20]
+    ];
+
+    // Draw metacarpal bones (from wrist) thicker, finger bones thinner
+    for (const [a, b] of allBones) {
+      const x1 = pts[a].x * w, y1 = pts[a].y * h;
+      const x2 = pts[b].x * w, y2 = pts[b].y * h;
+      const isMeta = a === 0; // metacarpal (from wrist)
+      drawBone(ctx, x1, y1, x2, y2, isMeta ? 4 : 2.5, boneColor);
+    }
+
+    // Palm cross-connections (ligaments)
     const palmConns = [[5,9],[9,13],[13,17]];
+    ctx.strokeStyle = 'rgba(255,255,255,0.05)';
+    ctx.lineWidth = 1;
     for (const [a, b] of palmConns) {
       ctx.beginPath();
       ctx.moveTo(pts[a].x * w, pts[a].y * h);
@@ -2125,34 +2150,19 @@
       ctx.stroke();
     }
 
-    // Finger bones (from MCP outward only)
-    const fingerConns = [
-      [1,2],[2,3],[3,4],
-      [5,6],[6,7],[7,8],
-      [9,10],[10,11],[11,12],
-      [13,14],[14,15],[15,16],
-      [17,18],[18,19],[19,20]
-    ];
-    for (const [a, b] of fingerConns) {
-      ctx.beginPath();
-      ctx.moveTo(pts[a].x * w, pts[a].y * h);
-      ctx.lineTo(pts[b].x * w, pts[b].y * h);
-      ctx.stroke();
-    }
-
-    // Joint dots
+    // Joint circles at every landmark
     for (let i = 0; i < 21; i++) {
       if (FINGERTIPS.includes(i)) continue;
       const px = pts[i].x * w, py = pts[i].y * h;
+      const r = i === 0 ? 5 : (i <= 4 || i === 5 || i === 9 || i === 13 || i === 17) ? 3.5 : 2.5;
       ctx.beginPath();
-      ctx.arc(px, py, 2.5, 0, Math.PI * 2);
-      ctx.fillStyle = 'rgba(255,255,255,0.12)';
+      ctx.arc(px, py, r, 0, Math.PI * 2);
+      ctx.fillStyle = jointColor;
       ctx.fill();
     }
 
     // Fingertip circles (guide)
-    const tips = [4, 8, 12, 16, 20];
-    for (const t of tips) {
+    for (const t of FINGERTIPS) {
       const px = pts[t].x * w, py = pts[t].y * h;
       ctx.beginPath();
       ctx.arc(px, py, 28, 0, Math.PI * 2);
@@ -2160,16 +2170,16 @@
       ctx.lineWidth = 1;
       ctx.stroke();
       ctx.beginPath();
-      ctx.arc(px, py, 4, 0, Math.PI * 2);
-      ctx.fillStyle = 'rgba(255,255,255,0.15)';
+      ctx.arc(px, py, 3, 0, Math.PI * 2);
+      ctx.fillStyle = jointColor;
       ctx.fill();
     }
+
     // Label
     ctx.font = '9px "Space Mono", monospace';
     ctx.fillStyle = 'rgba(255,255,255,0.15)';
     ctx.textAlign = 'center';
-    const wristX = pts[0].x * w, wristY = pts[0].y * h + 30;
-    ctx.fillText(label, wristX, wristY);
+    ctx.fillText(label, pts[0].x * w, pts[0].y * h + 30);
   }
 
   function drawFingertipCircle(ctx, x, y, radius, project, colorIdx) {
