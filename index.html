@@ -3402,6 +3402,8 @@
     portfolioActive = false;
     labsActive = false;
     aboutActive = false;
+    if (pfHandAnimId) { cancelAnimationFrame(pfHandAnimId); pfHandAnimId = null; }
+    pfHandCanvas.style.display = 'none';
     closeProjectModal();
     // Stop portfolio animations
     if (thumbAnimId) { cancelAnimationFrame(thumbAnimId); thumbAnimId = null; }
@@ -3450,6 +3452,8 @@
     portfolioActive = false;
     contactActive = false;
     aboutActive = false;
+    if (pfHandAnimId) { cancelAnimationFrame(pfHandAnimId); pfHandAnimId = null; }
+    pfHandCanvas.style.display = 'none';
     closeProjectModal();
     // Stop portfolio animations
     if (thumbAnimId) { cancelAnimationFrame(thumbAnimId); thumbAnimId = null; }
@@ -3715,6 +3719,8 @@
     portfolioActive = false;
     labsActive = false;
     contactActive = false;
+    if (pfHandAnimId) { cancelAnimationFrame(pfHandAnimId); pfHandAnimId = null; }
+    pfHandCanvas.style.display = 'none';
     closeProjectModal();
     // Stop portfolio animations
     if (thumbAnimId) { cancelAnimationFrame(thumbAnimId); thumbAnimId = null; }
