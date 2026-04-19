@@ -2212,11 +2212,13 @@
   }
 
   // Floating target circle state
-  const TARGET_RADIUS = 60;
+  // 16:9 rectangle target
+  const TARGET_W = 120;
+  const TARGET_H = Math.round(TARGET_W * 9 / 16); // 67.5 → 68
   let targetX = 0, targetY = 0;
   let targetVx = 0, targetVy = 0;
   let targetInitialized = false;
-  let targetCooldown = 0; // frames to wait after project opens
+  let targetCooldown = 0;
 
   function initTarget(w, h) {
     targetX = w * 0.3 + Math.random() * w * 0.4;
@@ -2227,7 +2229,7 @@
 
   function pickTargetDirection() {
     const angle = Math.random() * Math.PI * 2;
-    const speed = 0.8 + Math.random() * 0.6;
+    const speed = 3 + Math.random() * 2;
     targetVx = Math.cos(angle) * speed;
     targetVy = Math.sin(angle) * speed;
   }
@@ -2236,24 +2238,22 @@
     if (targetCooldown > 0) { targetCooldown--; return; }
     targetX += targetVx;
     targetY += targetVy;
-    // Bounce off edges with padding
-    const pad = TARGET_RADIUS + 40;
-    if (targetX < pad) { targetX = pad; targetVx = Math.abs(targetVx); }
-    if (targetX > w - pad) { targetX = w - pad; targetVx = -Math.abs(targetVx); }
-    if (targetY < pad + 60) { targetY = pad + 60; targetVy = Math.abs(targetVy); }
-    if (targetY > h - pad) { targetY = h - pad; targetVy = -Math.abs(targetVy); }
-    // Slight random drift
-    if (Math.random() < 0.02) pickTargetDirection();
+    // Bounce off edges (ping-pong)
+    const padX = TARGET_W / 2 + 20;
+    const padY = TARGET_H / 2 + 20;
+    if (targetX < padX) { targetX = padX; targetVx = Math.abs(targetVx); }
+    if (targetX > w - padX) { targetX = w - padX; targetVx = -Math.abs(targetVx); }
+    if (targetY < padY + 60) { targetY = padY + 60; targetVy = Math.abs(targetVy); }
+    if (targetY > h - padY) { targetY = h - padY; targetVy = -Math.abs(targetVy); }
   }
 
   function drawTarget(ctx) {
     if (targetCooldown > 0) return;
-    // Outer ring
-    ctx.beginPath();
-    ctx.arc(targetX, targetY, TARGET_RADIUS, 0, Math.PI * 2);
+    const hw = TARGET_W / 2, hh = TARGET_H / 2;
+    // Outer rect
     ctx.strokeStyle = 'rgba(255,255,255,0.25)';
     ctx.lineWidth = 1.5;
-    ctx.stroke();
+    ctx.strokeRect(targetX - hw, targetY - hh, TARGET_W, TARGET_H);
     // Inner crosshair
     const ch = 8;
     ctx.strokeStyle = 'rgba(255,255,255,0.15)';
@@ -2264,11 +2264,9 @@
     ctx.stroke();
     // Pulsing glow
     const pulse = 0.5 + Math.sin(performance.now() * 0.003) * 0.5;
-    ctx.beginPath();
-    ctx.arc(targetX, targetY, TARGET_RADIUS + 4, 0, Math.PI * 2);
     ctx.strokeStyle = `rgba(255,255,255,${0.05 + pulse * 0.08})`;
     ctx.lineWidth = 1;
-    ctx.stroke();
+    ctx.strokeRect(targetX - hw - 3, targetY - hh - 3, TARGET_W + 6, TARGET_H + 6);
   }
 
   function animatePortfolioHands() {
@@ -2311,11 +2309,10 @@
           if (projIdx < ALL_PROJECTS.length) {
             drawFingertipCircle(pfHandCtx, tx, ty, 35, ALL_PROJECTS[projIdx], projIdx);
 
-            // Check if fingertip is inside target circle
+            // Check if fingertip is inside target rectangle
             if (targetCooldown <= 0) {
-              const dx = tx - targetX, dy = ty - targetY;
-              const dist = Math.sqrt(dx * dx + dy * dy);
-              if (dist < TARGET_RADIUS) {
+              const inRect = Math.abs(tx - targetX) < TARGET_W / 2 && Math.abs(ty - targetY) < TARGET_H / 2;
+              if (inRect) {
                 openProjectModal(ALL_PROJECTS[projIdx], targetX, targetY);
                 targetCooldown = 120; // 2 seconds cooldown
                 // Reposition target after cooldown
