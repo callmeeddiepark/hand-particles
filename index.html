@@ -2081,7 +2081,7 @@
 
   function drawHandSkeleton(ctx, landmarks, w, h, color) {
     ctx.strokeStyle = color;
-    ctx.lineWidth = 1.5;
+    ctx.lineWidth = 2.5;
     for (const [a, b] of HAND_CONNECTIONS) {
       const ax = (1 - landmarks[a].x) * w, ay = landmarks[a].y * h;
       const bx = (1 - landmarks[b].x) * w, by = landmarks[b].y * h;
@@ -2292,7 +2292,7 @@
         }
 
         // Draw skeleton
-        drawHandSkeleton(pfHandCtx, pfSmooth[hi], w, h, 'rgba(255,255,255,0.2)');
+        drawHandSkeleton(pfHandCtx, pfSmooth[hi], w, h, 'rgba(255,255,255,0.6)');
 
         // Draw fingertip project circles + check collision with target
         for (let fi = 0; fi < FINGERTIPS.length; fi++) {
