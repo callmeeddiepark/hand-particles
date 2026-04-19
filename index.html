@@ -37,12 +37,13 @@
   .scan-guide-text{font-family:'Space Mono',monospace;font-size:9px;color:rgba(74,140,63,0.5);letter-spacing:0.1em;text-transform:uppercase}
 
   .scan-hands-area{position:fixed;inset:0;z-index:3;pointer-events:none}
-  .scan-hand-outline{position:absolute;top:50%;transform:translateY(-50%);width:810px;height:1170px;display:flex;flex-direction:column;align-items:center;justify-content:center;transition:all 0.5s ease}
-  .scan-hand-outline.left{left:-5%}
-  .scan-hand-outline.right{right:-5%}
+  .scan-hand-outline{position:absolute;top:50%;transform:translateY(-50%);width:200px;height:500px;display:flex;flex-direction:column;align-items:center;justify-content:center;transition:all 0.5s ease}
+  .scan-hand-outline.left{left:5%}
+  .scan-hand-outline.right{right:5%}
+  .scan-hand-rect{width:100%;height:100%;border:2px solid rgba(74,140,63,0.4);background:rgba(74,140,63,0.08);border-radius:4px;transition:all 0.5s ease}
+  .scan-hand-outline.detected .scan-hand-rect{border-color:rgba(74,140,63,0.7);background:rgba(74,140,63,0.15)}
   .scan-hand-label{font-family:'Space Mono',monospace;font-size:8px;letter-spacing:0.2em;color:rgba(74,140,63,0.25);position:absolute;bottom:-5px;text-align:center;width:100%}
   .scan-hand-outline.detected .scan-hand-label{color:rgba(74,140,63,0.6)}
-  .hand-canvas{width:100%;height:100%}
 
   /* scan line now drawn on canvas */
 
@@ -334,11 +335,11 @@
   </div>
   <div class="scan-hands-area" id="scanHandsArea" style="display:none">
     <div class="scan-hand-outline left" id="scanHandLeft">
-      <canvas id="handCanvasLeft" width="300" height="450" class="hand-canvas"></canvas>
+      <div class="scan-hand-rect"></div>
       <div class="scan-hand-label">Place your left hand</div>
     </div>
     <div class="scan-hand-outline right" id="scanHandRight">
-      <canvas id="handCanvasRight" width="300" height="450" class="hand-canvas"></canvas>
+      <div class="scan-hand-rect"></div>
       <div class="scan-hand-label">Place your right hand</div>
     </div>
   </div>
@@ -1623,8 +1624,8 @@
     return { scene, camera, renderer, hand, scanPlane };
   }
 
-  const leftHandScene = createHandScene(handCanvasLeft, true);
-  const rightHandScene = createHandScene(handCanvasRight, false);
+  const leftHandScene = handCanvasLeft ? createHandScene(handCanvasLeft, true) : null;
+  const rightHandScene = handCanvasRight ? createHandScene(handCanvasRight, false) : null;
 
   function animate3DHands(time) {
     const leftDetected = scanHandLeft.classList.contains('detected');
@@ -1634,6 +1635,7 @@
       { hs: leftHandScene, detected: leftDetected },
       { hs: rightHandScene, detected: rightDetected }
     ].forEach(({ hs, detected }) => {
+      if (!hs) return;
       const { scene, camera, renderer, hand, scanPlane } = hs;
       const pulse = 0.7 + 0.3 * Math.sin(time * 0.002);
 
