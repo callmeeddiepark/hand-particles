@@ -2693,7 +2693,12 @@
     pfHandCanvas.style.display = '';
     resizePfCanvas();
     pfSmooth = [null, null];
+    targetInitialized = false;
     pfHandGuide.classList.remove('hidden');
+    // Restart camera if in mouse mode (camera was stopped)
+    if (mouseMode && !mediaCam) {
+      initCamera().catch(err => console.warn('Camera restart failed:', err));
+    }
     if (!pfHandAnimId) animatePortfolioHands();
     // Ensure cursor matches current mode
     document.body.style.cursor = mouseMode ? 'default' : 'none';
