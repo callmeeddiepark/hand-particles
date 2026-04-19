@@ -2190,15 +2190,17 @@
     ctx.fillText(label, pts[0].x * w, pts[0].y * h + 30);
   }
 
+  const TIP_W = 80;
+  const TIP_H = Math.round(TIP_W * 9 / 16); // 45
+
   function drawFingertipCircle(ctx, x, y, radius, project, colorIdx) {
-    // Filled circle
-    ctx.beginPath();
-    ctx.arc(x, y, radius, 0, Math.PI * 2);
+    const hw = TIP_W / 2, hh = TIP_H / 2;
+    // Filled rectangle
     ctx.fillStyle = PF_CIRCLE_COLORS[colorIdx % PF_CIRCLE_COLORS.length];
-    ctx.fill();
+    ctx.fillRect(x - hw, y - hh, TIP_W, TIP_H);
 
     // Project title initial
-    ctx.font = `bold ${Math.round(radius * 0.9)}px 'Syne', sans-serif`;
+    ctx.font = `bold 16px 'Syne', sans-serif`;
     ctx.fillStyle = '#fff';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
@@ -2208,7 +2210,7 @@
     ctx.font = '8px "Space Mono", monospace';
     ctx.fillStyle = 'rgba(255,255,255,0.5)';
     ctx.textBaseline = 'top';
-    ctx.fillText(project.role, x, y + radius + 6);
+    ctx.fillText(project.role, x, y + hh + 4);
   }
 
   // Floating target circle state
