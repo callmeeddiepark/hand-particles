@@ -167,7 +167,7 @@
   .portfolio-light{position:fixed;width:300px;height:300px;border-radius:50%;background:radial-gradient(circle,rgba(74,140,63,0.04) 0%,transparent 70%);pointer-events:none;z-index:1;transform:translate(-50%,-50%);transition:left .1s linear,top .1s linear;display:none}
 
   /* PROJECT MODAL */
-  .project-modal-overlay{position:fixed;inset:0;z-index:200;background:rgba(0,0,0,0.95);backdrop-filter:blur(12px);display:none;align-items:center;justify-content:center;transition:clip-path 2s cubic-bezier(.16,1,.3,1)}
+  .project-modal-overlay{position:fixed;inset:0;z-index:200;background:rgba(0,0,0,0.95);backdrop-filter:blur(12px);display:none;align-items:center;justify-content:center;transition:clip-path 2s cubic-bezier(.16,1,.3,1),inset 2s cubic-bezier(.16,1,.3,1)}
   .project-modal-overlay.active{display:flex}
   @keyframes glitchReveal{0%{filter:none}10%{filter:hue-rotate(90deg) saturate(3) brightness(1.5)}12%{filter:none}20%{filter:invert(1) hue-rotate(180deg)}22%{filter:none}30%{filter:hue-rotate(-90deg) contrast(2) brightness(0.8)}32%{filter:none}45%{filter:saturate(5) hue-rotate(45deg) brightness(1.3)}47%{filter:none}60%{filter:hue-rotate(270deg) brightness(1.2)}62%{filter:none}80%{filter:contrast(1.5) saturate(1.5)}85%{filter:none}100%{filter:none}}
   .project-modal-overlay.glitch{animation:glitchReveal 2s ease-out forwards}
@@ -2647,14 +2647,16 @@
     document.body.style.cursor = 'default';
     const ox = originX !== undefined ? originX : window.innerWidth / 2;
     const oy = originY !== undefined ? originY : window.innerHeight / 2;
-    projectModal.style.clipPath = `circle(0px at ${ox}px ${oy}px)`;
+    // Rectangle reveal from origin point
+    const vw = window.innerWidth, vh = window.innerHeight;
+    projectModal.style.clipPath = `inset(${oy}px ${vw - ox}px ${vh - oy}px ${ox}px)`;
     projectModal.classList.remove('glitch');
     projectModal.style.display = 'flex';
     projectModal.classList.add('active');
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
         projectModal.classList.add('glitch');
-        projectModal.style.clipPath = `circle(150% at ${ox}px ${oy}px)`;
+        projectModal.style.clipPath = 'inset(0px 0px 0px 0px)';
       });
     });
   }
@@ -2686,12 +2688,10 @@
   document.getElementById('modalNext').addEventListener('click', (e) => { e.stopPropagation(); navigateProject(1); });
 
   function closeProjectModal() {
-    // Shrink circle back
-    const current = projectModal.style.clipPath;
-    const match = current.match(/at\s+([\d.]+)px\s+([\d.]+)px/);
-    if (match) {
-      projectModal.style.clipPath = `circle(0px at ${match[1]}px ${match[2]}px)`;
-    }
+    // Shrink rectangle back to center
+    const vw = window.innerWidth, vh = window.innerHeight;
+    const cx = vw / 2, cy = vh / 2;
+    projectModal.style.clipPath = `inset(${cy}px ${vw - cx}px ${vh - cy}px ${cx}px)`;
     setTimeout(() => {
       projectModal.classList.remove('active');
       projectModal.classList.remove('glitch');
