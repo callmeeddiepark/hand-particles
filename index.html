@@ -2191,26 +2191,37 @@
   }
 
   const TIP_W = 160;
-  const TIP_H = Math.round(TIP_W * 9 / 16); // 45
+  const TIP_H = Math.round(TIP_W * 9 / 16);
+  let tipRevealStart = 0; // timestamp when hands first detected
+  const TIP_REVEAL_DURATION = 500; // ms
 
   function drawFingertipCircle(ctx, x, y, radius, project, colorIdx) {
-    const hw = TIP_W / 2, hh = TIP_H / 2;
-    // Filled rectangle
+    // Expand animation
+    const elapsed = performance.now() - tipRevealStart;
+    const progress = Math.min(1, elapsed / TIP_REVEAL_DURATION);
+    const ease = 1 - Math.pow(1 - progress, 3); // ease-out cubic
+    const cw = TIP_W * ease, ch = TIP_H * ease;
+    const hw = cw / 2, hh = ch / 2;
+
+    // Filled rectangle expanding from center
     ctx.fillStyle = PF_CIRCLE_COLORS[colorIdx % PF_CIRCLE_COLORS.length];
-    ctx.fillRect(x - hw, y - hh, TIP_W, TIP_H);
+    ctx.fillRect(x - hw, y - hh, cw, ch);
 
-    // Project title initial
-    ctx.font = `bold 28px 'Syne', sans-serif`;
-    ctx.fillStyle = '#fff';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText(project.title.split('-')[0].replace('Project ',''), x, y);
+    if (progress > 0.3) {
+      const textAlpha = Math.min(1, (progress - 0.3) / 0.7);
+      // Project title initial
+      ctx.font = `bold 28px 'Syne', sans-serif`;
+      ctx.fillStyle = `rgba(255,255,255,${textAlpha})`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(project.title.split('-')[0].replace('Project ',''), x, y);
 
-    // Label below
-    ctx.font = '8px "Space Mono", monospace';
-    ctx.fillStyle = 'rgba(255,255,255,0.5)';
-    ctx.textBaseline = 'top';
-    ctx.fillText(project.role, x, y + hh + 4);
+      // Label below
+      ctx.font = '8px "Space Mono", monospace';
+      ctx.fillStyle = `rgba(255,255,255,${textAlpha * 0.5})`;
+      ctx.textBaseline = 'top';
+      ctx.fillText(project.role, x, y + hh + 4);
+    }
   }
 
   // Floating target circle state
@@ -2289,7 +2300,9 @@
 
     if (!hasHands) {
       pfHandGuide.classList.remove('hidden');
+      tipRevealStart = 0;
     } else {
+      if (tipRevealStart === 0) tipRevealStart = performance.now();
       pfHandGuide.classList.add('hidden');
 
       for (let hi = 0; hi < allHandLandmarks.length; hi++) {
