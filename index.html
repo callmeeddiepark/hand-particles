@@ -2747,8 +2747,8 @@
       initCamera().catch(err => console.warn('Camera restart failed:', err));
     }
     if (!pfHandAnimId) animatePortfolioHands();
-    // Ensure cursor matches current mode
-    document.body.style.cursor = mouseMode ? 'default' : 'none';
+    // Portfolio always allows mouse cursor + hand tracking simultaneously
+    document.body.style.cursor = 'default';
   }
 
   function showLanding() {
