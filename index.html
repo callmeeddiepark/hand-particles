@@ -172,6 +172,10 @@
   .project-modal-overlay.glitch{animation:glitchReveal 2s ease-out forwards}
   .project-modal{width:90vw;max-width:90vw;height:90vh;max-height:90vh;overflow-y:auto;background:#111;border:1px solid rgba(255,255,255,0.06);border-radius:4px;position:relative;transform:scale(0.95) translateY(20px);transition:transform .4s cubic-bezier(.16,1,.3,1)}
   .project-modal-overlay.active .project-modal{transform:scale(1) translateY(0)}
+  .modal-nav{position:absolute;top:50%;transform:translateY(-50%);width:48px;height:48px;border:1px solid rgba(255,255,255,0.15);border-radius:50%;background:rgba(0,0,0,0.4);color:rgba(255,255,255,0.6);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .3s ease;z-index:10;backdrop-filter:blur(4px)}
+  .modal-nav:hover{border-color:rgba(255,255,255,0.4);color:#fff;background:rgba(255,255,255,0.1)}
+  .modal-nav-left{left:20px}
+  .modal-nav-right{right:20px}
   .modal-close{position:absolute;top:16px;right:16px;width:36px;height:36px;border:1px solid rgba(255,255,255,0.1);border-radius:2px;background:rgba(0,0,0,0.5);color:var(--fg);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .3s ease;z-index:5;font-family:'Space Mono',monospace;backdrop-filter:blur(4px)}
   .modal-close:hover,.modal-close.pinch-hover{border-color:rgba(74,140,63,0.5);color:var(--accent);background:rgba(74,140,63,0.05)}
   .modal-video{width:100%;aspect-ratio:16/9;background:#080808;overflow:hidden;display:flex;align-items:center;justify-content:center;position:relative}
@@ -651,6 +655,8 @@
 </div>
 
 <div class="project-modal-overlay" id="projectModal">
+  <button class="modal-nav modal-nav-left" id="modalPrev"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M15 6L9 12L15 18"/></svg></button>
+  <button class="modal-nav modal-nav-right" id="modalNext"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M9 6L15 12L9 18"/></svg></button>
   <div class="project-modal">
     <button class="modal-close" id="modalClose">&times;</button>
     <div class="modal-video" id="modalVideo"></div>
@@ -2614,19 +2620,12 @@
 
   // Modal
   function openProjectModal(p, originX, originY) {
-    const modalVideo = document.getElementById('modalVideo');
-    document.getElementById('modalTitle').textContent = p.title;
-    document.getElementById('modalRole').textContent = p.role;
-    document.getElementById('modalDesc').textContent = p.desc;
-    if (p.videoSrc) {
-      if (p.videoType === 'youtube') {
-        modalVideo.innerHTML = `<iframe src="${p.videoSrc}" allowfullscreen></iframe>`;
-      } else {
-        modalVideo.innerHTML = `<video src="${p.videoSrc}" controls></video>`;
-      }
-    } else {
-      modalVideo.innerHTML = '<div class="placeholder-text">Video Coming Soon</div>';
-    }
+    // Track current project index
+    const idx = ALL_PROJECTS.indexOf(p);
+    if (idx >= 0) currentModalProjectIdx = idx;
+    updateModalContent(p);
+    // Enable mouse cursor in modal
+    document.body.style.cursor = 'default';
     const ox = originX !== undefined ? originX : window.innerWidth / 2;
     const oy = originY !== undefined ? originY : window.innerHeight / 2;
     projectModal.style.clipPath = `circle(0px at ${ox}px ${oy}px)`;
@@ -2640,6 +2639,32 @@
       });
     });
   }
+
+  let currentModalProjectIdx = 0;
+
+  function updateModalContent(p) {
+    const modalVideo = document.getElementById('modalVideo');
+    document.getElementById('modalTitle').textContent = p.title;
+    document.getElementById('modalRole').textContent = p.role;
+    document.getElementById('modalDesc').textContent = p.desc;
+    if (p.videoSrc) {
+      if (p.videoType === 'youtube') {
+        modalVideo.innerHTML = `<iframe src="${p.videoSrc}" allowfullscreen></iframe>`;
+      } else {
+        modalVideo.innerHTML = `<video src="${p.videoSrc}" controls></video>`;
+      }
+    } else {
+      modalVideo.innerHTML = '<div class="placeholder-text">Video Coming Soon</div>';
+    }
+  }
+
+  function navigateProject(dir) {
+    currentModalProjectIdx = (currentModalProjectIdx + dir + ALL_PROJECTS.length) % ALL_PROJECTS.length;
+    updateModalContent(ALL_PROJECTS[currentModalProjectIdx]);
+  }
+
+  document.getElementById('modalPrev').addEventListener('click', (e) => { e.stopPropagation(); navigateProject(-1); });
+  document.getElementById('modalNext').addEventListener('click', (e) => { e.stopPropagation(); navigateProject(1); });
 
   function closeProjectModal() {
     // Shrink circle back
@@ -2655,6 +2680,8 @@
       projectModal.style.clipPath = '';
       const modalVideo = document.getElementById('modalVideo');
       modalVideo.innerHTML = '';
+      // Restore cursor
+      document.body.style.cursor = mouseMode ? 'default' : 'none';
     }, 2000);
   }
 
