@@ -2190,7 +2190,7 @@
     ctx.fillText(label, pts[0].x * w, pts[0].y * h + 30);
   }
 
-  const TIP_W = 80;
+  const TIP_W = 160;
   const TIP_H = Math.round(TIP_W * 9 / 16); // 45
 
   function drawFingertipCircle(ctx, x, y, radius, project, colorIdx) {
@@ -2200,7 +2200,7 @@
     ctx.fillRect(x - hw, y - hh, TIP_W, TIP_H);
 
     // Project title initial
-    ctx.font = `bold 16px 'Syne', sans-serif`;
+    ctx.font = `bold 28px 'Syne', sans-serif`;
     ctx.fillStyle = '#fff';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
