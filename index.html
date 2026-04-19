@@ -2263,12 +2263,12 @@
     ctx.lineWidth = 1.5;
     ctx.strokeRect(targetX - hw, targetY - hh, TARGET_W, TARGET_H);
     // Center text
-    ctx.font = '9px "Space Mono", monospace';
+    ctx.font = '18px "Space Mono", monospace';
     ctx.fillStyle = 'rgba(255,255,255,0.3)';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillText('Place the project on your', targetX, targetY - 6);
-    ctx.fillText('finger here to explore', targetX, targetY + 6);
+    ctx.fillText('Place the project on your', targetX, targetY - 12);
+    ctx.fillText('finger here to explore', targetX, targetY + 12);
     // Pulsing glow
     const pulse = 0.5 + Math.sin(performance.now() * 0.003) * 0.5;
     ctx.strokeStyle = `rgba(255,255,255,${0.05 + pulse * 0.08})`;
