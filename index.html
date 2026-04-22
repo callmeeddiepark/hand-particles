@@ -43,7 +43,7 @@
   .scan-hand-outline.right{right:5%}
   .scan-hand-rect{width:100%;height:100%;border:2px solid rgba(57,255,20,0.4);background:rgba(57,255,20,0.08);border-radius:4px;transition:all 0.5s ease}
   .scan-hand-outline.detected .scan-hand-rect{border-color:rgba(57,255,20,0.7);background:rgba(57,255,20,0.15)}
-  .scan-hand-label{font-family:'Space Mono',monospace;font-size:14px;letter-spacing:0.2em;color:rgba(57,255,20,0.35);position:absolute;bottom:-25px;text-align:center;width:100%;text-transform:uppercase}
+  .scan-hand-label{font-family:'Space Mono',monospace;font-size:14px;letter-spacing:0.2em;color:rgba(57,255,20,0.35);position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;width:100%;text-transform:uppercase}
   .scan-hand-outline.detected .scan-hand-label{color:rgba(57,255,20,0.6)}
 
   /* scan line now drawn on canvas */
@@ -1878,7 +1878,7 @@
     } else {
       scanHandLeft.classList.remove('detected');
       scanHandRight.classList.remove('detected');
-      scanStatus.textContent = 'PLACE BOTH HANDS';
+      scanStatus.textContent = '';
       scanStatus.classList.remove('scanning');
       scanProgress = Math.max(0, scanProgress - 0.8);
     }
