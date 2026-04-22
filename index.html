@@ -7,7 +7,7 @@
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;500;700;800&display=swap');
   *{margin:0;padding:0;box-sizing:border-box}
-  :root{--bg:#191919;--fg:#111;--dim:rgba(0,0,0,0.08);--mid:rgba(0,0,0,0.3);--accent:#4a8c3f}
+  :root{--bg:#191919;--fg:#111;--dim:rgba(0,0,0,0.08);--mid:rgba(0,0,0,0.3);--accent:#39ff14}
   html,body{background:var(--bg);color:var(--fg);font-family:'Space Mono',monospace;overflow:hidden;height:100dvh;width:100vw;-webkit-font-smoothing:antialiased}
 
   .grain{position:fixed;inset:-50%;width:200%;height:200%;z-index:9999;pointer-events:none;opacity:0.03;
@@ -21,42 +21,42 @@
   #scanCanvas{position:absolute;inset:0;width:100%;height:100%;z-index:0}
 
   .scan-tap-prompt{position:absolute;inset:0;z-index:5;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-direction:column;gap:16px}
-  .scan-tap-prompt .tap-text{font-family:'Syne',sans-serif;font-size:16px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:rgba(74,140,63,0.6)}
-  .scan-tap-prompt .tap-sub{font-family:'Space Mono',monospace;font-size:13px;letter-spacing:.3em;color:rgba(74,140,63,0.35);animation:statusPulse 1s ease infinite alternate}
+  .scan-tap-prompt .tap-text{font-family:'Syne',sans-serif;font-size:16px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:rgba(57,255,20,0.6)}
+  .scan-tap-prompt .tap-sub{font-family:'Space Mono',monospace;font-size:13px;letter-spacing:.3em;color:rgba(57,255,20,0.35);animation:statusPulse 1s ease infinite alternate}
 
   .scan-ui{position:relative;z-index:2;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none;opacity:0;transition:opacity .8s ease}
   .scan-bottom{position:fixed;bottom:40px;left:0;right:0;display:flex;flex-direction:column;align-items:center;gap:12px;z-index:4;pointer-events:none}
   .scan-ui.visible{opacity:1}
 
   .scan-howto{text-align:center;max-width:700px;padding:0 20px;position:absolute;top:calc(50% + 55px);left:50%;transform:translate(-50%,-65%)}
-  .scan-howto-main{font-family:'Syne',sans-serif;font-size:22px;font-weight:700;color:rgba(74,140,63,0.9);margin-bottom:8px;letter-spacing:0.12em;line-height:1.4;white-space:nowrap}
-  .scan-howto-sub{font-family:'Space Mono',monospace;font-size:13px;color:rgba(74,140,63,0.4);line-height:1.8;margin-bottom:28px}
+  .scan-howto-main{font-family:'Syne',sans-serif;font-size:22px;font-weight:700;color:rgba(57,255,20,0.9);margin-bottom:8px;letter-spacing:0.12em;line-height:1.4;white-space:nowrap}
+  .scan-howto-sub{font-family:'Space Mono',monospace;font-size:13px;color:rgba(57,255,20,0.4);line-height:1.8;margin-bottom:28px}
   .scan-howto-guide{display:flex;gap:24px;justify-content:center;flex-wrap:wrap}
   .scan-guide-item{display:flex;flex-direction:column;align-items:center;gap:6px}
   .scan-guide-icon{font-size:24px}
-  .scan-guide-text{font-family:'Space Mono',monospace;font-size:9px;color:rgba(74,140,63,0.5);letter-spacing:0.1em;text-transform:uppercase}
+  .scan-guide-text{font-family:'Space Mono',monospace;font-size:9px;color:rgba(57,255,20,0.5);letter-spacing:0.1em;text-transform:uppercase}
 
   .scan-hands-area{position:fixed;inset:0;z-index:3;pointer-events:none}
   .scan-hand-outline{position:absolute;top:50%;transform:translateY(-50%);width:600px;height:750px;display:flex;flex-direction:column;align-items:center;justify-content:center;transition:all 0.5s ease}
   .scan-hand-outline.left{left:5%}
   .scan-hand-outline.right{right:5%}
-  .scan-hand-rect{width:100%;height:100%;border:2px solid rgba(74,140,63,0.4);background:rgba(74,140,63,0.08);border-radius:4px;transition:all 0.5s ease}
-  .scan-hand-outline.detected .scan-hand-rect{border-color:rgba(74,140,63,0.7);background:rgba(74,140,63,0.15)}
-  .scan-hand-label{font-family:'Space Mono',monospace;font-size:8px;letter-spacing:0.2em;color:rgba(74,140,63,0.25);position:absolute;bottom:-5px;text-align:center;width:100%}
-  .scan-hand-outline.detected .scan-hand-label{color:rgba(74,140,63,0.6)}
+  .scan-hand-rect{width:100%;height:100%;border:2px solid rgba(57,255,20,0.4);background:rgba(57,255,20,0.08);border-radius:4px;transition:all 0.5s ease}
+  .scan-hand-outline.detected .scan-hand-rect{border-color:rgba(57,255,20,0.7);background:rgba(57,255,20,0.15)}
+  .scan-hand-label{font-family:'Space Mono',monospace;font-size:8px;letter-spacing:0.2em;color:rgba(57,255,20,0.25);position:absolute;bottom:-5px;text-align:center;width:100%}
+  .scan-hand-outline.detected .scan-hand-label{color:rgba(57,255,20,0.6)}
 
   /* scan line now drawn on canvas */
 
-  .scan-status{font-family:'Space Mono',monospace;font-size:12px;letter-spacing:0.3em;color:rgba(74,140,63,0.5);text-transform:uppercase;margin-top:15px;margin-bottom:16px;transition:color 0.3s ease}
-  .scan-status.scanning{color:rgba(74,140,63,0.8);animation:statusPulse 0.5s ease infinite alternate}
+  .scan-status{font-family:'Space Mono',monospace;font-size:12px;letter-spacing:0.3em;color:rgba(57,255,20,0.5);text-transform:uppercase;margin-top:15px;margin-bottom:16px;transition:color 0.3s ease}
+  .scan-status.scanning{color:rgba(57,255,20,0.8);animation:statusPulse 0.5s ease infinite alternate}
   @keyframes statusPulse{0%{opacity:0.6}100%{opacity:1}}
 
-  .scan-progress-bar{width:200px;height:3px;background:rgba(74,140,63,0.1);border-radius:2px;overflow:hidden;margin:8px auto 0}
-  .scan-progress-fill{width:0%;height:100%;background:rgba(74,140,63,0.7);transition:width 0.1s linear;box-shadow:0 0 8px rgba(74,140,63,0.5)}
+  .scan-progress-bar{width:200px;height:3px;background:rgba(57,255,20,0.1);border-radius:2px;overflow:hidden;margin:8px auto 0}
+  .scan-progress-fill{width:0%;height:100%;background:rgba(57,255,20,0.7);transition:width 0.1s linear;box-shadow:0 0 8px rgba(57,255,20,0.5)}
 
-  .scan-approved{position:fixed;inset:0;z-index:10;display:none;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-size:clamp(36px,8vw,72px);font-weight:800;letter-spacing:0.3em;color:rgba(74,140,63,0);text-transform:uppercase;text-shadow:0 0 40px rgba(74,140,63,0.5),0 0 80px rgba(74,140,63,0.3)}
+  .scan-approved{position:fixed;inset:0;z-index:10;display:none;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-size:clamp(36px,8vw,72px);font-weight:800;letter-spacing:0.3em;color:rgba(57,255,20,0);text-transform:uppercase;text-shadow:0 0 40px rgba(57,255,20,0.5),0 0 80px rgba(57,255,20,0.3)}
   .scan-approved.show{display:flex;animation:approvedFlash 2s ease forwards}
-  @keyframes approvedFlash{0%{color:rgba(74,140,63,0);background:rgba(74,140,63,0)}10%{background:rgba(74,140,63,0.15);color:rgba(74,140,63,1)}40%{background:rgba(74,140,63,0.05);color:rgba(74,140,63,0.9)}100%{color:rgba(74,140,63,0);background:rgba(0,0,0,0)}}
+  @keyframes approvedFlash{0%{color:rgba(57,255,20,0);background:rgba(57,255,20,0)}10%{background:rgba(57,255,20,0.15);color:rgba(57,255,20,1)}40%{background:rgba(57,255,20,0.05);color:rgba(57,255,20,0.9)}100%{color:rgba(57,255,20,0);background:rgba(0,0,0,0)}}
 
   /* PAGE 2 */
   #page-landing{position:fixed;inset:0;z-index:50;display:none;opacity:0;transition:opacity .8s ease}
@@ -117,8 +117,8 @@
   .globe-labels{position:absolute;inset:0;z-index:2;pointer-events:none}
   .globe-label{position:absolute;pointer-events:auto;cursor:pointer;display:flex;align-items:center;gap:8px;transform:translate(-50%,-50%);transition:opacity .3s ease;opacity:0;user-select:none}
   .globe-label.visible{opacity:1}
-  .globe-label-dot{width:6px;height:6px;border-radius:50%;background:rgba(74,140,63,0.8);box-shadow:0 0 8px rgba(74,140,63,0.4),0 0 20px rgba(74,140,63,0.15);transition:all .3s ease;animation:globePulse 2s ease-in-out infinite}
-  @keyframes globePulse{0%,100%{box-shadow:0 0 8px rgba(74,140,63,0.4),0 0 20px rgba(74,140,63,0.15)}50%{box-shadow:0 0 12px rgba(74,140,63,0.6),0 0 30px rgba(74,140,63,0.25)}}
+  .globe-label-dot{width:6px;height:6px;border-radius:50%;background:rgba(57,255,20,0.8);box-shadow:0 0 8px rgba(57,255,20,0.4),0 0 20px rgba(57,255,20,0.15);transition:all .3s ease;animation:globePulse 2s ease-in-out infinite}
+  @keyframes globePulse{0%,100%{box-shadow:0 0 8px rgba(57,255,20,0.4),0 0 20px rgba(57,255,20,0.15)}50%{box-shadow:0 0 12px rgba(57,255,20,0.6),0 0 30px rgba(57,255,20,0.25)}}
   .globe-label:hover .globe-label-dot{background:var(--accent);transform:scale(1.5)}
   .globe-label-info{display:flex;flex-direction:column;gap:2px}
   .globe-label-name{font-family:'Syne',sans-serif;font-weight:700;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,0.7);white-space:nowrap;transition:color .3s ease}
@@ -128,7 +128,7 @@
   .country-panel.active{display:block;opacity:1}
   .country-panel-header{position:sticky;top:0;z-index:5;display:flex;align-items:center;gap:16px;padding:24px 40px;background:linear-gradient(180deg,var(--bg) 80%,transparent)}
   .country-back{width:36px;height:36px;border:1px solid rgba(255,255,255,0.1);border-radius:2px;background:transparent;color:var(--fg);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .3s ease;font-family:'Space Mono',monospace}
-  .country-back:hover,.country-back.pinch-hover{border-color:rgba(74,140,63,0.5);color:var(--accent)}
+  .country-back:hover,.country-back.pinch-hover{border-color:rgba(57,255,20,0.5);color:var(--accent)}
   .country-title{font-family:'Syne',sans-serif;font-weight:700;font-size:24px;color:var(--fg);letter-spacing:.08em;text-transform:uppercase;flex:1}
   .country-count{font-family:'Space Mono',monospace;font-size:10px;color:rgba(255,255,255,0.2);letter-spacing:.15em}
   .country-projects{max-width:960px;margin:0 auto;padding:20px 32px 80px}
@@ -138,33 +138,33 @@
   /* Card with media art styling */
   .project-card{background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);border-radius:4px;overflow:hidden;cursor:pointer;transition:border-color .4s ease,transform .4s cubic-bezier(.16,1,.3,1),box-shadow .4s ease;opacity:0;transform:translateY(40px);position:relative}
   .project-card.visible{opacity:1;transform:translateY(0)}
-  .project-card:hover,.project-card.pinch-hover{border-color:rgba(74,140,63,0.35);transform:translateY(-4px) scale(1.01);box-shadow:0 0 40px rgba(74,140,63,0.06),inset 0 0 30px rgba(74,140,63,0.02)}
-  .project-card::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(74,140,63,0.03) 0%,transparent 50%,rgba(0,255,255,0.02) 100%);opacity:0;transition:opacity .4s ease;z-index:1;pointer-events:none}
+  .project-card:hover,.project-card.pinch-hover{border-color:rgba(57,255,20,0.35);transform:translateY(-4px) scale(1.01);box-shadow:0 0 40px rgba(57,255,20,0.06),inset 0 0 30px rgba(57,255,20,0.02)}
+  .project-card::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(57,255,20,0.03) 0%,transparent 50%,rgba(0,255,255,0.02) 100%);opacity:0;transition:opacity .4s ease;z-index:1;pointer-events:none}
   .project-card:hover::before,.project-card.pinch-hover::before{opacity:1}
 
   /* Generative thumb canvas */
   .card-thumb{position:relative;width:100%;padding-top:56.25%;background:#0a0a0a;overflow:hidden}
   .card-thumb canvas{position:absolute;inset:0;width:100%;height:100%}
   .card-thumb .play-icon{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:48px;height:48px;border:1.5px solid rgba(255,255,255,0.12);border-radius:50%;display:flex;align-items:center;justify-content:center;transition:all .4s ease;z-index:2;backdrop-filter:blur(4px);background:rgba(0,0,0,0.3)}
-  .project-card:hover .play-icon,.project-card.pinch-hover .play-icon{border-color:rgba(74,140,63,0.4);box-shadow:0 0 20px rgba(74,140,63,0.15)}
+  .project-card:hover .play-icon,.project-card.pinch-hover .play-icon{border-color:rgba(57,255,20,0.4);box-shadow:0 0 20px rgba(57,255,20,0.15)}
   .play-icon svg{width:18px;height:18px;fill:rgba(255,255,255,0.35);margin-left:3px;transition:fill .3s ease}
-  .project-card:hover .play-icon svg,.project-card.pinch-hover .play-icon svg{fill:rgba(74,140,63,0.7)}
+  .project-card:hover .play-icon svg,.project-card.pinch-hover .play-icon svg{fill:rgba(57,255,20,0.7)}
   .card-index{position:absolute;top:12px;left:14px;font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.2em;color:rgba(255,255,255,.12);z-index:2}
   .card-body{padding:18px 20px 20px;position:relative;z-index:2}
   .card-title{font-family:'Syne',sans-serif;font-weight:700;font-size:16px;color:var(--fg);margin-bottom:8px;letter-spacing:.03em;transition:color .3s ease}
   .project-card:hover .card-title,.project-card.pinch-hover .card-title{color:var(--accent)}
   .card-desc{font-family:'Space Mono',monospace;font-size:11px;line-height:1.7;color:rgba(255,255,255,0.35);margin-bottom:14px}
-  .card-role{display:inline-block;padding:4px 14px;border:1px solid rgba(74,140,63,0.2);border-radius:2px;font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.12em;color:rgba(74,140,63,.7);text-transform:uppercase;transition:all .3s ease}
-  .project-card:hover .card-role,.project-card.pinch-hover .card-role{border-color:rgba(74,140,63,0.5);background:rgba(74,140,63,0.05)}
+  .card-role{display:inline-block;padding:4px 14px;border:1px solid rgba(57,255,20,0.2);border-radius:2px;font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.12em;color:rgba(57,255,20,.7);text-transform:uppercase;transition:all .3s ease}
+  .project-card:hover .card-role,.project-card.pinch-hover .card-role{border-color:rgba(57,255,20,0.5);background:rgba(57,255,20,0.05)}
 
   /* Scan line effect on cards */
   .card-scanline{position:absolute;inset:0;z-index:3;pointer-events:none;overflow:hidden;opacity:0;transition:opacity .4s ease}
   .project-card:hover .card-scanline,.project-card.pinch-hover .card-scanline{opacity:1}
-  .card-scanline::after{content:'';position:absolute;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,rgba(74,140,63,0.15),transparent);animation:scanDown 2s linear infinite}
+  .card-scanline::after{content:'';position:absolute;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,rgba(57,255,20,0.15),transparent);animation:scanDown 2s linear infinite}
   @keyframes scanDown{0%{top:-2px}100%{top:100%}}
 
   /* Light trail that follows cursor */
-  .portfolio-light{position:fixed;width:300px;height:300px;border-radius:50%;background:radial-gradient(circle,rgba(74,140,63,0.04) 0%,transparent 70%);pointer-events:none;z-index:1;transform:translate(-50%,-50%);transition:left .1s linear,top .1s linear;display:none}
+  .portfolio-light{position:fixed;width:300px;height:300px;border-radius:50%;background:radial-gradient(circle,rgba(57,255,20,0.04) 0%,transparent 70%);pointer-events:none;z-index:1;transform:translate(-50%,-50%);transition:left .1s linear,top .1s linear;display:none}
 
   /* PROJECT MODAL */
   .project-modal-overlay{position:fixed;inset:0;z-index:200;background:rgba(0,0,0,0.95);backdrop-filter:blur(12px);display:none;align-items:center;justify-content:center;transition:clip-path 2s cubic-bezier(.16,1,.3,1),inset 2s cubic-bezier(.16,1,.3,1)}
@@ -178,13 +178,13 @@
   .modal-nav-left{left:20px}
   .modal-nav-right{right:20px}
   .modal-close{position:absolute;top:16px;right:16px;width:36px;height:36px;border:1px solid rgba(255,255,255,0.1);border-radius:2px;background:rgba(0,0,0,0.5);color:var(--fg);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .3s ease;z-index:5;font-family:'Space Mono',monospace;backdrop-filter:blur(4px)}
-  .modal-close:hover,.modal-close.pinch-hover{border-color:rgba(74,140,63,0.5);color:var(--accent);background:rgba(74,140,63,0.05)}
+  .modal-close:hover,.modal-close.pinch-hover{border-color:rgba(57,255,20,0.5);color:var(--accent);background:rgba(57,255,20,0.05)}
   .modal-video{width:100%;aspect-ratio:16/9;background:#080808;overflow:hidden;display:flex;align-items:center;justify-content:center;position:relative}
   .modal-video iframe,.modal-video video{width:100%;height:100%;border:none}
   .modal-video .placeholder-text{font-family:'Space Mono',monospace;font-size:11px;color:rgba(255,255,255,0.12);letter-spacing:.15em;text-transform:uppercase}
   .modal-body{padding:28px 32px 36px}
   .modal-title{font-family:'Syne',sans-serif;font-weight:700;font-size:24px;color:var(--fg);margin-bottom:10px;letter-spacing:.02em}
-  .modal-role{display:inline-block;padding:5px 14px;border:1px solid rgba(74,140,63,0.25);border-radius:2px;font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.12em;color:rgba(74,140,63,.7);text-transform:uppercase;margin-bottom:20px}
+  .modal-role{display:inline-block;padding:5px 14px;border:1px solid rgba(57,255,20,0.25);border-radius:2px;font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.12em;color:rgba(57,255,20,.7);text-transform:uppercase;margin-bottom:20px}
   .modal-desc{font-family:'Space Mono',monospace;font-size:12px;line-height:1.9;color:rgba(255,255,255,0.4)}
 
   /* LABS PAGE */
@@ -196,7 +196,7 @@
   /* Orb cluster styles handled via canvas */
 
   /* Labs light trail */
-  .labs-light{position:fixed;width:300px;height:300px;border-radius:50%;background:radial-gradient(circle,rgba(74,140,63,0.04) 0%,transparent 70%);pointer-events:none;z-index:1;transform:translate(-50%,-50%);transition:left .1s linear,top .1s linear;display:none}
+  .labs-light{position:fixed;width:300px;height:300px;border-radius:50%;background:radial-gradient(circle,rgba(57,255,20,0.04) 0%,transparent 70%);pointer-events:none;z-index:1;transform:translate(-50%,-50%);transition:left .1s linear,top .1s linear;display:none}
 
   /* CONTACT PAGE */
   #page-contact{position:fixed;inset:0;z-index:60;display:none;opacity:0;transition:opacity .6s ease;background:var(--bg);overflow:hidden}
@@ -207,26 +207,26 @@
   .contact-value:hover{color:var(--accent)}
   @media(max-width:700px){.contact-value{font-size:16px}}
   canvas#contactCanvas{position:fixed;inset:0;width:100%;height:100%;z-index:2}
-  .contact-light{position:fixed;width:300px;height:300px;border-radius:50%;background:radial-gradient(circle,rgba(74,140,63,0.04) 0%,transparent 70%);pointer-events:none;z-index:0;transform:translate(-50%,-50%);transition:left .1s linear,top .1s linear;display:none}
+  .contact-light{position:fixed;width:300px;height:300px;border-radius:50%;background:radial-gradient(circle,rgba(57,255,20,0.04) 0%,transparent 70%);pointer-events:none;z-index:0;transform:translate(-50%,-50%);transition:left .1s linear,top .1s linear;display:none}
 
   /* Gesture cursor overlay for portfolio/modal */
   #gestureCursor{position:fixed;z-index:500;pointer-events:none;display:none}
   #gestureCursor .gc-ring{width:28px;height:28px;border:1.5px solid rgba(0,0,0,0.4);border-radius:50%;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);transition:width .15s ease,height .15s ease,border-color .15s ease}
-  #gestureCursor.pinching .gc-ring{width:16px;height:16px;border-color:rgba(74,140,63,0.6)}
+  #gestureCursor.pinching .gc-ring{width:16px;height:16px;border-color:rgba(57,255,20,0.6)}
   #gestureCursor .gc-dot{width:0;height:0;border-radius:50%;background:rgba(0,0,0,0.5);position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);transition:width .15s ease,height .15s ease}
   #gestureCursor.pinching .gc-dot{width:8px;height:8px}
-  #gestureCursor.hovering .gc-ring{border-color:rgba(74,140,63,0.5)}
+  #gestureCursor.hovering .gc-ring{border-color:rgba(57,255,20,0.5)}
 
   /* ABOUT PAGE */
   #page-about{position:fixed;inset:0;z-index:60;display:none;opacity:0;transition:opacity .6s ease;background:var(--bg);overflow-y:auto;overflow-x:hidden}
   #page-about.active{display:block;opacity:1}
   canvas#aboutCanvas{position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none}
-  .about-light{position:fixed;width:300px;height:300px;border-radius:50%;background:radial-gradient(circle,rgba(74,140,63,0.04) 0%,transparent 70%);pointer-events:none;z-index:0;transform:translate(-50%,-50%);transition:left .1s linear,top .1s linear;display:none}
+  .about-light{position:fixed;width:300px;height:300px;border-radius:50%;background:radial-gradient(circle,rgba(57,255,20,0.04) 0%,transparent 70%);pointer-events:none;z-index:0;transform:translate(-50%,-50%);transition:left .1s linear,top .1s linear;display:none}
   #section-dj,#section-tattoo{display:none;position:relative;width:100%;height:100%}
   #section-dj.active,#section-tattoo.active{display:block}
   #section-dj.active,#section-tattoo.active{overflow-y:auto}
   .labs-back-btn{position:fixed;top:70px;left:10%;z-index:10;padding:10px 24px;background:transparent;border:1px solid rgba(255,255,255,0.15);color:var(--fg);font-family:'Space Mono',monospace;font-size:11px;letter-spacing:.15em;text-transform:uppercase;cursor:pointer;transition:all .3s ease;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
-  .labs-back-btn:hover,.labs-back-btn.pinch-hover{border-color:var(--accent);color:var(--accent);background:rgba(74,140,63,0.05)}
+  .labs-back-btn:hover,.labs-back-btn.pinch-hover{border-color:var(--accent);color:var(--accent);background:rgba(57,255,20,0.05)}
   .about-content{position:relative;z-index:1}
   .resume-inner{max-width:700px;margin:0 auto;padding:120px 32px 80px;position:relative}
   .resume-header{margin-bottom:60px;position:relative}
@@ -248,19 +248,19 @@
   .skill-bar-label{font-family:'Space Mono',monospace;font-size:11px;letter-spacing:.1em;color:rgba(255,255,255,0.5);text-transform:uppercase;width:140px;flex-shrink:0}
   .skill-bar-track{flex:1;height:8px;background:rgba(255,255,255,0.04);border-radius:4px;position:relative;overflow:hidden}
   .skill-bar-fill{height:100%;border-radius:4px;position:relative;width:0}
-  .skill-bar-fill.normal{background:linear-gradient(90deg,rgba(74,140,63,0.3),rgba(74,140,63,0.7));box-shadow:0 0 8px rgba(74,140,63,0.3),0 0 16px rgba(74,140,63,0.15)}
-  .skill-bar-fill.overload{background:linear-gradient(90deg,rgba(74,140,63,0.5),rgba(74,140,63,0.9));box-shadow:0 0 12px rgba(74,140,63,0.4),0 0 24px rgba(74,140,63,0.2);border-radius:4px 0 0 4px}
-  .skill-bar-pct{font-family:'Space Mono',monospace;font-size:10px;color:rgba(74,140,63,0.6);width:36px;text-align:right;flex-shrink:0}
+  .skill-bar-fill.normal{background:linear-gradient(90deg,rgba(57,255,20,0.3),rgba(57,255,20,0.7));box-shadow:0 0 8px rgba(57,255,20,0.3),0 0 16px rgba(57,255,20,0.15)}
+  .skill-bar-fill.overload{background:linear-gradient(90deg,rgba(57,255,20,0.5),rgba(57,255,20,0.9));box-shadow:0 0 12px rgba(57,255,20,0.4),0 0 24px rgba(57,255,20,0.2);border-radius:4px 0 0 4px}
+  .skill-bar-pct{font-family:'Space Mono',monospace;font-size:10px;color:rgba(57,255,20,0.6);width:36px;text-align:right;flex-shrink:0}
   .skill-bar-track.overload-track{overflow:visible}
-  .skill-bar-burst-glow{position:absolute;right:0;top:50%;width:0;height:0;transform:translate(0,-50%);border-radius:50%;background:radial-gradient(circle,rgba(74,140,63,0.8),rgba(74,140,63,0.3) 40%,transparent 70%);opacity:0;z-index:5}
+  .skill-bar-burst-glow{position:absolute;right:0;top:50%;width:0;height:0;transform:translate(0,-50%);border-radius:50%;background:radial-gradient(circle,rgba(57,255,20,0.8),rgba(57,255,20,0.3) 40%,transparent 70%);opacity:0;z-index:5}
   .skill-bar-burst-glow.active{animation:burstGlow 0.8s ease-out forwards}
   @keyframes burstGlow{0%{width:0;height:0;opacity:1}30%{width:120px;height:120px;opacity:0.9}100%{width:200px;height:200px;opacity:0;transform:translate(0,-50%)}}
-  .skill-bar-burst-ring{position:absolute;right:0;top:50%;width:0;height:0;transform:translate(0,-50%);border-radius:50%;border:2px solid rgba(74,140,63,0.6);opacity:0;z-index:5}
+  .skill-bar-burst-ring{position:absolute;right:0;top:50%;width:0;height:0;transform:translate(0,-50%);border-radius:50%;border:2px solid rgba(57,255,20,0.6);opacity:0;z-index:5}
   .skill-bar-burst-ring.active{animation:burstRing 0.6s ease-out forwards}
   @keyframes burstRing{0%{width:0;height:0;opacity:1;border-width:3px}100%{width:160px;height:160px;opacity:0;border-width:1px;transform:translate(0,-50%)}}
-  .skill-bar-burst-flash{position:absolute;right:0;top:50%;width:20px;height:20px;transform:translate(0,-50%);border-radius:50%;background:rgba(74,140,63,1);opacity:0;z-index:6}
+  .skill-bar-burst-flash{position:absolute;right:0;top:50%;width:20px;height:20px;transform:translate(0,-50%);border-radius:50%;background:rgba(57,255,20,1);opacity:0;z-index:6}
   .skill-bar-burst-flash.active{animation:burstFlash 0.3s ease-out forwards}
-  @keyframes burstFlash{0%{opacity:1;width:20px;height:20px;box-shadow:0 0 30px rgba(74,140,63,1),0 0 60px rgba(74,140,63,0.5)}100%{opacity:0;width:40px;height:40px;transform:translate(0,-50%)}}
+  @keyframes burstFlash{0%{opacity:1;width:20px;height:20px;box-shadow:0 0 30px rgba(57,255,20,1),0 0 60px rgba(57,255,20,0.5)}100%{opacity:0;width:40px;height:40px;transform:translate(0,-50%)}}
   @keyframes barShake{0%{transform:translateX(0)}25%{transform:translateX(3px)}50%{transform:translateX(-2px)}75%{transform:translateX(2px)}100%{transform:translateX(0)}}
   .resume-divider{width:60px;height:1px;background:rgba(255,255,255,0.06);margin:48px 0}
 
@@ -354,15 +354,15 @@
   <div class="scan-bottom" id="scanBottom" style="display:none">
     <div class="scan-howto-guide">
       <div class="scan-guide-item">
-        <div class="scan-guide-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="rgba(74,140,63,0.5)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="3" fill="rgba(74,140,63,0.5)"/></svg></div>
+        <div class="scan-guide-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="rgba(57,255,20,0.5)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="3" fill="rgba(57,255,20,0.5)"/></svg></div>
         <div class="scan-guide-text">핀치</div>
-        <div style="width:40px;height:1px;background:rgba(74,140,63,0.2);margin-top:2px"></div>
+        <div style="width:40px;height:1px;background:rgba(57,255,20,0.2);margin-top:2px"></div>
         <div class="scan-guide-text" style="margin-top:2px">클릭</div>
       </div>
       <div class="scan-guide-item">
-        <div class="scan-guide-icon"><svg width="24" height="28" viewBox="0 0 24 28" fill="none" stroke="rgba(74,140,63,0.5)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1l-3 3m3-3l3 3"/><circle cx="12" cy="14" r="7"/><circle cx="12" cy="14" r="3" fill="rgba(74,140,63,0.5)"/><path d="M12 27l-3-3m3 3l3-3"/></svg></div>
+        <div class="scan-guide-icon"><svg width="24" height="28" viewBox="0 0 24 28" fill="none" stroke="rgba(57,255,20,0.5)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1l-3 3m3-3l3 3"/><circle cx="12" cy="14" r="7"/><circle cx="12" cy="14" r="3" fill="rgba(57,255,20,0.5)"/><path d="M12 27l-3-3m3 3l3-3"/></svg></div>
         <div class="scan-guide-text">핀치 + 드래그</div>
-        <div style="width:40px;height:1px;background:rgba(74,140,63,0.2);margin-top:2px"></div>
+        <div style="width:40px;height:1px;background:rgba(57,255,20,0.2);margin-top:2px"></div>
         <div class="scan-guide-text" style="margin-top:2px">스크롤</div>
       </div>
     </div>
@@ -1372,14 +1372,14 @@
         ctx.beginPath();
         ctx.moveTo(x, y - 12);
         ctx.lineTo(x, y + 12);
-        ctx.strokeStyle = 'rgba(74,140,63,0.4)';
+        ctx.strokeStyle = 'rgba(57,255,20,0.4)';
         ctx.lineWidth = 1.5;
         ctx.stroke();
         // Arrows
         ctx.beginPath();
         ctx.moveTo(x - 4, y - 8); ctx.lineTo(x, y - 12); ctx.lineTo(x + 4, y - 8);
         ctx.moveTo(x - 4, y + 8); ctx.lineTo(x, y + 12); ctx.lineTo(x + 4, y + 8);
-        ctx.strokeStyle = 'rgba(74,140,63,0.4)';
+        ctx.strokeStyle = 'rgba(57,255,20,0.4)';
         ctx.lineWidth = 1;
         ctx.stroke();
       } else {
@@ -1400,7 +1400,7 @@
       // Draw hover indicator
       ctx.beginPath();
       ctx.arc(x, y, ringRadius + 4, 0, Math.PI * 2);
-      ctx.strokeStyle = 'rgba(74,140,63,0.3)';
+      ctx.strokeStyle = 'rgba(57,255,20,0.3)';
       ctx.lineWidth = 1;
       ctx.stroke();
     }
@@ -1706,7 +1706,7 @@
     const scale = Math.min(w, h) * 0.0028;
 
     scanCtx.save();
-    scanCtx.strokeStyle = 'rgba(74,140,63,0.12)';
+    scanCtx.strokeStyle = 'rgba(57,255,20,0.12)';
     scanCtx.lineWidth = 1.5;
     scanCtx.setLineDash([6, 4]);
 
@@ -1803,7 +1803,7 @@
       const x = i * fontSize;
       const y = col.y * fontSize;
       const alpha = 0.05 + Math.random() * 0.15;
-      scanCtx.fillStyle = `rgba(74,140,63,${alpha})`;
+      scanCtx.fillStyle = `rgba(57,255,20,${alpha})`;
       scanCtx.fillText(char, x, y);
       col.y += col.speed;
       if (col.y * fontSize > scanCanvas.height && Math.random() > 0.975) {
@@ -1835,7 +1835,7 @@
     const ch = scanCanvas.height;
     for (const lm of allHandLandmarks) {
       // Draw connections
-      scanCtx.strokeStyle = 'rgba(74,140,63,0.4)';
+      scanCtx.strokeStyle = 'rgba(57,255,20,0.4)';
       scanCtx.lineWidth = 1.5;
       for (const [a, b] of HAND_CONNECTIONS) {
         const ax = (1 - lm[a].x) * cw, ay = lm[a].y * ch;
@@ -1851,7 +1851,7 @@
         const y = lm[i].y * ch;
         scanCtx.beginPath();
         scanCtx.arc(x, y, 3, 0, Math.PI * 2);
-        scanCtx.fillStyle = 'rgba(74,140,63,0.7)';
+        scanCtx.fillStyle = 'rgba(57,255,20,0.7)';
         scanCtx.fill();
       }
     }
@@ -2601,11 +2601,11 @@
 
   // === Generative thumb patterns ===
   const THUMB_PATTERNS = [
-    (ctx,w,h,t,s)=>{ctx.fillStyle='#0a0a0a';ctx.fillRect(0,0,w,h);for(let i=0;i<120;i++){const x=(((s*73+i*37)%w));const y=(((s*91+i*53)%h));const a=Math.sin(x*0.02+t+s)*Math.cos(y*0.02+t)*Math.PI;const len=15+Math.sin(i+t*2)*8;ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+Math.cos(a)*len,y+Math.sin(a)*len);ctx.strokeStyle=`rgba(74,140,63,${0.08+Math.sin(i*0.5+t)*0.04})`;ctx.lineWidth=1;ctx.stroke();}},
+    (ctx,w,h,t,s)=>{ctx.fillStyle='#0a0a0a';ctx.fillRect(0,0,w,h);for(let i=0;i<120;i++){const x=(((s*73+i*37)%w));const y=(((s*91+i*53)%h));const a=Math.sin(x*0.02+t+s)*Math.cos(y*0.02+t)*Math.PI;const len=15+Math.sin(i+t*2)*8;ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+Math.cos(a)*len,y+Math.sin(a)*len);ctx.strokeStyle=`rgba(57,255,20,${0.08+Math.sin(i*0.5+t)*0.04})`;ctx.lineWidth=1;ctx.stroke();}},
     (ctx,w,h,t,s)=>{ctx.fillStyle='#0a0a0a';ctx.fillRect(0,0,w,h);for(let i=0;i<8;i++){const r=20+i*18+Math.sin(t+i+s)*10;ctx.beginPath();ctx.arc(w/2+Math.sin(t*0.7+i+s)*30,h/2+Math.cos(t*0.5+i+s)*20,r,0,Math.PI*2);ctx.strokeStyle=`rgba(0,255,255,${0.06+i*0.01})`;ctx.lineWidth=0.8;ctx.stroke();}},
     (ctx,w,h,t,s)=>{ctx.fillStyle='#0a0a0a';ctx.fillRect(0,0,w,h);const g=20;for(let x=0;x<w;x+=g){for(let y=0;y<h;y+=g){const ox=Math.sin(y*0.03+t+s)*6;const oy=Math.cos(x*0.03+t+s)*6;ctx.fillStyle=`rgba(255,0,255,${0.04+Math.sin(x*0.05+y*0.05+t)*0.03})`;ctx.fillRect(x+ox,y+oy,2,2);}}},
-    (ctx,w,h,t,s)=>{ctx.fillStyle='#0a0a0a';ctx.fillRect(0,0,w,h);for(let i=0;i<5;i++){ctx.beginPath();for(let x=0;x<w;x+=2){const y=h/2+Math.sin(x*0.015+t+i*0.8+s)*((h/4)-i*8)+Math.sin(x*0.04+t*2)*5;if(x===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);}ctx.strokeStyle=`rgba(74,140,63,${0.05+i*0.015})`;ctx.lineWidth=1.2;ctx.stroke();}},
-    (ctx,w,h,t,s)=>{ctx.fillStyle='#0a0a0a';ctx.fillRect(0,0,w,h);for(let i=0;i<200;i++){const x=((s*31+i*97+Math.sin(t+i)*20)%w+w)%w;const y=((s*47+i*63+Math.cos(t+i*0.7)*20)%h+h)%h;const sz=1+Math.sin(i+t*3)*1;const c=i%3===0?'74,140,63':i%3===1?'60,120,50':'90,160,70';ctx.fillStyle=`rgba(${c},${0.1+Math.sin(i+t)*0.06})`;ctx.fillRect(x,y,sz,sz);}},
+    (ctx,w,h,t,s)=>{ctx.fillStyle='#0a0a0a';ctx.fillRect(0,0,w,h);for(let i=0;i<5;i++){ctx.beginPath();for(let x=0;x<w;x+=2){const y=h/2+Math.sin(x*0.015+t+i*0.8+s)*((h/4)-i*8)+Math.sin(x*0.04+t*2)*5;if(x===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);}ctx.strokeStyle=`rgba(57,255,20,${0.05+i*0.015})`;ctx.lineWidth=1.2;ctx.stroke();}},
+    (ctx,w,h,t,s)=>{ctx.fillStyle='#0a0a0a';ctx.fillRect(0,0,w,h);for(let i=0;i<200;i++){const x=((s*31+i*97+Math.sin(t+i)*20)%w+w)%w;const y=((s*47+i*63+Math.cos(t+i*0.7)*20)%h+h)%h;const sz=1+Math.sin(i+t*3)*1;const c=i%3===0?'57,255,20':i%3===1?'60,120,50':'90,160,70';ctx.fillStyle=`rgba(${c},${0.1+Math.sin(i+t)*0.06})`;ctx.fillRect(x,y,sz,sz);}},
   ];
 
   function animateThumbs() {
@@ -3581,7 +3581,7 @@
           aboutCtx.beginPath();
           aboutCtx.moveTo(a.x, a.y);
           aboutCtx.lineTo(b.x, b.y);
-          aboutCtx.strokeStyle = `rgba(74,140,63,${0.012 * (1 - d / 100)})`;
+          aboutCtx.strokeStyle = `rgba(57,255,20,${0.012 * (1 - d / 100)})`;
           aboutCtx.lineWidth = 0.5;
           aboutCtx.stroke();
         }
@@ -4022,7 +4022,7 @@
       const x = i * barW;
       const barH = djWaveformData[i] * h * 0.85;
       const isPast = x < playheadX;
-      ctx2.fillStyle = isPast ? 'rgba(74,140,63,0.7)' : 'rgba(74,140,63,0.2)';
+      ctx2.fillStyle = isPast ? 'rgba(57,255,20,0.7)' : 'rgba(57,255,20,0.2)';
       ctx2.fillRect(x, (h - barH) / 2, Math.max(barW - 0.5, 0.5), barH);
     }
     // Playhead line
@@ -4494,9 +4494,9 @@
       const djSection = document.getElementById('section-dj');
       const djRect = djSection.getBoundingClientRect();
 
-      djHandCtx.strokeStyle = `rgba(74,140,63,${0.4 + bassEnergy * 0.3})`;
+      djHandCtx.strokeStyle = `rgba(57,255,20,${0.4 + bassEnergy * 0.3})`;
       djHandCtx.lineWidth = 1.5;
-      djHandCtx.shadowColor = 'rgba(74,140,63,0.5)';
+      djHandCtx.shadowColor = 'rgba(57,255,20,0.5)';
       djHandCtx.shadowBlur = 8;
 
       for (const [a, b] of connections) {
@@ -4511,7 +4511,7 @@
       }
 
       // Draw joints
-      djHandCtx.fillStyle = `rgba(74,140,63,${0.5 + bassEnergy * 0.3})`;
+      djHandCtx.fillStyle = `rgba(57,255,20,${0.5 + bassEnergy * 0.3})`;
       for (let i = 0; i < 21; i++) {
         const x = (1 - lm[i].x) * window.innerWidth - djRect.left;
         const y = lm[i].y * window.innerHeight - djRect.top + djSection.scrollTop;
