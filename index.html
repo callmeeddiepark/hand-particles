@@ -227,9 +227,11 @@
   #page-about.active{display:block;opacity:1}
   canvas#aboutCanvas{position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none}
   .about-light{position:fixed;width:300px;height:300px;border-radius:50%;background:radial-gradient(circle,rgba(57,255,20,0.04) 0%,transparent 70%);pointer-events:none;z-index:0;transform:translate(-50%,-50%);transition:left .1s linear,top .1s linear;display:none}
-  #section-dj,#section-tattoo{display:none;position:relative;width:100%;height:100%}
-  #section-dj.active,#section-tattoo.active{display:block}
-  #section-dj.active,#section-tattoo.active{overflow-y:auto}
+  #section-facemesh,#section-dj,#section-tattoo{display:none;position:relative;width:100%;height:100%}
+  #section-facemesh.active,#section-dj.active,#section-tattoo.active{display:block}
+  #section-facemesh.active,#section-dj.active,#section-tattoo.active{overflow-y:auto}
+  #section-facemesh{background:#000}
+  #faceMeshCanvas{position:absolute;inset:0;width:100%;height:100%;z-index:1}
   .labs-back-btn{position:fixed;top:70px;left:10%;z-index:10;padding:10px 24px;background:transparent;border:1px solid rgba(255,255,255,0.15);color:var(--fg);font-family:'Space Mono',monospace;font-size:11px;letter-spacing:.15em;text-transform:uppercase;cursor:pointer;transition:all .3s ease;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
   .labs-back-btn:hover,.labs-back-btn.pinch-hover{border-color:var(--accent);color:var(--accent);background:rgba(57,255,20,0.05)}
   .about-content{position:relative;z-index:1}
@@ -459,6 +461,9 @@
     <a href="#" class="nav-item" data-page="contact">Contact</a>
   </nav>
   <button class="labs-back-btn" id="labsBackBtn" style="display:none">&larr; Back</button>
+  <div id="section-facemesh">
+    <canvas id="faceMeshCanvas"></canvas>
+  </div>
   <div id="section-dj">
     <div class="dj-club-overlay" id="djClubOverlay"></div>
     <canvas id="djClubCanvas"></canvas>
@@ -679,6 +684,7 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1675469240/hands.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh@0.4.1633559619/face_mesh.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils@0.3.1675466862/camera_utils.js"></script>
 <script>
 (() => {
@@ -3152,6 +3158,7 @@
 
   // === LABS PAGE — ORB CLUSTER ===
   const LAB_ORBS = [
+    { id: 'facemesh', label: 'Face Mesh', size: 85, color: [57, 255, 20], section: 'section-facemesh' },
     { id: 'dj', label: 'DJ', size: 80, color: [255, 60, 100], section: 'section-dj' },
     { id: 'tattoo', label: 'Tattoo', size: 65, color: [100, 60, 255], section: 'section-tattoo' },
     { id: 'autotrader', label: 'AutoTrader', size: 55, color: [60, 180, 255] },
@@ -3411,6 +3418,7 @@
         const sec = document.getElementById(data.section);
         sec.classList.add('active');
         labsBackBtn.style.display = 'block';
+        if (data.section === 'section-facemesh') faceMeshInit();
         if (data.section === 'section-dj') djInitUI();
         if (data.section === 'section-tattoo') tattooInit();
       }, 400);
@@ -3425,6 +3433,7 @@
   labsBackBtn.addEventListener('click', () => {
     if (!labsViewingSection) return;
     const sec = document.getElementById(labsViewingSection);
+    if (labsViewingSection === 'section-facemesh') faceMeshStop();
     if (labsViewingSection === 'section-tattoo') tattooStop();
     if (labsViewingSection === 'section-dj' && djPlaying) djStop();
     sec.classList.remove('active');
@@ -3715,8 +3724,10 @@
     labsBackBtn.style.display = 'none';
     labsCanvas.style.display = 'block';
     labsCanvas.style.pointerEvents = '';
+    document.getElementById('section-facemesh').classList.remove('active');
     document.getElementById('section-dj').classList.remove('active');
     document.getElementById('section-tattoo').classList.remove('active');
+    faceMeshStop();
     tattooStop();
     if (djPlaying) djStop();
     // Init and start orbs
@@ -3990,6 +4001,189 @@
     resetSkillBars();
     setTimeout(() => animateSkillBars(), 500);
   }
+
+  // ===== FACE MESH SECTION =====
+  const fmCanvas = document.getElementById('faceMeshCanvas');
+  const fmCtx = fmCanvas.getContext('2d');
+  let faceMeshInstance = null;
+  let faceMeshCam = null;
+  let faceMeshAnimId = null;
+  let faceMeshLandmarks = null;
+  let faceMeshRunning = false;
+
+  function faceMeshInit() {
+    fmCanvas.width = window.innerWidth;
+    fmCanvas.height = window.innerHeight;
+    faceMeshRunning = true;
+
+    // Make video available for face mesh (it may be hidden by showLabs)
+    video.style.display = 'block';
+    video.style.opacity = '0';
+    video.style.pointerEvents = 'none';
+
+    // Ensure camera stream is available
+    const startFM = async () => {
+      // Stop existing hands camera to avoid conflicts
+      if (mediaCam) { mediaCam.stop(); mediaCam = null; }
+
+      // If no stream, get one
+      if (!video.srcObject) {
+        mediaStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user', width: 1280, height: 720 } });
+        video.srcObject = mediaStream;
+        await video.play();
+      }
+
+      if (!faceMeshInstance && typeof FaceMesh !== 'undefined') {
+        faceMeshInstance = new FaceMesh({
+          locateFile: f => `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh@0.4.1633559619/${f}`
+        });
+        faceMeshInstance.setOptions({
+          maxNumFaces: 1,
+          refineLandmarks: true,
+          minDetectionConfidence: 0.5,
+          minTrackingConfidence: 0.5
+        });
+        faceMeshInstance.onResults(onFaceMeshResults);
+      }
+
+      // Start sending frames
+      if (faceMeshInstance) {
+        faceMeshCam = new Camera(video, {
+          onFrame: async () => {
+            if (faceMeshRunning && faceMeshInstance) {
+              await faceMeshInstance.send({ image: video });
+            }
+          },
+          width: 1280,
+          height: 720
+        });
+        faceMeshCam.start();
+      }
+
+      if (!faceMeshAnimId) animateFaceMesh();
+    };
+
+    startFM().catch(e => console.error('Face Mesh init error:', e));
+  }
+
+  function onFaceMeshResults(results) {
+    if (results.multiFaceLandmarks && results.multiFaceLandmarks.length > 0) {
+      faceMeshLandmarks = results.multiFaceLandmarks[0];
+    } else {
+      faceMeshLandmarks = null;
+    }
+  }
+
+  function animateFaceMesh() {
+    if (!faceMeshRunning) { faceMeshAnimId = null; return; }
+    const w = fmCanvas.width;
+    const h = fmCanvas.height;
+
+    // Resize if needed
+    if (w !== window.innerWidth || h !== window.innerHeight) {
+      fmCanvas.width = window.innerWidth;
+      fmCanvas.height = window.innerHeight;
+    }
+
+    fmCtx.fillStyle = '#000';
+    fmCtx.fillRect(0, 0, fmCanvas.width, fmCanvas.height);
+
+    if (faceMeshLandmarks) {
+      const cw = fmCanvas.width;
+      const ch = fmCanvas.height;
+
+      // Draw tesselation lines
+      fmCtx.strokeStyle = 'rgba(57, 255, 20, 0.08)';
+      fmCtx.lineWidth = 0.5;
+      const tess = FACEMESH_TESSELATION;
+      for (let i = 0; i < tess.length; i++) {
+        const [a, b] = tess[i];
+        const pA = faceMeshLandmarks[a];
+        const pB = faceMeshLandmarks[b];
+        if (!pA || !pB) continue;
+        const x1 = (1 - pA.x) * cw;
+        const y1 = pA.y * ch;
+        const x2 = (1 - pB.x) * cw;
+        const y2 = pB.y * ch;
+        fmCtx.beginPath();
+        fmCtx.moveTo(x1, y1);
+        fmCtx.lineTo(x2, y2);
+        fmCtx.stroke();
+      }
+
+      // Draw landmark dots
+      fmCtx.fillStyle = '#39ff14';
+      fmCtx.shadowColor = '#39ff14';
+      fmCtx.shadowBlur = 3;
+      for (let i = 0; i < faceMeshLandmarks.length; i++) {
+        const lm = faceMeshLandmarks[i];
+        const x = (1 - lm.x) * cw; // mirror
+        const y = lm.y * ch;
+        fmCtx.beginPath();
+        fmCtx.arc(x, y, 1.2, 0, Math.PI * 2);
+        fmCtx.fill();
+      }
+      fmCtx.shadowBlur = 0;
+    } else {
+      // Show waiting text
+      fmCtx.fillStyle = 'rgba(57, 255, 20, 0.4)';
+      fmCtx.font = "14px 'Space Mono', monospace";
+      fmCtx.textAlign = 'center';
+      fmCtx.fillText('Detecting face...', fmCanvas.width / 2, fmCanvas.height / 2);
+    }
+
+    faceMeshAnimId = requestAnimationFrame(animateFaceMesh);
+  }
+
+  function faceMeshStop() {
+    faceMeshRunning = false;
+    if (faceMeshCam) { faceMeshCam.stop(); faceMeshCam = null; }
+    if (faceMeshAnimId) { cancelAnimationFrame(faceMeshAnimId); faceMeshAnimId = null; }
+    faceMeshLandmarks = null;
+    // Re-hide video if not on landing
+    if (labsActive) {
+      video.style.display = 'none';
+    }
+  }
+
+  // Face Mesh tesselation connections (index pairs)
+  const FACEMESH_TESSELATION = [
+    [127,34],[34,139],[139,127],[11,0],[0,37],[37,11],[232,231],[231,120],[120,232],
+    [72,37],[37,39],[39,72],[128,121],[121,47],[47,128],[232,121],[121,128],[128,232],
+    [104,69],[69,67],[67,104],[175,171],[171,148],[148,175],[118,50],[50,101],[101,118],
+    [73,39],[39,40],[40,73],[9,151],[151,108],[108,9],[48,115],[115,131],[131,48],
+    [194,204],[204,211],[211,194],[74,40],[40,185],[185,74],[80,42],[42,183],[183,80],
+    [40,92],[92,186],[186,40],[230,229],[229,118],[118,230],[202,212],[212,214],[214,202],
+    [83,18],[18,17],[17,83],[76,61],[61,146],[146,76],[160,29],[29,30],[30,160],
+    [56,157],[157,173],[173,56],[106,130],[130,25],[25,106],[1,65],[65,2],[2,1],
+    [166,79],[79,239],[239,166],[3,45],[45,44],[44,3],[220,115],[115,48],[48,220],
+    [236,198],[198,236],[134,51],[51,5],[5,134],[51,6],[6,68],[68,51],[198,236],
+    [236,206],[206,198],[59,195],[195,60],[60,59],[240,75],[75,199],[199,240],
+    [213,49],[49,170],[170,213],[317,316],[316,315],[315,317],[165,391],[391,167],[167,165],
+    [164,167],[167,37],[37,164],[297,299],[299,338],[338,297],[2,164],[164,2],
+    [326,327],[327,294],[294,326],[278,279],[279,360],[360,278],[334,293],[293,283],[283,334],
+    [282,295],[295,285],[285,282],[346,340],[340,261],[261,346],[446,261],[261,340],[340,446],
+    [448,339],[339,449],[449,448],[347,346],[346,280],[280,347],[303,271],[271,304],[304,303],
+    [270,409],[409,272],[272,270],[337,335],[335,406],[406,337],[275,274],[274,276],[276,275],
+    [353,383],[383,382],[382,353],[368,389],[389,264],[264,368],[356,454],[454,277],[277,356],
+    [329,371],[371,358],[358,329],[263,466],[466,467],[467,263],[359,255],[255,339],[339,359],
+    [392,289],[289,305],[305,392],[354,370],[370,462],[462,354],[288,367],[367,260],[260,288],
+    [459,458],[458,461],[461,459],[462,370],[370,326],[326,462],[328,258],[258,364],[364,328],
+    [294,331],[331,279],[279,294],[303,255],[255,271],[271,303],[17,314],[314,405],[405,17],
+    [306,291],[291,375],[375,306],[259,387],[387,260],[260,259],[424,335],[335,432],[432,424],
+    [164,393],[393,391],[391,164],[269,268],[268,276],[276,269],[412,399],[399,410],[410,412],
+    [263,431],[431,262],[262,263],[304,408],[408,306],[306,304],[375,387],[387,259],[259,375],
+    [289,305],[305,290],[290,289],[305,392],[392,250],[250,305],[364,373],[373,380],[380,364],
+    [373,374],[374,387],[387,373],[367,372],[372,345],[345,367],[363,398],[398,351],[351,363],
+    [359,446],[446,467],[467,359],[282,334],[334,333],[333,282],[285,417],[417,258],[258,285],
+    [346,340],[340,347],[347,346],[328,327],[327,326],[326,328],[277,355],[355,329],[329,277],
+    [264,368],[368,390],[390,264],[283,293],[293,334],[334,283],[258,364],[364,327],[327,258],
+    [302,303],[303,304],[304,302],[26,110],[110,24],[24,26],[25,130],[130,226],[226,25],
+    [23,24],[24,110],[110,23],[229,230],[230,228],[228,229],[24,23],[23,22],[22,24],
+    [26,25],[25,226],[226,26],[112,110],[110,26],[26,112],[22,23],[23,28],[28,22],
+    [36,35],[35,205],[205,36],[113,226],[226,130],[130,113],[142,36],[36,205],[205,142],
+    [203,116],[116,235],[235,203],[113,112],[112,26],[26,113]
+  ];
 
   // ===== DJ SECTION =====
   const DJ_TRACKS = [
