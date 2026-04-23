@@ -1020,14 +1020,13 @@
     octx.fillStyle = '#000';
     octx.fillRect(0, 0, W, H);
 
-    // Custom geometric slanted JHP logo
+    // Custom geometric slanted JHP logo — matched to reference
     octx.fillStyle = '#fff';
-    const s = Math.min(W / 1200, H / 400); // scale factor
+    const s = Math.min(W / 1400, H / 450); // scale factor
     const cx = W / 2, cy = H / 2;
-    const skew = 0.25; // slant amount
+    const skew = 0.3; // slant amount
 
     function para(x, y, w, h) {
-      // Draw a parallelogram (skewed right)
       const sx = h * skew;
       octx.beginPath();
       octx.moveTo(cx + (x + sx) * s, cy + y * s);
@@ -1038,30 +1037,22 @@
       octx.fill();
     }
 
-    const gap = 12; // gap between rows
-    const bh = 80;  // bar height
+    const gap = 14;
+    const bh = 90;
     const totalH = bh * 2 + gap;
-    const oy = -totalH / 2; // vertical offset to center
+    const oy = -totalH / 2;
 
-    // === Top row ===
-    // J top: short bar
-    para(-540, oy, 200, bh);
-    // H top left bar
-    para(-300, oy, 160, bh);
-    // H top right bar
-    para(-100, oy, 160, bh);
-    // P top: long bar
-    para(100, oy, 440, bh);
+    // === Top row (J top is shorter/offset right, P top is long) ===
+    para(-480, oy, 250, bh);       // J top: short bar
+    para(-195, oy, 200, bh);       // H top left
+    para(40, oy, 195, bh);         // H top right
+    para(270, oy, 370, bh);        // P top: long bar
 
-    // === Bottom row ===
-    // J bottom: long bar
-    para(-540, oy + bh + gap, 340, bh);
-    // H bottom left bar
-    para(-160, oy + bh + gap, 160, bh);
-    // H bottom right bar
-    para(40, oy + bh + gap, 160, bh);
-    // P bottom: bar with gap for P opening
-    para(240, oy + bh + gap, 300, bh);
+    // === Bottom row (J bottom is long, P bottom is shorter) ===
+    para(-630, oy + bh + gap, 400, bh);  // J bottom: long bar
+    para(-195, oy + bh + gap, 200, bh);  // H bottom left
+    para(40, oy + bh + gap, 195, bh);    // H bottom right
+    para(270, oy + bh + gap, 280, bh);   // P bottom: shorter (P opening on right)
 
     textMask = octx.getImageData(0, 0, W, H);
 
