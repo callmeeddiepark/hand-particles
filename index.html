@@ -1024,7 +1024,7 @@
     octx.fillStyle = '#fff';
     const s = Math.min(W / 1400, H / 450); // scale factor
     const cx = W / 2, cy = H / 2;
-    const skew = 0.3; // slant amount
+    const skew = 0.27; // slant amount matched to reference
 
     function para(x, y, w, h) {
       const sx = h * skew;
@@ -1037,22 +1037,22 @@
       octx.fill();
     }
 
-    const gap = 14;
-    const bh = 90;
+    const gap = 25;
+    const bh = 130;
     const totalH = bh * 2 + gap;
     const oy = -totalH / 2;
 
-    // === Top row (J top is shorter/offset right, P top is long) ===
-    para(-480, oy, 250, bh);       // J top: short bar
-    para(-195, oy, 200, bh);       // H top left
-    para(40, oy, 195, bh);         // H top right
-    para(270, oy, 370, bh);        // P top: long bar
+    // === Top row ===
+    para(-455, oy, 225, bh);       // J top: short bar (starts further right)
+    para(-200, oy, 195, bh);       // H top left
+    para(20, oy, 205, bh);         // H top right
+    para(255, oy, 375, bh);        // P top: long bar (extends to right edge)
 
-    // === Bottom row (J bottom is long, P bottom is shorter) ===
-    para(-630, oy + bh + gap, 400, bh);  // J bottom: long bar
-    para(-195, oy + bh + gap, 200, bh);  // H bottom left
-    para(40, oy + bh + gap, 195, bh);    // H bottom right
-    para(270, oy + bh + gap, 280, bh);   // P bottom: shorter (P opening on right)
+    // === Bottom row ===
+    para(-630, oy + bh + gap, 430, bh);  // J bottom: long bar (starts at left edge)
+    para(-170, oy + bh + gap, 200, bh);  // H bottom left
+    para(60, oy + bh + gap, 200, bh);    // H bottom right
+    para(290, oy + bh + gap, 260, bh);   // P bottom: shorter (P opening on right)
 
     textMask = octx.getImageData(0, 0, W, H);
 
