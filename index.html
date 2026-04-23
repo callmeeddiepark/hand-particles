@@ -1915,6 +1915,10 @@
           resize();
           window.addEventListener('resize', resize);
           requestAnimationFrame(animate);
+          // Save camera approval flag for future visits
+          localStorage.setItem('cameraApproved', 'true');
+          // Navigate to hash page if present, otherwise default to home
+          navigateToHash();
         });
       }, 600);
     }, 2000);
@@ -1945,6 +1949,54 @@
     }
     if (portfolioActive) resizePfCanvas();
   });
+
+  // === Hash Routing ===
+  function navigateToHash() {
+    const hash = location.hash.replace('#', '');
+    switch (hash) {
+      case 'portfolio': showPortfolio(); break;
+      case 'labs': showLabs(); break;
+      case 'about': showAbout(); break;
+      case 'contact': showContact(); break;
+      case 'home': default:
+        // Only call showLanding if we're already past the scan page and on a sub-page
+        if (portfolioActive || labsActive || contactActive || aboutActive) {
+          showLanding();
+        } else if (location.hash !== '#home') {
+          location.hash = '#home';
+        }
+        break;
+    }
+  }
+
+  window.addEventListener('hashchange', () => {
+    navigateToHash();
+  });
+
+  // === Skip Scan on Revisit ===
+  if (localStorage.getItem('cameraApproved')) {
+    // Returning visitor: skip scan page, go directly to content
+    pageAttention.style.display = 'none';
+    pageAttention.classList.add('exit');
+    scanMatrixRunning = false;
+    pageLanding.classList.add('active');
+    document.getElementById('globalModeToggle').style.display = 'block';
+    pageLanding.style.opacity = '1';
+
+    document.fonts.ready.then(() => {
+      resize();
+      window.addEventListener('resize', resize);
+      requestAnimationFrame(animate);
+      // Init camera in background (don't block page)
+      initCamera().catch(err => {
+        console.warn('Camera init failed on revisit:', err.message);
+        // Camera denied/failed - clear flag so scan page shows next time
+        localStorage.removeItem('cameraApproved');
+      });
+      // Navigate to hash page if present
+      navigateToHash();
+    });
+  }
 
   // === Mouse Mode ===
   const globalModeBtn = document.getElementById('globalModeBtn');
@@ -2728,6 +2780,7 @@
 
   // === Page Navigation ===
   function showPortfolio() {
+    if (location.hash !== '#portfolio') location.hash = '#portfolio';
     portfolioActive = true;
     labsActive = false;
     contactActive = false;
@@ -2788,6 +2841,7 @@
   }
 
   function showLanding() {
+    if (location.hash !== '#home') location.hash = '#home';
     portfolioActive = false;
     labsActive = false;
     contactActive = false;
@@ -3430,6 +3484,7 @@
   });
 
   function showContact() {
+    if (location.hash !== '#contact') location.hash = '#contact';
     contactActive = true;
     portfolioActive = false;
     labsActive = false;
@@ -3480,6 +3535,7 @@
 
   // === Show Labs ===
   function showLabs() {
+    if (location.hash !== '#labs') location.hash = '#labs';
     labsActive = true;
     portfolioActive = false;
     contactActive = false;
@@ -3747,6 +3803,7 @@
   // Labs back button is handled above in the orb cluster section
 
   function showAbout() {
+    if (location.hash !== '#about') location.hash = '#about';
     aboutActive = true;
     portfolioActive = false;
     labsActive = false;
