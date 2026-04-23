@@ -1065,17 +1065,18 @@
 
     textMask = octx.getImageData(0, 0, W, H);
 
-    // Position info text 20px above EDDIE
+    // Position info text above JHP
+    const logoHalfH = (totalH / 2) * s;
     const infoEl = document.getElementById('landingInfo');
     if (infoEl) {
-      const eddieTop = H / 2 - fontSize / 2;
-      infoEl.style.top = (eddieTop - 50) + 'px';
+      const logoTop = H / 2 - logoHalfH;
+      infoEl.style.top = (logoTop - 50) + 'px';
       infoEl.style.transform = 'translateY(-100%)';
     }
-    // Position wind indicator below EDDIE
+    // Position wind indicator below JHP
     const windEl = document.getElementById('windContainer');
     if (windEl) {
-      const eddieBottom = H / 2 + fontSize / 2;
+      const eddieBottom = H / 2 + logoHalfH;
       windEl.style.top = (eddieBottom + 40) + 'px';
     }
   }
