@@ -2155,6 +2155,10 @@
     [4, 5, 6, null, 7]   // right hand: Get More Care, LG X BEGE, Get More Love, (skip), Who enjoys Waiting
   ];
 
+  // Mouse click order: left pinky→middle→index→thumb, right thumb→index→middle→pinky
+  const MOUSE_CLICK_ORDER = [3, 2, 1, 0, 4, 5, 6, 7];
+  let mouseClickIdx = 0;
+
   // Placeholder colors for project circles
   const PF_CIRCLE_COLORS = [
     '#e74c3c','#3498db','#2ecc71','#f39c12','#9b59b6',
@@ -2776,6 +2780,24 @@
   });
   portfolioPage.addEventListener('mouseleave', () => {
     portfolioLight.style.display = 'none';
+  });
+
+  // Mouse click on floating target to open projects in order
+  portfolioPage.addEventListener('click', (e) => {
+    if (targetCooldown > 0) return;
+    const mx = e.clientX, my = e.clientY;
+    const hw = TARGET_W / 2, hh = TARGET_H / 2;
+    if (mx >= targetX - hw && mx <= targetX + hw && my >= targetY - hh && my <= targetY + hh) {
+      const projIdx = MOUSE_CLICK_ORDER[mouseClickIdx % MOUSE_CLICK_ORDER.length];
+      if (projIdx < ALL_PROJECTS.length) {
+        openProjectModal(ALL_PROJECTS[projIdx], targetX, targetY);
+        targetCooldown = 120;
+        mouseClickIdx++;
+        setTimeout(() => {
+          pickTargetDirection();
+        }, 2000);
+      }
+    }
   });
 
   // Modal
