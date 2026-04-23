@@ -1035,7 +1035,7 @@
       const imgData = octx.getImageData(0, 0, W, H);
       for (let i = 0; i < imgData.data.length; i += 4) {
         const avg = (imgData.data[i] + imgData.data[i+1] + imgData.data[i+2]) / 3;
-        const val = avg < 128 ? 255 : 0;
+        const val = avg >= 128 ? 255 : 0;
         imgData.data[i] = val;
         imgData.data[i+1] = val;
         imgData.data[i+2] = val;
