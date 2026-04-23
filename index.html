@@ -2842,8 +2842,8 @@
   function closeProjectModal() {
     // Shrink rectangle back to floating square position
     const vw = window.innerWidth, vh = window.innerHeight;
-    const cx = projectModal._originX || targetX || vw / 2;
-    const cy = projectModal._originY || targetY || vh / 2;
+    const cx = targetX || vw / 2;
+    const cy = targetY || vh / 2;
     projectModal.style.clipPath = `inset(${cy}px ${vw - cx}px ${vh - cy}px ${cx}px)`;
     setTimeout(() => {
       projectModal.classList.remove('active');
