@@ -2101,7 +2101,7 @@
       projects: [
         { id:3, title:'Fairy Tale', desc:'Placeholder description for Dubai project 1.', role:'Art Director', videoType:'youtube', videoSrc:'https://www.youtube.com/embed/0CNRIEg8qbo' },
         { id:4, title:'금호타이어x넷플릭스', desc:'금호타이어 x 넷플릭스 오징어게임 콜라보레이션 캠페인', role:'Director / Editor', videoType:'youtube', videoSrc:'https://www.youtube.com/embed/0w--IkcNokM', videoSrc2:'https://www.youtube.com/embed/bn2yANcKVLY' },
-        { id:6, title:'Get More Care', desc:'Placeholder description for Dubai project 4.', role:'Art Director', videoType:'direct', videoSrc:'' },
+        { id:6, title:'Get More Care', desc:'Placeholder description for Dubai project 4.', role:'Art Director', videoType:'youtube', videoSrc:'https://www.youtube.com/embed/E-gleL9tXc4', videos:['https://www.youtube.com/embed/E-gleL9tXc4','https://www.youtube.com/embed/i2QFKrwkKYA','https://www.youtube.com/embed/TIVI0XHtePQ','https://www.youtube.com/embed/hZh0hCNQlKE','https://www.youtube.com/embed/WYSSAoL2Z-k'] },
         { id:7, title:'LG X BEGE', desc:'Placeholder description for Dubai project 5.', role:'Director', videoType:'youtube', videoSrc:'https://www.youtube.com/embed/ID39z3VHaB0' },
         { id:8, title:'Get More Love', desc:'Placeholder description for Dubai project 6.', role:'Producer', videoType:'direct', videoSrc:'' },
         { id:9, title:'Who enjoys Waiting', desc:'Placeholder description for Dubai project 7.', role:'Art Director', videoType:'youtube', videoSrc:'' },
@@ -2810,18 +2810,18 @@
     document.getElementById('modalRole').textContent = p.role;
     document.getElementById('modalDesc').textContent = p.desc;
     let html = '';
-    if (p.videoSrc) {
+    if (p.videos && p.videos.length > 0) {
+      p.videos.forEach(src => {
+        html += `<iframe src="${src}" allowfullscreen></iframe>`;
+      });
+    } else if (p.videoSrc) {
       if (p.videoType === 'youtube') {
         html += `<iframe src="${p.videoSrc}" allowfullscreen></iframe>`;
       } else {
         html += `<video src="${p.videoSrc}" controls></video>`;
       }
-    }
-    if (p.videoSrc2) {
-      if (p.videoType === 'youtube') {
-        html += `<iframe src="${p.videoSrc2}" allowfullscreen style="margin-top:16px"></iframe>`;
-      } else {
-        html += `<video src="${p.videoSrc2}" controls style="margin-top:16px"></video>`;
+      if (p.videoSrc2) {
+        html += `<iframe src="${p.videoSrc2}" allowfullscreen></iframe>`;
       }
     }
     if (!html) {
