@@ -2220,12 +2220,16 @@
 
     if (progress > 0.3) {
       const textAlpha = Math.min(1, (progress - 0.3) / 0.7);
-      // Project title
-      ctx.fillStyle = `rgba(255,255,255,${textAlpha})`;
+      // Project title — fit within box
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      const titleSize = Math.min(28, TIP_W * 0.8 / (project.title.length * 0.55));
-      ctx.font = `bold ${Math.round(titleSize)}px 'Syne', sans-serif`;
+      let titleSize = 28;
+      ctx.font = `bold ${titleSize}px 'Syne', sans-serif`;
+      while (titleSize > 8 && ctx.measureText(project.title).width > cw * 0.9) {
+        titleSize -= 1;
+        ctx.font = `bold ${titleSize}px 'Syne', sans-serif`;
+      }
+      ctx.fillStyle = `rgba(255,255,255,${textAlpha})`;
       ctx.fillText(project.title, x, y);
 
       // Label below
