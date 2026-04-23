@@ -2013,8 +2013,7 @@
       name: 'DUBAI', nameKr: '두바이', lat: 25.2, lng: 55.3,
       projects: [
         { id:3, title:'Fairy Tale', desc:'Placeholder description for Dubai project 1.', role:'Art Director', videoType:'youtube', videoSrc:'' },
-        { id:4, title:'Get More Care', desc:'Placeholder description for Dubai project 2.', role:'Creative Director', videoType:'youtube', videoSrc:'' },
-        { id:5, title:'금호타이어x넷플릭스', desc:'Placeholder description for Dubai project 3.', role:'Director / Editor', videoType:'youtube', videoSrc:'' },
+        { id:4, title:'금호타이어x넷플릭스', desc:'Placeholder description for Dubai project 2.', role:'Director / Editor', videoType:'youtube', videoSrc:'' },
         { id:6, title:'Project DB-04', desc:'Placeholder description for Dubai project 4.', role:'Art Director', videoType:'direct', videoSrc:'' },
         { id:7, title:'Project DB-05', desc:'Placeholder description for Dubai project 5.', role:'Director', videoType:'youtube', videoSrc:'' },
         { id:8, title:'Project DB-06', desc:'Placeholder description for Dubai project 6.', role:'Producer', videoType:'direct', videoSrc:'' },
@@ -2060,8 +2059,14 @@
   const pfHandGuide = document.getElementById('portfolioHandGuide');
   let pfHandAnimId = null;
 
-  // All projects flat list for fingertip assignment
+  // All projects flat list
   const ALL_PROJECTS = GLOBE_COUNTRIES.flatMap(c => c.projects);
+  // Finger-to-project mapping per hand [thumb, index, middle, ring, pinky]
+  // null = no project on that finger
+  const FINGER_MAP = [
+    [0, 1, 2, null, 3],  // left hand: LG X SEFO, The Interview, Fairy Tale, (skip), 금호타이어x넷플릭스
+    [4, 5, 6, 7, 8]      // right hand
+  ];
 
   // Placeholder colors for project circles
   const PF_CIRCLE_COLORS = [
@@ -2327,13 +2332,14 @@
         // Draw skeleton
         drawHandSkeleton(pfHandCtx, pfSmooth[hi], w, h, 'rgba(255,255,255,0.6)');
 
-        // Draw fingertip project circles + check collision with target
+        // Draw fingertip project rectangles + check collision with target
+        const handMap = FINGER_MAP[hi] || FINGER_MAP[1];
         for (let fi = 0; fi < FINGERTIPS.length; fi++) {
           const tip = FINGERTIPS[fi];
           const tx = (1 - pfSmooth[hi][tip].x) * w;
           const ty = pfSmooth[hi][tip].y * h;
-          const projIdx = hi * 5 + fi;
-          if (projIdx < ALL_PROJECTS.length) {
+          const projIdx = handMap[fi];
+          if (projIdx !== null && projIdx < ALL_PROJECTS.length) {
             drawFingertipCircle(pfHandCtx, tx, ty, 35, ALL_PROJECTS[projIdx], projIdx);
 
             // Check if fingertip is inside target rectangle
