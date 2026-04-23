@@ -2791,12 +2791,10 @@
     // Rectangle reveal from origin point
     const vw = window.innerWidth, vh = window.innerHeight;
     projectModal.style.clipPath = `inset(${oy}px ${vw - ox}px ${vh - oy}px ${ox}px)`;
-    projectModal.classList.remove('glitch');
     projectModal.style.display = 'flex';
     projectModal.classList.add('active');
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
-        projectModal.classList.add('glitch');
         projectModal.style.clipPath = 'inset(0px 0px 0px 0px)';
       });
     });
@@ -2845,7 +2843,6 @@
     projectModal.style.clipPath = `inset(${cy}px ${vw - cx}px ${vh - cy}px ${cx}px)`;
     setTimeout(() => {
       projectModal.classList.remove('active');
-      projectModal.classList.remove('glitch');
       projectModal.style.display = 'none';
       projectModal.style.clipPath = '';
       const modalVideo = document.getElementById('modalVideo');
