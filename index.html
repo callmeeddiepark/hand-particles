@@ -1068,14 +1068,14 @@
     return textMask.data[(py * W + px) * 4] > 128;
   }
 
-  // Mowed grass colors (slightly darker, trimmed)
+  // Non-text area: black pins
   const MOWED_COLORS = [
-    [50, 130, 40],
-    [55, 140, 45],
-    [45, 120, 38],
-    [60, 145, 50],
-    [52, 135, 42],
-    [48, 125, 36],
+    [8, 12, 6],
+    [10, 15, 8],
+    [6, 10, 5],
+    [12, 18, 10],
+    [9, 13, 7],
+    [7, 11, 5],
   ];
 
   function rebuildPins() {
@@ -1254,7 +1254,7 @@
 
   function draw() {
     // Warm earthy green background
-    ctx.fillStyle = '#1a2a15';
+    ctx.fillStyle = '#000000';
     ctx.fillRect(0, 0, W, H);
 
     for (let i = 0; i < pins.length; i++) {
