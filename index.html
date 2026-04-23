@@ -1477,16 +1477,19 @@
   }
 
   // === MediaPipe Init ===
+  let handsInstance = null;
   async function initCamera() {
     if (typeof Hands === 'undefined' || typeof Camera === 'undefined') throw new Error('MediaPipe failed to load.');
-    const hands = new Hands({ locateFile: f => `https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1675469240/${f}` });
-    hands.setOptions({ maxNumHands: 2, modelComplexity: 1, minDetectionConfidence: 0.7, minTrackingConfidence: 0.5 });
-    hands.onResults(onResults);
+    if (!handsInstance) {
+      handsInstance = new Hands({ locateFile: f => `https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1675469240/${f}` });
+      handsInstance.setOptions({ maxNumHands: 2, modelComplexity: 1, minDetectionConfidence: 0.7, minTrackingConfidence: 0.5 });
+      handsInstance.onResults(onResults);
+    }
 
     mediaStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user', width: 1280, height: 720 } });
     video.srcObject = mediaStream; await video.play(); video.classList.add('visible');
 
-    mediaCam = new Camera(video, { onFrame: async () => { await hands.send({ image: video }); }, width: 1280, height: 720 });
+    mediaCam = new Camera(video, { onFrame: async () => { await handsInstance.send({ image: video }); }, width: 1280, height: 720 });
     mediaCam.start();
     statusText.textContent = 'Searching';
   }
@@ -3409,6 +3412,8 @@
           if (!labsFaceMeshRunning || !labsFaceMeshInstance) return;
           try {
             await labsFaceMeshInstance.send({ image: video });
+            // Also send to hands model for hand tracking
+            if (handsInstance) await handsInstance.send({ image: video });
           } catch (e) { /* ignore frame errors */ }
           if (labsFaceMeshRunning) {
             labsFaceMeshCam = requestAnimationFrame(sendFrame);
