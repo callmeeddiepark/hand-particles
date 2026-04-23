@@ -2839,21 +2839,39 @@
   document.getElementById('modalPrev').addEventListener('click', (e) => { e.stopPropagation(); navigateProject(-1); });
   document.getElementById('modalNext').addEventListener('click', (e) => { e.stopPropagation(); navigateProject(1); });
 
+  let modalCloseAnimId = null;
+  let modalCloseStart = 0;
+  const MODAL_CLOSE_DURATION = 2000;
+
   function closeProjectModal() {
-    // Shrink rectangle back to floating square position
-    const vw = window.innerWidth, vh = window.innerHeight;
-    const cx = targetX || vw / 2;
-    const cy = targetY || vh / 2;
-    projectModal.style.clipPath = `inset(${cy}px ${vw - cx}px ${vh - cy}px ${cx}px)`;
-    setTimeout(() => {
-      projectModal.classList.remove('active');
-      projectModal.style.display = 'none';
-      projectModal.style.clipPath = '';
-      const modalVideo = document.getElementById('modalVideo');
-      modalVideo.innerHTML = '';
-      // Restore cursor
-      document.body.style.cursor = mouseMode ? 'default' : 'none';
-    }, 2000);
+    modalCloseStart = performance.now();
+    function animateClose() {
+      const elapsed = performance.now() - modalCloseStart;
+      const progress = Math.min(1, elapsed / MODAL_CLOSE_DURATION);
+      const ease = progress * progress; // ease-in
+      const vw = window.innerWidth, vh = window.innerHeight;
+      const cx = targetX || vw / 2;
+      const cy = targetY || vh / 2;
+      // Interpolate from full screen (0,0,0,0) to target point
+      const top = cy * ease;
+      const right = (vw - cx) * ease;
+      const bottom = (vh - cy) * ease;
+      const left = cx * ease;
+      projectModal.style.clipPath = `inset(${top}px ${right}px ${bottom}px ${left}px)`;
+
+      if (progress < 1) {
+        modalCloseAnimId = requestAnimationFrame(animateClose);
+      } else {
+        projectModal.classList.remove('active');
+        projectModal.style.display = 'none';
+        projectModal.style.clipPath = '';
+        const modalVideo = document.getElementById('modalVideo');
+        modalVideo.innerHTML = '';
+        document.body.style.cursor = mouseMode ? 'default' : 'none';
+        modalCloseAnimId = null;
+      }
+    }
+    animateClose();
   }
 
   document.getElementById('modalClose').addEventListener('click', closeProjectModal);
