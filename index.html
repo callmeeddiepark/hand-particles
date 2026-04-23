@@ -2788,7 +2788,10 @@
     document.body.style.cursor = 'default';
     const ox = originX !== undefined ? originX : window.innerWidth / 2;
     const oy = originY !== undefined ? originY : window.innerHeight / 2;
-    // Rectangle reveal from origin point
+    // Save origin for close animation
+    projectModal._originX = ox;
+    projectModal._originY = oy;
+    // Rectangle reveal from floating square position
     const vw = window.innerWidth, vh = window.innerHeight;
     projectModal.style.clipPath = `inset(${oy}px ${vw - ox}px ${vh - oy}px ${ox}px)`;
     projectModal.style.display = 'flex';
@@ -2837,9 +2840,10 @@
   document.getElementById('modalNext').addEventListener('click', (e) => { e.stopPropagation(); navigateProject(1); });
 
   function closeProjectModal() {
-    // Shrink rectangle back to center
+    // Shrink rectangle back to floating square position
     const vw = window.innerWidth, vh = window.innerHeight;
-    const cx = vw / 2, cy = vh / 2;
+    const cx = projectModal._originX || targetX || vw / 2;
+    const cy = projectModal._originY || targetY || vh / 2;
     projectModal.style.clipPath = `inset(${cy}px ${vw - cx}px ${vh - cy}px ${cx}px)`;
     setTimeout(() => {
       projectModal.classList.remove('active');
