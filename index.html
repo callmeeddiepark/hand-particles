@@ -2336,8 +2336,10 @@
         // Draw skeleton
         drawHandSkeleton(pfHandCtx, pfSmooth[hi], w, h, 'rgba(255,255,255,0.6)');
 
-        // Draw fingertip project rectangles + check collision with target
-        const handMap = FINGER_MAP[hi] || FINGER_MAP[1];
+        // Determine left/right hand by wrist screen position
+        const wristScreenX = (1 - pfSmooth[hi][0].x) * w;
+        const isLeftHand = wristScreenX < w / 2;
+        const handMap = isLeftHand ? FINGER_MAP[0] : FINGER_MAP[1];
         for (let fi = 0; fi < FINGERTIPS.length; fi++) {
           const tip = FINGERTIPS[fi];
           const tx = (1 - pfSmooth[hi][tip].x) * w;
