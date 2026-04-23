@@ -1020,13 +1020,48 @@
     octx.fillStyle = '#000';
     octx.fillRect(0, 0, W, H);
 
-    // Bold geometric "JHP"
+    // Custom geometric slanted JHP logo
     octx.fillStyle = '#fff';
-    const fontSize = Math.floor(Math.min(W * 0.22, H * 0.45));
-    octx.font = `900 ${fontSize}px 'Syne', sans-serif`;
-    octx.textAlign = 'center';
-    octx.textBaseline = 'middle';
-    octx.fillText('JHP', W / 2, H / 2);
+    const s = Math.min(W / 1200, H / 400); // scale factor
+    const cx = W / 2, cy = H / 2;
+    const skew = 0.25; // slant amount
+
+    function para(x, y, w, h) {
+      // Draw a parallelogram (skewed right)
+      const sx = h * skew;
+      octx.beginPath();
+      octx.moveTo(cx + (x + sx) * s, cy + y * s);
+      octx.lineTo(cx + (x + w + sx) * s, cy + y * s);
+      octx.lineTo(cx + (x + w) * s, cy + (y + h) * s);
+      octx.lineTo(cx + x * s, cy + (y + h) * s);
+      octx.closePath();
+      octx.fill();
+    }
+
+    const gap = 12; // gap between rows
+    const bh = 80;  // bar height
+    const totalH = bh * 2 + gap;
+    const oy = -totalH / 2; // vertical offset to center
+
+    // === Top row ===
+    // J top: short bar
+    para(-540, oy, 200, bh);
+    // H top left bar
+    para(-300, oy, 160, bh);
+    // H top right bar
+    para(-100, oy, 160, bh);
+    // P top: long bar
+    para(100, oy, 440, bh);
+
+    // === Bottom row ===
+    // J bottom: long bar
+    para(-540, oy + bh + gap, 340, bh);
+    // H bottom left bar
+    para(-160, oy + bh + gap, 160, bh);
+    // H bottom right bar
+    para(40, oy + bh + gap, 160, bh);
+    // P bottom: bar with gap for P opening
+    para(240, oy + bh + gap, 300, bh);
 
     textMask = octx.getImageData(0, 0, W, H);
 
