@@ -2407,14 +2407,6 @@
     ctx.lineWidth = 1.5;
     ctx.strokeRect(targetX - hw, targetY - hh, TARGET_W, TARGET_H);
 
-    // Overlay text
-    ctx.font = '14px "Space Mono", monospace';
-    ctx.fillStyle = 'rgba(255,255,255,0.6)';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText('Place the project on your finger', targetX, targetY - 10);
-    ctx.fillText('here to explore', targetX, targetY + 10);
-
     // Pulsing glow
     const pulse = 0.5 + Math.sin(now * 0.003) * 0.5;
     ctx.strokeStyle = `rgba(255,255,255,${0.05 + pulse * 0.08})`;
