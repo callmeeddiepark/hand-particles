@@ -2802,9 +2802,13 @@
 
   // Modal
   function openProjectModal(p, originX, originY) {
-    // Track current project index
+    // Track current project index and nav position
     const idx = ALL_PROJECTS.indexOf(p);
-    if (idx >= 0) currentModalProjectIdx = idx;
+    if (idx >= 0) {
+      currentModalProjectIdx = idx;
+      const navPos = MOUSE_CLICK_ORDER.indexOf(idx);
+      if (navPos >= 0) currentNavIdx = navPos;
+    }
     updateModalContent(p);
     // Enable mouse cursor in modal
     document.body.style.cursor = 'default';
@@ -2853,9 +2857,13 @@
     modalVideo.innerHTML = html;
   }
 
+  let currentNavIdx = 0; // index within MOUSE_CLICK_ORDER
+
   function navigateProject(dir) {
-    currentModalProjectIdx = (currentModalProjectIdx + dir + ALL_PROJECTS.length) % ALL_PROJECTS.length;
-    updateModalContent(ALL_PROJECTS[currentModalProjectIdx]);
+    currentNavIdx = (currentNavIdx + dir + MOUSE_CLICK_ORDER.length) % MOUSE_CLICK_ORDER.length;
+    const projIdx = MOUSE_CLICK_ORDER[currentNavIdx];
+    currentModalProjectIdx = projIdx;
+    updateModalContent(ALL_PROJECTS[projIdx]);
   }
 
   document.getElementById('modalPrev').addEventListener('click', (e) => { e.stopPropagation(); navigateProject(-1); });
