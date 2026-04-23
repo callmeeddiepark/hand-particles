@@ -3586,8 +3586,14 @@
     // 8. Draw hand skeleton for each detected hand
     if (allHandLandmarks && allHandLandmarks.length > 0) {
       for (let hi = 0; hi < allHandLandmarks.length; hi++) {
-        drawHandSkeleton(labsCtx, allHandLandmarks[hi], w, h, 'rgba(255,255,255,0.6)');
+        drawHandSkeleton(labsCtx, allHandLandmarks[hi], w, h, 'rgba(57,255,20,0.8)');
       }
+    } else {
+      // Show hint if no hands
+      labsCtx.font = "11px 'Space Mono', monospace";
+      labsCtx.textAlign = 'center';
+      labsCtx.fillStyle = 'rgba(255,255,255,0.15)';
+      labsCtx.fillText('Show your hands', w / 2, h - 60);
     }
 
     // 9. Handle eaten pill animation -> open section
