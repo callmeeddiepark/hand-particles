@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>EDDIE — Interactive Experience</title>
+<title>JHP — Interactive Experience</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;500;700;800&display=swap');
   *{margin:0;padding:0;box-sizing:border-box}
@@ -559,7 +559,7 @@
     <div id="section-resume">
       <div class="resume-inner">
         <div class="resume-header">
-          <div class="resume-name" id="glitchName">EDDIE</div>
+          <div class="resume-name" id="glitchName">JHP</div>
           <div class="resume-name-kr">박정현</div>
           <div class="resume-title">Art Director</div>
           <div class="resume-tagline">Crafting digital experiences at the intersection of code, motion, and human gesture.</div>
@@ -1020,13 +1020,13 @@
     octx.fillStyle = '#000';
     octx.fillRect(0, 0, W, H);
 
-    // Sans-serif bold "EDDIE"
+    // Bold geometric "JHP"
     octx.fillStyle = '#fff';
-    const fontSize = Math.floor(Math.min(W * 0.14, H * 0.35));
-    octx.font = `800 ${fontSize}px 'Syne', sans-serif`;
+    const fontSize = Math.floor(Math.min(W * 0.22, H * 0.45));
+    octx.font = `900 ${fontSize}px 'Syne', sans-serif`;
     octx.textAlign = 'center';
     octx.textBaseline = 'middle';
-    octx.fillText('EDDIE', W / 2, H / 2);
+    octx.fillText('JHP', W / 2, H / 2);
 
     textMask = octx.getImageData(0, 0, W, H);
 
@@ -3775,7 +3775,7 @@
   function glitchName() {
     const el = document.getElementById('glitchName');
     if (!el) return;
-    const original = 'EDDIE';
+    const original = 'JHP';
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%&*';
     let iterations = 0;
     const maxIterations = 12;
