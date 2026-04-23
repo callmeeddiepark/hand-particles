@@ -2290,8 +2290,17 @@
 
   const TIP_W = 160;
   const TIP_H = Math.round(TIP_W * 9 / 16);
-  let tipRevealStart = 0; // timestamp when hands first detected
-  const TIP_REVEAL_DURATION = 500; // ms
+  let tipRevealStart = 0;
+  const TIP_REVEAL_DURATION = 500;
+
+  // Fingertip project images: projIdx → image
+  const tipImgMap = {};
+  const tipImgSrcs = {0:'project-5.jpg', 1:'project-4.jpg', 2:'project-3.jpg', 3:'project-2.jpg'};
+  Object.entries(tipImgSrcs).forEach(([idx, src]) => {
+    const img = new Image();
+    img.src = src;
+    tipImgMap[idx] = img;
+  });
 
   function drawFingertipCircle(ctx, x, y, radius, project, colorIdx) {
     // Expand animation
@@ -2301,9 +2310,17 @@
     const cw = TIP_W * ease, ch = TIP_H * ease;
     const hw = cw / 2, hh = ch / 2;
 
-    // Filled rectangle expanding from center
-    ctx.fillStyle = PF_CIRCLE_COLORS[colorIdx % PF_CIRCLE_COLORS.length];
-    ctx.fillRect(x - hw, y - hh, cw, ch);
+    // Draw image or colored rectangle
+    const tipImg = tipImgMap[colorIdx];
+    if (tipImg && tipImg.complete && tipImg.naturalWidth > 0) {
+      ctx.save();
+      ctx.globalAlpha = ease;
+      ctx.drawImage(tipImg, x - hw, y - hh, cw, ch);
+      ctx.restore();
+    } else {
+      ctx.fillStyle = PF_CIRCLE_COLORS[colorIdx % PF_CIRCLE_COLORS.length];
+      ctx.fillRect(x - hw, y - hh, cw, ch);
+    }
 
     if (progress > 0.3) {
       const textAlpha = Math.min(1, (progress - 0.3) / 0.7);
