@@ -2295,7 +2295,7 @@
 
   // Fingertip project images: projIdx → image
   const tipImgMap = {};
-  const tipImgSrcs = {0:'project-5.jpg', 1:'project-4.jpg', 2:'project-3.jpg', 3:'project-2.jpg'};
+  const tipImgSrcs = {0:'project-2.jpg', 1:'project-3.jpg', 2:'project-4.jpg', 3:'project-5.jpg'};
   Object.entries(tipImgSrcs).forEach(([idx, src]) => {
     const img = new Image();
     img.src = src;
@@ -2322,25 +2322,21 @@
       ctx.fillRect(x - hw, y - hh, cw, ch);
     }
 
-    if (progress > 0.3) {
-      const textAlpha = Math.min(1, (progress - 0.3) / 0.7);
-      // Project title — fit within box
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      let titleSize = 28;
-      ctx.font = `bold ${titleSize}px 'Syne', sans-serif`;
-      while (titleSize > 8 && ctx.measureText(project.title).width > cw * 0.9) {
-        titleSize -= 1;
+    // Show text only if no image
+    if (!tipImg || !tipImg.complete || !tipImg.naturalWidth) {
+      if (progress > 0.3) {
+        const textAlpha = Math.min(1, (progress - 0.3) / 0.7);
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        let titleSize = 28;
         ctx.font = `bold ${titleSize}px 'Syne', sans-serif`;
+        while (titleSize > 8 && ctx.measureText(project.title).width > cw * 0.9) {
+          titleSize -= 1;
+          ctx.font = `bold ${titleSize}px 'Syne', sans-serif`;
+        }
+        ctx.fillStyle = `rgba(255,255,255,${textAlpha})`;
+        ctx.fillText(project.title, x, y);
       }
-      ctx.fillStyle = `rgba(255,255,255,${textAlpha})`;
-      ctx.fillText(project.title, x, y);
-
-      // Label below
-      ctx.font = '8px "Space Mono", monospace';
-      ctx.fillStyle = `rgba(255,255,255,${textAlpha * 0.5})`;
-      ctx.textBaseline = 'top';
-      ctx.fillText(project.role, x, y + hh + 4);
     }
   }
 
