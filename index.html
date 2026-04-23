@@ -2337,6 +2337,20 @@
   let targetCooldown = 0;
   let targetColor = 'rgba(255,255,255,0.25)';
 
+  // Preload project images for target slideshow
+  const projImgSrcs = ['project-1.jpg','project-2.jpg','project-3.jpg','project-4.jpg','project-5.jpg','project-6.jpg','project-7.jpg','project-8.jpg'];
+  const projImgs = [];
+  let projImgsLoaded = 0;
+  let currentProjImg = 0;
+  let lastImgSwitch = 0;
+  const IMG_SWITCH_INTERVAL = 300; // ms between image switches
+  projImgSrcs.forEach(src => {
+    const img = new Image();
+    img.onload = () => projImgsLoaded++;
+    img.src = src;
+    projImgs.push(img);
+  });
+
   function randomTargetColor() {
     const colors = ['#e74c3c','#3498db','#2ecc71','#f39c12','#9b59b6','#1abc9c','#e67e22','#00ffff','#ff6b9d','#ffd93d'];
     targetColor = colors[Math.floor(Math.random() * colors.length)];
@@ -2372,19 +2386,37 @@
   function drawTarget(ctx) {
     if (targetCooldown > 0) return;
     const hw = TARGET_W / 2, hh = TARGET_H / 2;
-    // Outer rect
+    const now = performance.now();
+
+    // Switch image rapidly
+    if (now - lastImgSwitch > IMG_SWITCH_INTERVAL) {
+      currentProjImg = Math.floor(Math.random() * projImgs.length);
+      lastImgSwitch = now;
+    }
+
+    // Draw project image inside rectangle
+    if (projImgsLoaded > 0 && projImgs[currentProjImg].complete) {
+      ctx.save();
+      ctx.globalAlpha = 0.7;
+      ctx.drawImage(projImgs[currentProjImg], targetX - hw, targetY - hh, TARGET_W, TARGET_H);
+      ctx.restore();
+    }
+
+    // Outer rect border
     ctx.strokeStyle = targetColor;
     ctx.lineWidth = 1.5;
     ctx.strokeRect(targetX - hw, targetY - hh, TARGET_W, TARGET_H);
-    // Center text
-    ctx.font = '18px "Space Mono", monospace';
-    ctx.fillStyle = 'rgba(255,255,255,0.3)';
+
+    // Overlay text
+    ctx.font = '14px "Space Mono", monospace';
+    ctx.fillStyle = 'rgba(255,255,255,0.6)';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillText('Place the project on your finger', targetX, targetY - 12);
-    ctx.fillText('here to explore', targetX, targetY + 12);
+    ctx.fillText('Place the project on your finger', targetX, targetY - 10);
+    ctx.fillText('here to explore', targetX, targetY + 10);
+
     // Pulsing glow
-    const pulse = 0.5 + Math.sin(performance.now() * 0.003) * 0.5;
+    const pulse = 0.5 + Math.sin(now * 0.003) * 0.5;
     ctx.strokeStyle = `rgba(255,255,255,${0.05 + pulse * 0.08})`;
     ctx.lineWidth = 1;
     ctx.strokeRect(targetX - hw - 3, targetY - hh - 3, TARGET_W + 6, TARGET_H + 6);
