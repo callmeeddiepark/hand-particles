@@ -3971,10 +3971,16 @@
     faceMeshStop();
     tattooStop();
     if (djPlaying) djStop();
+    // Restart hand tracking camera if not running
+    if (!mediaCam) {
+      initCamera().catch(err => console.warn('Camera restart failed:', err));
+    }
     // Init pills and start labs face mesh
     initOrbs();
     startLabsFaceMesh();
     if (!labsAnimId) animateLabs();
+    // Allow both mouse cursor and hand tracking
+    document.body.style.cursor = 'default';
   }
   // === ABOUT PAGE ===
   const aboutPage = document.getElementById('page-about');
