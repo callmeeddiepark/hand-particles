@@ -3370,30 +3370,33 @@
       const z = lm.z || 0;
       // Map z to 0-9 level (closer = bigger, further = smaller)
       const level = Math.floor(((maxZ - z) / zRange) * 9.99);
-      const radius = 0.3 + level * 0.13; // 0.3px to ~1.5px
+      const radius = 1 + level * 0.28; // 1px to 3.5px
       const alpha = 0.15 + level * 0.07; // 0.15 to 0.78
       ctx.fillStyle = `rgba(57, 255, 20, ${alpha})`;
       ctx.beginPath();
       ctx.arc(x, y, radius, 0, Math.PI * 2);
       ctx.fill();
     }
-    // Draw interpolated midpoints between tessellation edges (doubles dot count)
+    // Draw interpolated points between tessellation edges (quarter + midpoint + three-quarter = 3x extra)
     const tess2 = FACEMESH_TESSELATION;
     for (let i = 0; i < tess2.length; i++) {
       const [a, b] = tess2[i];
       const pA = landmarks[a];
       const pB = landmarks[b];
       if (!pA || !pB) continue;
-      const mx = (1 - (pA.x + pB.x) / 2) * w;
-      const my = ((pA.y + pB.y) / 2) * h;
-      const mz = ((pA.z || 0) + (pB.z || 0)) / 2;
-      const mlevel = Math.floor(((maxZ - mz) / zRange) * 9.99);
-      const mr = 0.3 + mlevel * 0.13;
-      const ma = 0.1 + mlevel * 0.05;
-      ctx.fillStyle = `rgba(57, 255, 20, ${ma})`;
-      ctx.beginPath();
-      ctx.arc(mx, my, mr, 0, Math.PI * 2);
-      ctx.fill();
+      const fracs = [0.25, 0.5, 0.75];
+      for (const f of fracs) {
+        const ix = (1 - (pA.x * (1 - f) + pB.x * f)) * w;
+        const iy = ((pA.y * (1 - f) + pB.y * f)) * h;
+        const iz = ((pA.z || 0) * (1 - f) + (pB.z || 0) * f);
+        const ilevel = Math.floor(((maxZ - iz) / zRange) * 9.99);
+        const ir = 1 + ilevel * 0.28;
+        const ia = 0.1 + ilevel * 0.06;
+        ctx.fillStyle = `rgba(57, 255, 20, ${ia})`;
+        ctx.beginPath();
+        ctx.arc(ix, iy, ir * 0.7, 0, Math.PI * 2);
+        ctx.fill();
+      }
     }
     // Draw tessellation lines faintly
     ctx.strokeStyle = 'rgba(57, 255, 20, 0.08)';
