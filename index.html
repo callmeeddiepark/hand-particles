@@ -3199,6 +3199,7 @@
     { label: 'Tattoo', section: 'section-tattoo', color: [100, 60, 255] },
   ];
   let labsPills = [];           // runtime pill objects
+  let labsDots = [];             // white dot grid for face repulsion
   let labsGrabbedPill = -1;     // index of currently grabbed pill, or -1
   let labsFaceMeshInstance = null;
   let labsFaceMeshCam = null;
@@ -3229,6 +3230,7 @@
     labsCanvas.height = window.innerHeight;
     // Initialize pills instead of orbs
     initLabsPills();
+    initLabsDots();
   }
 
   // --- Pills: init, draw, animate ---
@@ -3260,6 +3262,18 @@
     labsGrabbedPill = -1;
     labsPillEatenAnim = null;
     labsPillTime = 0;
+  }
+
+  function initLabsDots() {
+    const w = labsCanvas.width;
+    const h = labsCanvas.height;
+    const spacing = 15;
+    labsDots = [];
+    for (let gx = 0; gx <= w; gx += spacing) {
+      for (let gy = 0; gy <= h; gy += spacing) {
+        labsDots.push({ bx: gx, by: gy, x: gx, y: gy, vx: 0, vy: 0 });
+      }
+    }
   }
 
   // Preload pill image
@@ -3508,12 +3522,66 @@
     if (w !== window.innerWidth || h !== window.innerHeight) {
       labsCanvas.width = window.innerWidth;
       labsCanvas.height = window.innerHeight;
+      initLabsDots();
     }
 
     // Clear
     labsCtx.clearRect(0, 0, w, h);
     labsCtx.fillStyle = '#000';
     labsCtx.fillRect(0, 0, w, h);
+
+    // 0. Update & draw white dot grid (repelled by face)
+    {
+      const spring = 0.05;
+      const damping = 0.85;
+      const influenceR2 = 80 * 80;
+      const repulseStrength = 4;
+      // Build sparse landmark list (every 10th) in pixel coords
+      const facePoints = [];
+      if (labsFaceLandmarks) {
+        for (let i = 0; i < labsFaceLandmarks.length; i += 10) {
+          const lm = labsFaceLandmarks[i];
+          facePoints.push({ x: (1 - lm.x) * w, y: lm.y * h });
+        }
+      }
+      for (let i = 0; i < labsDots.length; i++) {
+        const d = labsDots[i];
+        // Repulsion from face landmarks
+        for (let j = 0; j < facePoints.length; j++) {
+          const fp = facePoints[j];
+          const dx = d.x - fp.x;
+          const dy = d.y - fp.y;
+          const dist2 = dx * dx + dy * dy;
+          if (dist2 < influenceR2 && dist2 > 0.01) {
+            const dist = Math.sqrt(dist2);
+            const force = repulseStrength * (1 - dist / 80);
+            d.vx += (dx / dist) * force;
+            d.vy += (dy / dist) * force;
+          }
+        }
+        // Spring back to base
+        d.vx += (d.bx - d.x) * spring;
+        d.vy += (d.by - d.y) * spring;
+        // Damping
+        d.vx *= damping;
+        d.vy *= damping;
+        // Update position
+        d.x += d.vx;
+        d.y += d.vy;
+      }
+      // Draw dots
+      for (let i = 0; i < labsDots.length; i++) {
+        const d = labsDots[i];
+        const dx = d.x - d.bx;
+        const dy = d.y - d.by;
+        const disp = Math.sqrt(dx * dx + dy * dy);
+        const alpha = Math.max(0.15, Math.min(0.6, 0.6 - disp * 0.008));
+        labsCtx.fillStyle = `rgba(255, 255, 255, ${alpha})`;
+        labsCtx.beginPath();
+        labsCtx.arc(d.x, d.y, 2, 0, Math.PI * 2);
+        labsCtx.fill();
+      }
+    }
 
     // 1. Draw face mesh as background
     drawLabsFaceMesh(labsCtx, labsFaceLandmarks, w, h);
@@ -3745,8 +3813,9 @@
     labsCanvas.style.pointerEvents = '';
     // Restart labs face mesh
     startLabsFaceMesh();
-    // Reset pills
+    // Reset pills and dots
     initLabsPills();
+    initLabsDots();
   });
 
   // Scroll interaction on labs canvas (keep for compatibility, no-op now)
