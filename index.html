@@ -3332,12 +3332,12 @@
     ctx.lineWidth = 1;
     ctx.stroke();
 
-    // Label text below pill
+    // Label text inside pill
     ctx.font = "bold 12px 'Space Mono', monospace";
     ctx.textAlign = 'center';
-    ctx.textBaseline = 'top';
-    ctx.fillStyle = `rgba(255, 255, 255, ${grabbed ? 1 : 0.7})`;
-    ctx.fillText(data.label, x, y + hh + 8);
+    ctx.textBaseline = 'middle';
+    ctx.fillStyle = `rgba(57, 255, 20, ${grabbed ? 1 : 0.8})`;
+    ctx.fillText(data.label, x, y);
 
     ctx.restore();
   }
