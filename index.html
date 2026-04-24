@@ -4212,13 +4212,16 @@
     const aw = aboutCanvas.width = window.innerWidth;
     const ah = aboutCanvas.height = window.innerHeight;
     // Stars floating in space
-    for (let i = 0; i < 200; i++) {
+    for (let i = 0; i < 400; i++) {
+      const level = Math.floor(Math.random() * 5); // 0-4 (5 levels)
       aParticles.push({
         x: Math.random() * aw, y: Math.random() * ah,
+        bx: 0, by: 0, // base offset for repulsion
         vx: (Math.random() - 0.5) * 0.15, vy: (Math.random() - 0.5) * 0.15,
-        r: 0.5 + Math.random() * 1.5,
+        r: 0.5 + level * 0.3, // 0.5px to 1.7px (5 levels)
         twinkle: Math.random() * Math.PI * 2,
         twinkleSpeed: 0.02 + Math.random() * 0.03,
+        repX: 0, repY: 0, // repulsion velocity
       });
     }
   }
@@ -4230,9 +4233,38 @@
     aboutCtx.fillStyle = 'rgba(0,0,0,0.12)';
     aboutCtx.fillRect(0, 0, aw, ah);
 
-    // Update & draw stars
+    // Get cursor/hand positions for repulsion
+    const aboutCursors = [];
+    if (allHandLandmarks && allHandLandmarks.length > 0) {
+      for (let hi = 0; hi < allHandLandmarks.length; hi++) {
+        const lm = allHandLandmarks[hi];
+        for (let li = 0; li < 21; li += 4) {
+          aboutCursors.push({ x: (1 - lm[li].x) * aw, y: lm[li].y * ah });
+        }
+      }
+    } else if (aMouseX > 0) {
+      aboutCursors.push({ x: aMouseX, y: aMouseY });
+    }
+
+    // Update & draw stars with repulsion
     for (const p of aParticles) {
-      p.x += p.vx; p.y += p.vy;
+      // Repulsion from cursor/hand
+      for (const c of aboutCursors) {
+        const dx = p.x - c.x;
+        const dy = p.y - c.y;
+        const dist2 = dx * dx + dy * dy;
+        if (dist2 < 10000 && dist2 > 1) { // 100px radius
+          const dist = Math.sqrt(dist2);
+          const force = 2 * (1 - dist / 100);
+          p.repX += (dx / dist) * force;
+          p.repY += (dy / dist) * force;
+        }
+      }
+      // Apply repulsion with spring back
+      p.x += p.vx + p.repX;
+      p.y += p.vy + p.repY;
+      p.repX *= 0.9;
+      p.repY *= 0.9;
       p.twinkle += p.twinkleSpeed;
       if (p.x < 0) p.x = aw; if (p.x > aw) p.x = 0;
       if (p.y < 0) p.y = ah; if (p.y > ah) p.y = 0;
