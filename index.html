@@ -4289,31 +4289,35 @@
       aboutMeteorTrail.push({ x: aMouseX, y: aMouseY, t: performance.now(), alpha: 1 });
     }
 
-    // Draw meteor trail
+    // Draw meteor trail (smooth white)
     const now = performance.now();
-    aboutMeteorTrail = aboutMeteorTrail.filter(p => now - p.t < 800);
-    for (let i = 1; i < aboutMeteorTrail.length; i++) {
-      const a = aboutMeteorTrail[i - 1];
-      const b = aboutMeteorTrail[i];
-      const age = (now - b.t) / 800;
-      const alpha = (1 - age) * 0.8;
-      const width = (1 - age) * 3;
-      aboutCtx.beginPath();
-      aboutCtx.moveTo(a.x, a.y);
-      aboutCtx.lineTo(b.x, b.y);
-      aboutCtx.strokeStyle = `rgba(57,255,20,${alpha})`;
-      aboutCtx.lineWidth = width;
-      aboutCtx.stroke();
+    aboutMeteorTrail = aboutMeteorTrail.filter(p => now - p.t < 1200);
+    if (aboutMeteorTrail.length > 2) {
+      aboutCtx.lineCap = 'round';
+      aboutCtx.lineJoin = 'round';
+      for (let i = 1; i < aboutMeteorTrail.length; i++) {
+        const a = aboutMeteorTrail[i - 1];
+        const b = aboutMeteorTrail[i];
+        const age = (now - b.t) / 1200;
+        const alpha = (1 - age) * 0.5;
+        const width = (1 - age) * 2.5;
+        aboutCtx.beginPath();
+        aboutCtx.moveTo(a.x, a.y);
+        aboutCtx.lineTo(b.x, b.y);
+        aboutCtx.strokeStyle = `rgba(255,255,255,${alpha})`;
+        aboutCtx.lineWidth = width;
+        aboutCtx.stroke();
+      }
     }
-    // Meteor head glow
+    // Meteor head glow (white)
     if (aboutMeteorTrail.length > 0) {
       const head = aboutMeteorTrail[aboutMeteorTrail.length - 1];
-      const grad = aboutCtx.createRadialGradient(head.x, head.y, 0, head.x, head.y, 15);
-      grad.addColorStop(0, 'rgba(57,255,20,0.4)');
-      grad.addColorStop(1, 'rgba(57,255,20,0)');
+      const grad = aboutCtx.createRadialGradient(head.x, head.y, 0, head.x, head.y, 20);
+      grad.addColorStop(0, 'rgba(255,255,255,0.25)');
+      grad.addColorStop(1, 'rgba(255,255,255,0)');
       aboutCtx.fillStyle = grad;
       aboutCtx.beginPath();
-      aboutCtx.arc(head.x, head.y, 15, 0, Math.PI * 2);
+      aboutCtx.arc(head.x, head.y, 20, 0, Math.PI * 2);
       aboutCtx.fill();
     }
 
