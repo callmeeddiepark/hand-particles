@@ -3262,46 +3262,32 @@
     labsPillTime = 0;
   }
 
+  // Preload pill image
+  const pillImg = new Image();
+  pillImg.src = 'pill.png';
+
   function drawPill(ctx, pill, idx) {
     if (pill.eaten) return;
     const { x, y, width, height, data, grabbed } = pill;
     const [r, g, b] = data.color;
-    const hw = width / 2;
-    const hh = height / 2;
-    const radius = hh; // pill end radius
 
     ctx.save();
 
-    // Glow behind pill
-    ctx.shadowColor = `rgba(${r}, ${g}, ${b}, ${grabbed ? 0.6 : 0.3})`;
-    ctx.shadowBlur = grabbed ? 25 : 12;
+    // Draw pill image
+    if (pillImg.complete && pillImg.naturalWidth > 0) {
+      const imgW = grabbed ? width * 1.2 : width;
+      const imgH = grabbed ? height * 1.2 : height;
+      ctx.globalAlpha = grabbed ? 1 : 0.85;
+      ctx.drawImage(pillImg, x - imgW / 2, y - imgH / 2, imgW, imgH);
+      ctx.globalAlpha = 1;
+    }
 
-    // Pill shape (rounded rectangle / capsule)
-    ctx.beginPath();
-    ctx.moveTo(x - hw + radius, y - hh);
-    ctx.lineTo(x + hw - radius, y - hh);
-    ctx.arc(x + hw - radius, y, radius, -Math.PI / 2, Math.PI / 2);
-    ctx.lineTo(x - hw + radius, y + hh);
-    ctx.arc(x - hw + radius, y, radius, Math.PI / 2, -Math.PI / 2);
-    ctx.closePath();
-
-    // Fill with semi-transparent color
-    ctx.fillStyle = `rgba(${r}, ${g}, ${b}, ${grabbed ? 0.35 : 0.15})`;
-    ctx.fill();
-
-    // Border
-    ctx.strokeStyle = `rgba(${r}, ${g}, ${b}, ${grabbed ? 0.9 : 0.6})`;
-    ctx.lineWidth = grabbed ? 2.5 : 1.5;
-    ctx.stroke();
-
-    ctx.shadowBlur = 0;
-
-    // Label text
-    ctx.font = "bold 14px 'Space Mono', monospace";
+    // Label text below pill
+    ctx.font = "bold 12px 'Space Mono', monospace";
     ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillStyle = `rgba(255, 255, 255, ${grabbed ? 1 : 0.85})`;
-    ctx.fillText(data.label, x, y);
+    ctx.textBaseline = 'top';
+    ctx.fillStyle = `rgba(255, 255, 255, ${grabbed ? 1 : 0.7})`;
+    ctx.fillText(data.label, x, y + height / 2 + 8);
 
     ctx.restore();
   }
