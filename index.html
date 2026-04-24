@@ -2452,6 +2452,8 @@
 
     if (!hasHands) {
       pfHandGuide.classList.remove('hidden');
+      const guideText = document.getElementById('portfolioGuideText');
+      if (guideText) guideText.textContent = mouseMode ? 'Click the floating square' : 'Place your fingers on the floating square';
       tipRevealStart = 0;
     } else {
       if (tipRevealStart === 0) tipRevealStart = performance.now();
