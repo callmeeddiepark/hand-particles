@@ -2469,8 +2469,26 @@
           pfSmooth[hi][j].y += (lm[j].y - pfSmooth[hi][j].y) * 0.35;
         }
 
-        // Draw skeleton
-        drawHandSkeleton(pfHandCtx, pfSmooth[hi], w, h, 'rgba(255,255,255,0.6)');
+        // Draw skeleton (behind project images)
+        {
+          const lm = allHandLandmarks[hi];
+          pfHandCtx.strokeStyle = 'rgba(57,255,20,0.9)';
+          pfHandCtx.lineWidth = 3;
+          for (const [a, b] of HAND_CONNECTIONS) {
+            if (!lm[a] || !lm[b]) continue;
+            pfHandCtx.beginPath();
+            pfHandCtx.moveTo((1 - lm[a].x) * w, lm[a].y * h);
+            pfHandCtx.lineTo((1 - lm[b].x) * w, lm[b].y * h);
+            pfHandCtx.stroke();
+          }
+          pfHandCtx.fillStyle = 'rgba(57,255,20,1)';
+          for (let i = 0; i < 21; i++) {
+            if (!lm[i]) continue;
+            pfHandCtx.beginPath();
+            pfHandCtx.arc((1 - lm[i].x) * w, lm[i].y * h, 4, 0, Math.PI * 2);
+            pfHandCtx.fill();
+          }
+        }
 
         // Determine left/right hand by wrist screen position
         const wristScreenX = (1 - pfSmooth[hi][0].x) * w;
@@ -2510,30 +2528,6 @@
     // Draw floating target circle
     drawTarget(pfHandCtx);
 
-    // Redraw hand skeletons on top of everything (use raw landmarks for reliability)
-    if (hasHands) {
-      for (let hi = 0; hi < allHandLandmarks.length; hi++) {
-        const lm = allHandLandmarks[hi];
-        // Draw connections
-        pfHandCtx.strokeStyle = 'rgba(57,255,20,0.9)';
-        pfHandCtx.lineWidth = 3;
-        for (const [a, b] of HAND_CONNECTIONS) {
-          if (!lm[a] || !lm[b]) continue;
-          pfHandCtx.beginPath();
-          pfHandCtx.moveTo((1 - lm[a].x) * w, lm[a].y * h);
-          pfHandCtx.lineTo((1 - lm[b].x) * w, lm[b].y * h);
-          pfHandCtx.stroke();
-        }
-        // Draw joints
-        pfHandCtx.fillStyle = 'rgba(57,255,20,1)';
-        for (let i = 0; i < 21; i++) {
-          if (!lm[i]) continue;
-          pfHandCtx.beginPath();
-          pfHandCtx.arc((1 - lm[i].x) * w, lm[i].y * h, 4, 0, Math.PI * 2);
-          pfHandCtx.fill();
-        }
-      }
-    }
 
     pfHandAnimId = requestAnimationFrame(animatePortfolioHands);
   }
