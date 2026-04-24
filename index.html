@@ -2198,8 +2198,9 @@
 
   function drawHandSkeleton(ctx, landmarks, w, h, color) {
     ctx.strokeStyle = color;
-    ctx.lineWidth = 2.5;
+    ctx.lineWidth = 3;
     for (const [a, b] of HAND_CONNECTIONS) {
+      if (!landmarks[a] || !landmarks[b]) continue;
       const ax = (1 - landmarks[a].x) * w, ay = landmarks[a].y * h;
       const bx = (1 - landmarks[b].x) * w, by = landmarks[b].y * h;
       ctx.beginPath();
@@ -2207,12 +2208,12 @@
       ctx.lineTo(bx, by);
       ctx.stroke();
     }
-    // Joint dots
+    // Joint dots (all 21 landmarks)
     for (let i = 0; i < 21; i++) {
-      if (FINGERTIPS.includes(i)) continue;
+      if (!landmarks[i]) continue;
       const px = (1 - landmarks[i].x) * w, py = landmarks[i].y * h;
       ctx.beginPath();
-      ctx.arc(px, py, 3, 0, Math.PI * 2);
+      ctx.arc(px, py, 4, 0, Math.PI * 2);
       ctx.fillStyle = color;
       ctx.fill();
     }
