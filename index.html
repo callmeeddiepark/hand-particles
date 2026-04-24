@@ -3368,10 +3368,10 @@
       const x = (1 - lm.x) * w; // mirror
       const y = lm.y * h;
       const z = lm.z || 0;
-      // Map z to 0-9 level (closer = bigger, further = smaller)
-      const level = Math.floor(((maxZ - z) / zRange) * 9.99);
-      const radius = 1 + level * 0.25; // 1px to ~3.5px
-      const alpha = 0.25 + level * 0.07; // 0.25 to 0.88
+      // Map z to 0-19 level (closer = bigger, further = smaller)
+      const level = Math.floor(((maxZ - z) / zRange) * 19.99);
+      const radius = 1 + level * 0.13; // 1px to ~3.5px
+      const alpha = 0.25 + level * 0.035; // 0.25 to 0.92
       ctx.fillStyle = `rgba(57, 255, 20, ${alpha})`;
       ctx.beginPath();
       ctx.arc(x, y, radius, 0, Math.PI * 2);
@@ -3387,8 +3387,8 @@
       const mx = (1 - (pA.x + pB.x) / 2) * w;
       const my = ((pA.y + pB.y) / 2) * h;
       const mz = ((pA.z || 0) + (pB.z || 0)) / 2;
-      const mlevel = Math.floor(((maxZ - mz) / zRange) * 9.99);
-      const mr = 0.8 + mlevel * 0.2;
+      const mlevel = Math.floor(((maxZ - mz) / zRange) * 19.99);
+      const mr = 0.8 + mlevel * 0.1;
       const ma = 0.1 + mlevel * 0.05;
       ctx.fillStyle = `rgba(57, 255, 20, ${ma})`;
       ctx.beginPath();
