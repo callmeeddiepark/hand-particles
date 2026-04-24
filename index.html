@@ -3554,7 +3554,8 @@
           const dist2 = dx * dx + dy * dy;
           if (dist2 < influenceR2 && dist2 > 0.01) {
             const dist = Math.sqrt(dist2);
-            const force = repulseStrength * (1 - dist / 80);
+            // Stronger repulsion near face (10px minimum gap)
+            const force = dist < 10 ? repulseStrength * 3 : repulseStrength * (1 - dist / 80);
             d.vx += (dx / dist) * force;
             d.vy += (dy / dist) * force;
           }
@@ -3578,7 +3579,7 @@
         const alpha = Math.max(0.15, Math.min(0.6, 0.6 - disp * 0.008));
         labsCtx.fillStyle = `rgba(255, 255, 255, ${alpha})`;
         labsCtx.beginPath();
-        labsCtx.arc(d.x, d.y, 2, 0, Math.PI * 2);
+        labsCtx.arc(d.x, d.y, 1, 0, Math.PI * 2);
         labsCtx.fill();
       }
     }
