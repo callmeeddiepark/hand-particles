@@ -3570,9 +3570,17 @@
         d.x += d.vx;
         d.y += d.vy;
       }
-      // Draw dots
+      // Draw dots (skip dots that are too close to face landmarks)
       for (let i = 0; i < labsDots.length; i++) {
         const d = labsDots[i];
+        // Check if dot is within 20px of any face point — if so, hide it
+        let tooClose = false;
+        for (let j = 0; j < facePoints.length; j++) {
+          const fdx = d.x - facePoints[j].x;
+          const fdy = d.y - facePoints[j].y;
+          if (fdx * fdx + fdy * fdy < 400) { tooClose = true; break; } // 20px = 400 squared
+        }
+        if (tooClose) continue;
         const dx = d.x - d.bx;
         const dy = d.y - d.by;
         const disp = Math.sqrt(dx * dx + dy * dy);
