@@ -3276,32 +3276,68 @@
     }
   }
 
-  // Preload pill image
-  const pillImg = new Image();
-  pillImg.src = 'pill.png';
-
   function drawPill(ctx, pill, idx) {
     if (pill.eaten) return;
     const { x, y, width, height, data, grabbed } = pill;
-    const [r, g, b] = data.color;
+    const scale = grabbed ? 1.15 : 1;
+    const pw = width * scale;
+    const ph = height * scale;
+    const hw = pw / 2;
+    const hh = ph / 2;
+    const radius = hh;
 
     ctx.save();
 
-    // Draw pill image
-    if (pillImg.complete && pillImg.naturalWidth > 0) {
-      const imgW = grabbed ? width * 1.2 : width;
-      const imgH = grabbed ? height * 1.2 : height;
-      ctx.globalAlpha = grabbed ? 1 : 0.85;
-      ctx.drawImage(pillImg, x - imgW / 2, y - imgH / 2, imgW, imgH);
-      ctx.globalAlpha = 1;
-    }
+    // 3D glass pill shape
+    ctx.beginPath();
+    ctx.moveTo(x - hw + radius, y - hh);
+    ctx.lineTo(x + hw - radius, y - hh);
+    ctx.arc(x + hw - radius, y, radius, -Math.PI / 2, Math.PI / 2);
+    ctx.lineTo(x - hw + radius, y + hh);
+    ctx.arc(x - hw + radius, y, radius, Math.PI / 2, -Math.PI / 2);
+    ctx.closePath();
+
+    // Glass gradient fill
+    const grad = ctx.createLinearGradient(x - hw, y - hh, x + hw, y + hh);
+    grad.addColorStop(0, 'rgba(180, 200, 255, 0.15)');
+    grad.addColorStop(0.3, 'rgba(120, 160, 255, 0.1)');
+    grad.addColorStop(0.5, 'rgba(200, 100, 255, 0.12)');
+    grad.addColorStop(0.7, 'rgba(100, 200, 255, 0.1)');
+    grad.addColorStop(1, 'rgba(180, 220, 255, 0.15)');
+    ctx.fillStyle = grad;
+    ctx.fill();
+
+    // Glass border with rainbow shimmer
+    const borderGrad = ctx.createLinearGradient(x - hw, y, x + hw, y);
+    borderGrad.addColorStop(0, 'rgba(100, 200, 255, 0.6)');
+    borderGrad.addColorStop(0.25, 'rgba(200, 100, 255, 0.5)');
+    borderGrad.addColorStop(0.5, 'rgba(255, 150, 200, 0.5)');
+    borderGrad.addColorStop(0.75, 'rgba(100, 255, 200, 0.5)');
+    borderGrad.addColorStop(1, 'rgba(100, 150, 255, 0.6)');
+    ctx.strokeStyle = borderGrad;
+    ctx.lineWidth = grabbed ? 2 : 1.5;
+    ctx.stroke();
+
+    // Top highlight (glass reflection)
+    ctx.beginPath();
+    ctx.ellipse(x, y - hh * 0.3, hw * 0.6, hh * 0.35, 0, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.08)';
+    ctx.fill();
+
+    // Center divider line
+    ctx.beginPath();
+    ctx.moveTo(x, y - hh);
+    ctx.lineTo(x, y + hh);
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.06)';
+    ctx.lineWidth = 1;
+    ctx.stroke();
 
     // Label text below pill
     ctx.font = "bold 12px 'Space Mono', monospace";
     ctx.textAlign = 'center';
     ctx.textBaseline = 'top';
     ctx.fillStyle = `rgba(255, 255, 255, ${grabbed ? 1 : 0.7})`;
-    ctx.fillText(data.label, x, y + height / 2 + 8);
+    ctx.fillText(data.label, x, y + hh + 8);
 
     ctx.restore();
   }
