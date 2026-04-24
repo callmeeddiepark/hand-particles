@@ -3354,14 +3354,27 @@
 
   function drawLabsFaceMesh(ctx, landmarks, w, h) {
     if (!landmarks) return;
-    // Draw dots
-    ctx.fillStyle = 'rgba(57, 255, 20, 0.35)';
+    // Find z range for 10-level depth mapping
+    let minZ = Infinity, maxZ = -Infinity;
+    for (let i = 0; i < landmarks.length; i++) {
+      const z = landmarks[i].z || 0;
+      if (z < minZ) minZ = z;
+      if (z > maxZ) maxZ = z;
+    }
+    const zRange = maxZ - minZ || 1;
+    // Draw dots with size based on depth (10 levels)
     for (let i = 0; i < landmarks.length; i++) {
       const lm = landmarks[i];
       const x = (1 - lm.x) * w; // mirror
       const y = lm.y * h;
+      const z = lm.z || 0;
+      // Map z to 0-9 level (closer = bigger, further = smaller)
+      const level = Math.floor(((maxZ - z) / zRange) * 9.99);
+      const radius = 1 + level * 0.4; // 1px to 4.6px
+      const alpha = 0.15 + level * 0.07; // 0.15 to 0.78
+      ctx.fillStyle = `rgba(57, 255, 20, ${alpha})`;
       ctx.beginPath();
-      ctx.arc(x, y, 2.5, 0, Math.PI * 2);
+      ctx.arc(x, y, radius, 0, Math.PI * 2);
       ctx.fill();
     }
     // Draw tessellation lines faintly
