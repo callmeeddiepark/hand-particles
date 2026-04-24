@@ -3838,11 +3838,10 @@
       labsCtx.restore();
     } else if (labsGrabbedPill < 0 && !labsPillEatenAnim) {
       labsCtx.save();
-      labsCtx.font = "12px 'Space Mono', monospace";
+      labsCtx.font = "20px 'Space Mono', monospace";
       labsCtx.textAlign = 'center';
-      labsCtx.fillStyle = 'rgba(255, 255, 255, 0.25)';
-      const instrText = mouseMode ? 'Click a pill to grab, drag to mouth' : 'Pinch a pill, drag to your mouth';
-      labsCtx.fillText(instrText, w / 2, h - 40);
+      labsCtx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+      labsCtx.fillText('Drop a pill into your mouth', w / 2, h / 2);
       labsCtx.restore();
     }
 
