@@ -3426,13 +3426,19 @@
         });
       }
 
-      // Send frames to face mesh on a timer (don't use Camera to avoid conflict with hand tracking Camera)
+      // Initialize hands model if not yet created
+      if (!handsInstance && typeof Hands !== 'undefined') {
+        handsInstance = new Hands({ locateFile: f => `https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1675469240/${f}` });
+        handsInstance.setOptions({ maxNumHands: 2, modelComplexity: 1, minDetectionConfidence: 0.7, minTrackingConfidence: 0.5 });
+        handsInstance.onResults(onResults);
+      }
+
+      // Send frames to face mesh AND hands on a timer
       if (labsFaceMeshInstance) {
         const sendFrame = async () => {
           if (!labsFaceMeshRunning || !labsFaceMeshInstance) return;
           try {
             await labsFaceMeshInstance.send({ image: video });
-            // Also send to hands model for hand tracking
             if (handsInstance) await handsInstance.send({ image: video });
           } catch (e) { /* ignore frame errors */ }
           if (labsFaceMeshRunning) {
