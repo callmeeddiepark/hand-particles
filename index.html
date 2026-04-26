@@ -511,7 +511,7 @@
         </div>
         <div class="cdj-transport">
           <button class="cdj-btn cdj-cue" id="djCue">CUE</button>
-          <button class="cdj-btn cdj-play" id="djPlay">&#9654;</button>
+          <button class="cdj-btn cdj-play" id="djPlay">&#9654;&#10074;&#10074;</button>
         </div>
         <div class="cdj-tempo" style="position:absolute;bottom:80px;right:20px;display:flex;flex-direction:column;align-items:center;gap:4px">
           <span style="font-family:'Space Mono',monospace;font-size:8px;color:rgba(255,255,255,0.4);letter-spacing:.1em">TEMPO</span>
@@ -4901,7 +4901,6 @@
     djSourceNode.start(0, djPauseOffset);
     djPlaying = true;
     document.getElementById('djPlay').classList.add('playing');
-    document.getElementById('djPlay').innerHTML = '&#10074;&#10074;';
     if (!djAnimId) djAnimate();
   }
 
@@ -4934,7 +4933,6 @@
     djPauseOffset = (djAudioCtx.currentTime - djStartTime) % (djBuffer ? djBuffer.duration : 1);
     djPlaying = false;
     document.getElementById('djPlay').classList.remove('playing');
-    document.getElementById('djPlay').innerHTML = '&#9654;';
   }
 
   function djCue() {
