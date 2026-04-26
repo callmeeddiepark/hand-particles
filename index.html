@@ -3547,6 +3547,8 @@
       if (sectionId === 'section-facemesh') faceMeshInit();
       if (sectionId === 'section-dj') {
         djInitUI();
+        // Start DJ animation loop for hand skeleton even before playing
+        if (!djAnimId) djAnimate();
         // Keep sending frames to hands model for skeleton tracking
         const sendDjHandFrames = () => {
           if (!labsViewingSection || labsViewingSection !== 'section-dj') return;
