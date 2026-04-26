@@ -513,6 +513,11 @@
           <button class="cdj-btn cdj-cue" id="djCue">CUE</button>
           <button class="cdj-btn cdj-play" id="djPlay">&#9654;</button>
         </div>
+        <div class="cdj-tempo" style="position:absolute;bottom:80px;right:20px;display:flex;flex-direction:column;align-items:center;gap:4px">
+          <span style="font-family:'Space Mono',monospace;font-size:8px;color:rgba(255,255,255,0.4);letter-spacing:.1em">TEMPO</span>
+          <input type="range" id="djTempo" min="0.5" max="1.5" step="0.01" value="1" orient="vertical" style="writing-mode:vertical-lr;direction:rtl;height:100px;accent-color:#39ff14;cursor:pointer">
+          <span id="djTempoVal" style="font-family:'Space Mono',monospace;font-size:9px;color:rgba(57,255,20,0.7)">0%</span>
+        </div>
         <div class="cdj-branding">
           <span>Pioneer DJ</span>
           <span>CDJ-3000</span>
@@ -4892,10 +4897,23 @@
     djSourceNode.connect(djHighEQ);
     djSourceNode.loop = true;
     djStartTime = djAudioCtx.currentTime - djPauseOffset;
+    djSourceNode.playbackRate.value = djTempoSlider ? parseFloat(djTempoSlider.value) : 1;
     djSourceNode.start(0, djPauseOffset);
     djPlaying = true;
     document.getElementById('djPlay').classList.add('playing');
     if (!djAnimId) djAnimate();
+  }
+
+  // Tempo fader
+  const djTempoSlider = document.getElementById('djTempo');
+  const djTempoVal = document.getElementById('djTempoVal');
+  if (djTempoSlider) {
+    djTempoSlider.addEventListener('input', () => {
+      const rate = parseFloat(djTempoSlider.value);
+      if (djSourceNode) djSourceNode.playbackRate.value = rate;
+      const pct = Math.round((rate - 1) * 100);
+      djTempoVal.textContent = (pct >= 0 ? '+' : '') + pct + '%';
+    });
   }
 
   // Restart audio at current position (for scratch/rewind)
