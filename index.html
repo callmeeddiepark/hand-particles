@@ -3548,16 +3548,14 @@
       if (sectionId === 'section-dj') {
         djInitUI();
         // Keep sending frames to hands model for skeleton tracking
-        if (!mediaCam && handsInstance) {
-          const sendHandFrames = () => {
-            if (!labsViewingSection || labsViewingSection !== 'section-dj') return;
-            if (handsInstance && video.srcObject) {
-              handsInstance.send({ image: video }).catch(() => {});
-            }
-            requestAnimationFrame(sendHandFrames);
-          };
-          sendHandFrames();
-        }
+        const sendDjHandFrames = () => {
+          if (!labsViewingSection || labsViewingSection !== 'section-dj') return;
+          if (handsInstance && video.srcObject) {
+            handsInstance.send({ image: video }).catch(() => {});
+          }
+          requestAnimationFrame(sendDjHandFrames);
+        };
+        sendDjHandFrames();
       }
       if (sectionId === 'section-tattoo') tattooInit();
     }, 300);
@@ -5560,8 +5558,8 @@
       const djSection = document.getElementById('section-dj');
       const djRect = djSection.getBoundingClientRect();
 
-      djHandCtx.strokeStyle = `rgba(57,255,20,${0.4 + bassEnergy * 0.3})`;
-      djHandCtx.lineWidth = 1.5;
+      djHandCtx.strokeStyle = `rgba(57,255,20,${0.7 + bassEnergy * 0.3})`;
+      djHandCtx.lineWidth = 3;
       djHandCtx.shadowColor = 'rgba(57,255,20,0.5)';
       djHandCtx.shadowBlur = 8;
 
@@ -5577,12 +5575,12 @@
       }
 
       // Draw joints
-      djHandCtx.fillStyle = `rgba(57,255,20,${0.5 + bassEnergy * 0.3})`;
+      djHandCtx.fillStyle = `rgba(57,255,20,${0.8 + bassEnergy * 0.2})`;
       for (let i = 0; i < 21; i++) {
         const x = (1 - lm[i].x) * window.innerWidth - djRect.left;
         const y = lm[i].y * window.innerHeight - djRect.top + djSection.scrollTop;
         djHandCtx.beginPath();
-        djHandCtx.arc(x, y, 3, 0, Math.PI * 2);
+        djHandCtx.arc(x, y, 4, 0, Math.PI * 2);
         djHandCtx.fill();
       }
       djHandCtx.shadowBlur = 0;
