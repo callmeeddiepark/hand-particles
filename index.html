@@ -4901,6 +4901,7 @@
     djSourceNode.start(0, djPauseOffset);
     djPlaying = true;
     document.getElementById('djPlay').classList.add('playing');
+    document.getElementById('djPlay').innerHTML = '&#10074;&#10074;';
     if (!djAnimId) djAnimate();
   }
 
@@ -4933,6 +4934,7 @@
     djPauseOffset = (djAudioCtx.currentTime - djStartTime) % (djBuffer ? djBuffer.duration : 1);
     djPlaying = false;
     document.getElementById('djPlay').classList.remove('playing');
+    document.getElementById('djPlay').innerHTML = '&#9654;';
   }
 
   function djCue() {
