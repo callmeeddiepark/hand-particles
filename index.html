@@ -5904,7 +5904,7 @@
     }
 
     // Check tattooing state
-    if (isGesture && nx >= 0 && tattooGestureActive) {
+    if (isGesture && nx >= 0 && (tattooGestureActive || isPinching)) {
       const coords = tattooGetCanvasCoords(nx, ny);
       if (coords.inBounds) {
         if (!tattooIsTattooing) {
@@ -5918,7 +5918,7 @@
           tattooStopBuzz();
         }
       }
-    } else if (isGesture && !tattooGestureActive) {
+    } else if (isGesture && !tattooGestureActive && !isPinching) {
       if (tattooIsTattooing) {
         tattooIsTattooing = false;
         tattooStopBuzz();
