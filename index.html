@@ -3543,7 +3543,20 @@
       sec.classList.add('active');
       labsBackBtn.style.display = 'block';
       if (sectionId === 'section-facemesh') faceMeshInit();
-      if (sectionId === 'section-dj') { djInitUI(); }
+      if (sectionId === 'section-dj') {
+        djInitUI();
+        // Keep sending frames to hands model for skeleton tracking
+        if (!mediaCam && handsInstance) {
+          const sendHandFrames = () => {
+            if (!labsViewingSection || labsViewingSection !== 'section-dj') return;
+            if (handsInstance && video.srcObject) {
+              handsInstance.send({ image: video }).catch(() => {});
+            }
+            requestAnimationFrame(sendHandFrames);
+          };
+          sendHandFrames();
+        }
+      }
       if (sectionId === 'section-tattoo') tattooInit();
     }, 300);
   }
@@ -5522,7 +5535,8 @@
     const h = djHandCanvas.height = djHandCanvas.parentElement.clientHeight;
     djHandCtx.clearRect(0, 0, w, h);
 
-    if (!mouseMode && handPresent && handLandmarks) {
+    if (allHandLandmarks && allHandLandmarks.length > 0) {
+      const handLandmarks = allHandLandmarks[0];
       // Get bass energy for brightness
       let bassEnergy = 0;
       if (djPlaying && djAnalyser) {
