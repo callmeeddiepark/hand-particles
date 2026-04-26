@@ -277,6 +277,7 @@
   #djClubCanvas{position:absolute;inset:0;width:100%;height:100%;z-index:3;pointer-events:none}
   #djHandCanvas{position:absolute;inset:0;width:100%;height:100%;z-index:6;pointer-events:none}
   #section-dj{position:relative;overflow:hidden;min-height:100vh}
+  #djWipCanvas{position:absolute;inset:0;width:100%;height:100%;z-index:10;pointer-events:none}
   .dj-container{display:flex;flex-direction:column;align-items:center;padding:120px 16px 80px;max-width:540px;margin:0 auto;position:relative;z-index:5}
   .dj-tracklist{width:100%;overflow:hidden;margin-bottom:10px;border-top:1px solid rgba(0,212,255,0.1)}
   .dj-tracklist-title{font-family:'Space Mono',monospace;font-size:8px;letter-spacing:.25em;text-transform:uppercase;color:rgba(0,212,255,0.3);padding:6px 0 4px}
@@ -465,6 +466,7 @@
     <canvas id="faceMeshCanvas"></canvas>
   </div>
   <div id="section-dj">
+    <canvas id="djWipCanvas"></canvas>
     <div class="dj-club-overlay" id="djClubOverlay"></div>
     <canvas id="djClubCanvas"></canvas>
     <canvas id="djHandCanvas"></canvas>
@@ -3541,7 +3543,7 @@
       sec.classList.add('active');
       labsBackBtn.style.display = 'block';
       if (sectionId === 'section-facemesh') faceMeshInit();
-      if (sectionId === 'section-dj') djInitUI();
+      if (sectionId === 'section-dj') { djInitUI(); djWipInit(); }
       if (sectionId === 'section-tattoo') tattooInit();
     }, 300);
   }
@@ -4176,6 +4178,7 @@
     document.getElementById('section-tattoo').classList.remove('active');
     faceMeshStop();
     tattooStop();
+    djWipStop();
     if (djPlaying) djStop();
     // Restart hand tracking camera if not running
     if (!mediaCam) {
@@ -5182,6 +5185,144 @@
 
     // Gesture mode support: check for hand cursor position over knobs/jog
     // This is handled by the existing pinch-click system which dispatches click events
+  }
+
+  // === DJ WIP Pin Overlay ===
+  let djWipPins = [];
+  let djWipAnimId = null;
+  let djWipTime = 0;
+  const DJ_WIP_SPACING = 8;
+  const DJ_WIP_NEON = [
+    [57, 255, 20],
+    [50, 230, 18],
+    [65, 245, 25],
+    [45, 240, 15],
+    [70, 255, 30],
+  ];
+  const DJ_WIP_DARK = [
+    [8, 12, 6],
+    [10, 15, 8],
+    [6, 10, 5],
+  ];
+
+  function djWipBuildMask(cw, ch) {
+    const off = document.createElement('canvas');
+    off.width = cw;
+    off.height = ch;
+    const octx = off.getContext('2d');
+    octx.fillStyle = '#000';
+    octx.fillRect(0, 0, cw, ch);
+    octx.fillStyle = '#fff';
+    octx.textAlign = 'center';
+    octx.textBaseline = 'middle';
+    // Size the font to fit width
+    let fontSize = Math.floor(cw / 10);
+    if (fontSize < 20) fontSize = 20;
+    octx.font = 'bold ' + fontSize + 'px Syne, sans-serif';
+    // Measure and shrink if needed
+    let metrics = octx.measureText('WORK IN PROGRESS');
+    while (metrics.width > cw * 0.9 && fontSize > 10) {
+      fontSize -= 2;
+      octx.font = 'bold ' + fontSize + 'px Syne, sans-serif';
+      metrics = octx.measureText('WORK IN PROGRESS');
+    }
+    octx.fillText('WORK IN', cw / 2, ch / 2 - fontSize * 0.6);
+    octx.fillText('PROGRESS', cw / 2, ch / 2 + fontSize * 0.6);
+    return octx.getImageData(0, 0, cw, ch);
+  }
+
+  function djWipInit() {
+    const cvs = document.getElementById('djWipCanvas');
+    if (!cvs) return;
+    const section = document.getElementById('section-dj');
+    const cw = section.offsetWidth || window.innerWidth;
+    const ch = section.offsetHeight || window.innerHeight;
+    cvs.width = cw;
+    cvs.height = ch;
+    const mask = djWipBuildMask(cw, ch);
+    djWipPins = [];
+    const cols = Math.ceil(cw / DJ_WIP_SPACING) + 1;
+    const rows = Math.ceil(ch / DJ_WIP_SPACING) + 1;
+    const ox = (cw - (cols - 1) * DJ_WIP_SPACING) / 2;
+    const oy = (ch - (rows - 1) * DJ_WIP_SPACING) / 2;
+    for (let r = 0; r < rows; r++) {
+      for (let c = 0; c < cols; c++) {
+        const bx = ox + c * DJ_WIP_SPACING;
+        const by = oy + r * DJ_WIP_SPACING;
+        const px = Math.round(bx);
+        const py = Math.round(by);
+        let inText = false;
+        if (px >= 0 && px < cw && py >= 0 && py < ch) {
+          inText = mask.data[(py * cw + px) * 4] > 128;
+        }
+        if (inText) {
+          djWipPins.push({
+            bx, by, inText: true,
+            color: DJ_WIP_NEON[Math.floor(Math.random() * DJ_WIP_NEON.length)],
+            h: 1.0 + Math.random() * 0.8,
+            phase: Math.random() * Math.PI * 2,
+          });
+        } else {
+          djWipPins.push({
+            bx, by, inText: false,
+            color: DJ_WIP_DARK[Math.floor(Math.random() * DJ_WIP_DARK.length)],
+            h: 0.15 + Math.random() * 0.15,
+            phase: Math.random() * Math.PI * 2,
+          });
+        }
+      }
+    }
+    djWipTime = 0;
+    if (!djWipAnimId) djWipAnimate();
+  }
+
+  function djWipAnimate() {
+    const cvs = document.getElementById('djWipCanvas');
+    if (!cvs) { djWipAnimId = null; return; }
+    const ctx = cvs.getContext('2d');
+    const cw = cvs.width;
+    const ch = cvs.height;
+    ctx.clearRect(0, 0, cw, ch);
+    djWipTime += 0.016;
+    const rodBase = DJ_WIP_SPACING * 2;
+    for (let i = 0; i < djWipPins.length; i++) {
+      const p = djWipPins[i];
+      const sway = Math.sin(djWipTime * 1.5 + p.phase) * (p.inText ? 3 : 0.5);
+      const rodLen = rodBase * p.h;
+      const tipX = p.bx + sway;
+      const tipY = p.by - rodLen;
+      const r = p.color[0];
+      const g = p.color[1];
+      const b = p.color[2];
+      const alpha = p.inText ? 0.85 : 0.25;
+      ctx.beginPath();
+      ctx.moveTo(p.bx, p.by);
+      ctx.lineTo(tipX, tipY);
+      ctx.strokeStyle = 'rgba(' + r + ',' + g + ',' + b + ',' + alpha + ')';
+      ctx.lineWidth = p.inText ? 1.8 : 0.8;
+      ctx.stroke();
+      // Pin head
+      if (p.inText) {
+        ctx.beginPath();
+        ctx.arc(tipX, tipY, 1.4, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(' + r + ',' + g + ',' + b + ',1)';
+        ctx.fill();
+        // Subtle glow
+        ctx.beginPath();
+        ctx.arc(tipX, tipY, 3, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(' + r + ',' + g + ',' + b + ',0.15)';
+        ctx.fill();
+      }
+    }
+    djWipAnimId = requestAnimationFrame(djWipAnimate);
+  }
+
+  function djWipStop() {
+    if (djWipAnimId) {
+      cancelAnimationFrame(djWipAnimId);
+      djWipAnimId = null;
+    }
+    djWipPins = [];
   }
 
   // Club lighting
