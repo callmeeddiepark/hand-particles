@@ -524,6 +524,7 @@
     <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;z-index:0;pointer-events:none;overflow:hidden">
       <span style="font-family:'Syne',sans-serif;font-size:clamp(40px,8vw,120px);font-weight:900;color:#39ff14;letter-spacing:.15em;text-transform:uppercase;white-space:nowrap">WORK IN PROGRESS</span>
     </div>
+    <canvas id="tattooHandCanvas" style="position:absolute;inset:0;width:100%;height:100%;z-index:6;pointer-events:none"></canvas>
     <div class="tattoo-container">
       <div class="tattoo-canvas-wrap">
         <canvas id="tattooCanvas"></canvas>
@@ -3561,7 +3562,19 @@
         };
         sendDjHandFrames();
       }
-      if (sectionId === 'section-tattoo') tattooInit();
+      if (sectionId === 'section-tattoo') {
+        tattooInit();
+        if (!tattooHandAnimId) tattooDrawHandLoop();
+        // Keep sending frames to hands model for skeleton tracking
+        const sendTattooHandFrames = () => {
+          if (!labsViewingSection || labsViewingSection !== 'section-tattoo') return;
+          if (handsInstance && video.srcObject) {
+            handsInstance.send({ image: video }).catch(() => {});
+          }
+          requestAnimationFrame(sendTattooHandFrames);
+        };
+        sendTattooHandFrames();
+      }
     }, 300);
   }
 
@@ -6008,10 +6021,49 @@
     if (!tattooAnimId) tattooAnimate();
   }
 
+  let tattooHandAnimId = null;
+  function tattooDrawHandLoop() {
+    const sec = document.getElementById('section-tattoo');
+    if (!sec || !sec.classList.contains('active')) { tattooHandAnimId = null; return; }
+    const cvs = document.getElementById('tattooHandCanvas');
+    if (!cvs) { tattooHandAnimId = null; return; }
+    const ctx = cvs.getContext('2d');
+    cvs.width = cvs.parentElement.clientWidth;
+    cvs.height = cvs.parentElement.clientHeight;
+    ctx.clearRect(0, 0, cvs.width, cvs.height);
+    if (allHandLandmarks && allHandLandmarks.length > 0) {
+      const secRect = sec.getBoundingClientRect();
+      for (let hi = 0; hi < allHandLandmarks.length; hi++) {
+        const lm = allHandLandmarks[hi];
+        ctx.strokeStyle = 'rgba(57,255,20,0.9)';
+        ctx.lineWidth = 3;
+        for (const [a, b] of HAND_CONNECTIONS) {
+          if (!lm[a] || !lm[b]) continue;
+          ctx.beginPath();
+          ctx.moveTo((1 - lm[a].x) * window.innerWidth - secRect.left, lm[a].y * window.innerHeight - secRect.top);
+          ctx.lineTo((1 - lm[b].x) * window.innerWidth - secRect.left, lm[b].y * window.innerHeight - secRect.top);
+          ctx.stroke();
+        }
+        ctx.fillStyle = 'rgba(57,255,20,1)';
+        for (let i = 0; i < 21; i++) {
+          if (!lm[i]) continue;
+          ctx.beginPath();
+          ctx.arc((1 - lm[i].x) * window.innerWidth - secRect.left, lm[i].y * window.innerHeight - secRect.top, 4, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+    }
+    tattooHandAnimId = requestAnimationFrame(tattooDrawHandLoop);
+  }
+
   function tattooStop() {
     if (tattooAnimId) {
       cancelAnimationFrame(tattooAnimId);
       tattooAnimId = null;
+    }
+    if (tattooHandAnimId) {
+      cancelAnimationFrame(tattooHandAnimId);
+      tattooHandAnimId = null;
     }
     tattooStopBuzz();
     tattooIsTattooing = false;
