@@ -563,7 +563,7 @@
       <a href="tel:+821051184965" class="contact-value">+82-10-5118-4965</a>
     </div>
   </div>
-  <div style="position:fixed;bottom:0;left:0;right:0;z-index:10;display:flex;align-items:center;justify-content:center;gap:28px;padding-bottom:60px;pointer-events:none">
+  <div id="contactGestureGuide" style="position:fixed;bottom:0;left:0;right:0;z-index:10;display:flex;align-items:center;justify-content:center;gap:28px;padding-bottom:60px;pointer-events:none">
     <div style="display:flex;flex-direction:column;align-items:center;gap:8px">
       <div style="color:rgba(255,255,255,.45)"><svg width="24" height="28" viewBox="0 0 24 28" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1l-3 3m3-3l3 3"/><circle cx="12" cy="14" r="7"/><circle cx="12" cy="14" r="3" fill="currentColor" opacity="0.5"/><path d="M12 27l-3-3m3 3l3-3"/></svg></div>
       <div style="font-family:'Space Mono',monospace;font-size:13px;letter-spacing:.08em;color:rgba(255,255,255,.5)">핀치 + 드래그</div>
@@ -4155,6 +4155,9 @@
     contactPage.querySelectorAll('.nav-item').forEach(n => n.classList.toggle('active', n.dataset.page === 'contact'));
     // Ensure cursor matches current mode
     document.body.style.cursor = mouseMode ? 'default' : 'none';
+    // Show/hide gesture guide based on mode
+    const cgg = document.getElementById('contactGestureGuide');
+    if (cgg) cgg.style.display = mouseMode ? 'none' : 'flex';
     // Init scratch canvas
     initContactCanvas();
     contactLastScratchX = -1;
