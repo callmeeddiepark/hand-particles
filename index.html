@@ -3814,8 +3814,8 @@
       drawPill(labsCtx, labsPills[i], i);
     }
 
-    // 8. Draw hand skeleton for each detected hand
-    if (allHandLandmarks && allHandLandmarks.length > 0) {
+    // 8. Draw hand skeleton for each detected hand (gesture mode only)
+    if (!mouseMode && allHandLandmarks && allHandLandmarks.length > 0) {
       for (let hi = 0; hi < allHandLandmarks.length; hi++) {
         const lm = allHandLandmarks[hi];
         // Draw connections
