@@ -3670,11 +3670,11 @@
       }
     }
 
-    // 1. Draw face mesh as background
-    drawLabsFaceMesh(labsCtx, labsFaceLandmarks, w, h);
+    // 1. Draw face mesh as background (gesture mode only)
+    if (!mouseMode) drawLabsFaceMesh(labsCtx, labsFaceLandmarks, w, h);
 
-    // 2. Draw mouth indicator if face detected
-    const mouthPos = getMouthPos(labsFaceLandmarks, w, h);
+    // 2. Draw mouth indicator if face detected (gesture mode only)
+    const mouthPos = mouseMode ? null : getMouthPos(labsFaceLandmarks, w, h);
     if (mouthPos) {
       labsCtx.save();
       labsCtx.beginPath();
@@ -3878,7 +3878,7 @@
       labsCtx.font = "20px 'Space Mono', monospace";
       labsCtx.textAlign = 'center';
       labsCtx.fillStyle = 'rgba(255, 255, 255, 0.3)';
-      labsCtx.fillText(mouseMode ? 'Drag & Drop a pill into your mouth' : 'Drop a pill into your mouth', w / 2, h / 2);
+      labsCtx.fillText(mouseMode ? 'Double Click a pill' : 'Drop a pill into your mouth', w / 2, h / 2);
       labsCtx.restore();
     }
 
@@ -3893,23 +3893,8 @@
     if (pill.eaten) return;
 
     if (mouseMode) {
-      // In mouse mode: if face mesh detected, grab pill for dragging; otherwise open directly
-      if (labsFaceLandmarks) {
-        // Toggle grab — release starts falling
-        if (labsGrabbedPill === idx) {
-          pill.grabbed = false;
-          pill.falling = true;
-          pill.vy = 0;
-          labsGrabbedPill = -1;
-        } else {
-          if (labsGrabbedPill >= 0) labsPills[labsGrabbedPill].grabbed = false;
-          labsGrabbedPill = idx;
-          pill.grabbed = true;
-        }
-      } else {
-        // No face detected, fall back to direct open
-        openLabSection(pill.data.section);
-      }
+      // Mouse mode: direct open on click
+      openLabSection(pill.data.section);
     } else {
       // Gesture mode: pinch grab is handled in animateLabs
     }
@@ -3940,9 +3925,13 @@
     e.preventDefault();
   }, { passive: false });
 
-  // Mouse click on canvas
+  // Mouse double-click on canvas (mouse mode) / click (gesture mode)
+  labsCanvas.addEventListener('dblclick', (e) => {
+    if (!labsActive || labsViewingSection || !mouseMode) return;
+    handleOrbClick(e.clientX, e.clientY);
+  });
   labsCanvas.addEventListener('click', (e) => {
-    if (!labsActive || labsViewingSection) return;
+    if (!labsActive || labsViewingSection || mouseMode) return;
     handleOrbClick(e.clientX, e.clientY);
   });
 
