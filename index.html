@@ -5576,6 +5576,7 @@
     const w = djHandCanvas.width = djHandCanvas.parentElement.clientWidth;
     const h = djHandCanvas.height = djHandCanvas.parentElement.clientHeight;
     djHandCtx.clearRect(0, 0, w, h);
+    if (mouseMode) return;
 
     if (allHandLandmarks && allHandLandmarks.length > 0) {
       const handLandmarks = allHandLandmarks[0];
@@ -6056,7 +6057,7 @@
     cvs.width = cvs.parentElement.clientWidth;
     cvs.height = cvs.parentElement.clientHeight;
     ctx.clearRect(0, 0, cvs.width, cvs.height);
-    if (allHandLandmarks && allHandLandmarks.length > 0) {
+    if (!mouseMode && allHandLandmarks && allHandLandmarks.length > 0) {
       const secRect = sec.getBoundingClientRect();
       for (let hi = 0; hi < allHandLandmarks.length; hi++) {
         const lm = allHandLandmarks[hi];
