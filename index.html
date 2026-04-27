@@ -3866,7 +3866,14 @@
     }
 
     // 10. Show instructions
-    if (!labsFaceLandmarks) {
+    if (mouseMode) {
+      labsCtx.save();
+      labsCtx.font = "20px 'Space Mono', monospace";
+      labsCtx.textAlign = 'center';
+      labsCtx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+      labsCtx.fillText('Double Click a pill', w / 2, h / 2);
+      labsCtx.restore();
+    } else if (!labsFaceLandmarks) {
       labsCtx.save();
       labsCtx.font = "14px 'Space Mono', monospace";
       labsCtx.textAlign = 'center';
