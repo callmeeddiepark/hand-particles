@@ -3575,6 +3575,15 @@
       const sec = document.getElementById(sectionId);
       sec.classList.add('active');
       labsBackBtn.style.display = 'block';
+      if (sectionId === 'section-website') {
+        window.open('https://callmeeddiepark.github.io/directormarket_work/index.html#hero', '_blank');
+        // Reset pill view since we opened external link
+        labsViewingSection = null;
+        labsBackBtn.style.display = 'none';
+        labsCanvas.style.display = 'block';
+        sec.classList.remove('active');
+        return;
+      }
       if (sectionId === 'section-facemesh') faceMeshInit();
       if (sectionId === 'section-dj') {
         djInitUI();
