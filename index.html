@@ -227,9 +227,9 @@
   #page-about.active{display:block;opacity:1}
   canvas#aboutCanvas{position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none}
   .about-light{position:fixed;width:300px;height:300px;border-radius:50%;background:radial-gradient(circle,rgba(57,255,20,0.04) 0%,transparent 70%);pointer-events:none;z-index:0;transform:translate(-50%,-50%);transition:left .1s linear,top .1s linear;display:none}
-  #section-facemesh,#section-dj,#section-tattoo,#section-snipmark{display:none;position:relative;width:100%;height:100%}
-  #section-facemesh.active,#section-dj.active,#section-tattoo.active,#section-snipmark.active{display:block}
-  #section-facemesh.active,#section-dj.active,#section-tattoo.active,#section-snipmark.active{overflow-y:auto}
+  #section-facemesh,#section-dj,#section-tattoo,#section-snipmark,#section-website{display:none;position:relative;width:100%;height:100%}
+  #section-facemesh.active,#section-dj.active,#section-tattoo.active,#section-snipmark.active,#section-website.active{display:block}
+  #section-facemesh.active,#section-dj.active,#section-tattoo.active,#section-snipmark.active,#section-website.active{overflow-y:auto}
   #section-facemesh{background:#000}
   #faceMeshCanvas{position:absolute;inset:0;width:100%;height:100%;z-index:1}
   .labs-back-btn{position:fixed;top:70px;left:10%;z-index:10;padding:10px 24px;background:transparent;border:1px solid rgba(255,255,255,0.5);color:#fff;font-family:'Space Mono',monospace;font-size:11px;letter-spacing:.15em;text-transform:uppercase;cursor:pointer;transition:all .3s ease;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
@@ -548,6 +548,12 @@
   <div id="section-snipmark">
     <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;z-index:0;pointer-events:none;overflow:hidden">
       <span style="font-family:'Syne',sans-serif;font-size:clamp(40px,8vw,120px);font-weight:900;color:#39ff14;letter-spacing:.15em;text-transform:uppercase;white-space:nowrap">WORK IN PROGRESS</span>
+    </div>
+  </div>
+  <div id="section-website">
+    <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:0;pointer-events:none;overflow:hidden">
+      <span style="font-family:'Syne',sans-serif;font-size:clamp(60px,12vw,180px);font-weight:900;color:rgba(57,255,20,0.3);letter-spacing:.1em;text-transform:uppercase;white-space:nowrap">WORK IN</span>
+      <span style="font-family:'Syne',sans-serif;font-size:clamp(60px,12vw,180px);font-weight:900;color:rgba(57,255,20,0.3);letter-spacing:.1em;text-transform:uppercase;white-space:nowrap">PROGRESS</span>
     </div>
   </div>
 </div>
@@ -3229,6 +3235,7 @@
     { label: 'DJ', section: 'section-dj', color: [255, 60, 100] },
     { label: 'Tattoo', section: 'section-tattoo', color: [100, 60, 255] },
     { label: '스닙마크', section: 'section-snipmark', color: [255, 200, 50] },
+    { label: '웹사이트', section: 'section-website', color: [60, 200, 255] },
   ];
   let labsPills = [];           // runtime pill objects
   let labsDots = [];             // white dot grid for face repulsion
@@ -4226,6 +4233,7 @@
     document.getElementById('section-dj').classList.remove('active');
     document.getElementById('section-tattoo').classList.remove('active');
     document.getElementById('section-snipmark').classList.remove('active');
+    document.getElementById('section-website').classList.remove('active');
     faceMeshStop();
     tattooStop();
 
