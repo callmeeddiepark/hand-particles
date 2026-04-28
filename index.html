@@ -3279,9 +3279,10 @@
     labsPills = LAB_PILLS.map((data, i) => {
       // Scatter pills at different positions
       const positions = [
-        { x: w * 0.2, y: h * 0.3 },
-        { x: w * 0.75, y: h * 0.25 },
-        { x: w * 0.5, y: h * 0.7 },
+        { x: w * 0.2, y: h * 0.3 },   // DJ - left
+        { x: w * 0.8, y: h * 0.3 },   // Tattoo - right
+        { x: w * 0.15, y: h * 0.65 }, // 스닙마크 - bottom left
+        { x: w * 0.85, y: h * 0.65 }, // 웹사이트 - bottom right
       ];
       const pos = positions[i] || { x: w * 0.5, y: h * 0.5 };
       return {
