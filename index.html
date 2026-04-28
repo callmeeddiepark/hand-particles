@@ -2873,6 +2873,8 @@
       if (navPos >= 0) currentNavIdx = navPos;
     }
     updateModalContent(p);
+    // Hide hand canvas (skeleton, fingertip images, floating box)
+    pfHandCanvas.style.display = 'none';
     // Enable mouse cursor in modal
     document.body.style.cursor = 'default';
     const ox = originX !== undefined ? originX : window.innerWidth / 2;
@@ -2961,6 +2963,8 @@
         const modalVideo = document.getElementById('modalVideo');
         modalVideo.innerHTML = '';
         document.body.style.cursor = mouseMode ? 'default' : 'none';
+        // Show hand canvas again
+        if (portfolioActive) pfHandCanvas.style.display = 'block';
         modalCloseAnimId = null;
       }
     }
