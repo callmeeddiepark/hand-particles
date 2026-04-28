@@ -2444,6 +2444,7 @@
 
   function drawTarget(ctx) {
     if (targetCooldown > 0) return;
+    if (projectModal.classList.contains('active')) return;
     const hw = TARGET_W / 2, hh = TARGET_H / 2;
     const now = performance.now();
 
@@ -2526,7 +2527,8 @@
           }
         }
 
-        // Determine left/right hand by wrist screen position
+        // Determine left/right hand by wrist screen position (skip fingertip images when modal open)
+        if (!projectModal.classList.contains('active')) {
         const wristScreenX = (1 - pfSmooth[hi][0].x) * w;
         const isLeftHand = wristScreenX < w / 2;
         const handMap = isLeftHand ? FINGER_MAP[0] : FINGER_MAP[1];
@@ -2554,6 +2556,7 @@
             }
           }
         }
+        } // end modal check
       }
       // Clear smooth data for hands no longer present
       for (let hi = allHandLandmarks.length; hi < 2; hi++) {
@@ -2873,8 +2876,6 @@
       if (navPos >= 0) currentNavIdx = navPos;
     }
     updateModalContent(p);
-    // Hide hand canvas (skeleton, fingertip images, floating box)
-    pfHandCanvas.style.display = 'none';
     // Enable mouse cursor in modal
     document.body.style.cursor = 'default';
     const ox = originX !== undefined ? originX : window.innerWidth / 2;
@@ -2963,8 +2964,6 @@
         const modalVideo = document.getElementById('modalVideo');
         modalVideo.innerHTML = '';
         document.body.style.cursor = mouseMode ? 'default' : 'none';
-        // Show hand canvas again
-        if (portfolioActive) pfHandCanvas.style.display = 'block';
         modalCloseAnimId = null;
       }
     }
