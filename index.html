@@ -3236,6 +3236,7 @@
     { label: 'Tattoo', section: 'section-tattoo', color: [100, 60, 255] },
     { label: '스닙마크', section: 'section-snipmark', color: [255, 200, 50] },
     { label: '웹사이트', section: 'section-website', color: [60, 200, 255] },
+    { label: 'Resume', section: 'section-resume', color: [200, 100, 255] },
   ];
   let labsPills = [];           // runtime pill objects
   let labsDots = [];             // white dot grid for face repulsion
@@ -3283,6 +3284,7 @@
         { x: w * 0.8, y: h * 0.3 },   // Tattoo - right
         { x: w * 0.15, y: h * 0.65 }, // 스닙마크 - bottom left
         { x: w * 0.85, y: h * 0.65 }, // 웹사이트 - bottom right
+        { x: w * 0.5, y: h * 0.8 },   // Resume - bottom center
       ];
       const pos = positions[i] || { x: w * 0.5, y: h * 0.5 };
       return {
@@ -3575,6 +3577,14 @@
       const sec = document.getElementById(sectionId);
       sec.classList.add('active');
       labsBackBtn.style.display = 'block';
+      if (sectionId === 'section-resume') {
+        window.open('https://callmeeddiepark.github.io/resume/', '_blank');
+        labsViewingSection = null;
+        labsBackBtn.style.display = 'none';
+        labsCanvas.style.display = 'block';
+        sec.classList.remove('active');
+        return;
+      }
       if (sectionId === 'section-snipmark') {
         window.open('https://apps.apple.com/kr/app/%EC%8A%A4%EB%8B%99%EB%A7%88%ED%81%AC/id6761728141?mt=12', '_blank');
         labsViewingSection = null;
