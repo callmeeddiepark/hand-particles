@@ -3575,6 +3575,14 @@
       const sec = document.getElementById(sectionId);
       sec.classList.add('active');
       labsBackBtn.style.display = 'block';
+      if (sectionId === 'section-snipmark') {
+        window.open('https://apps.apple.com/kr/app/%EC%8A%A4%EB%8B%99%EB%A7%88%ED%81%AC/id6761728141?mt=12', '_blank');
+        labsViewingSection = null;
+        labsBackBtn.style.display = 'none';
+        labsCanvas.style.display = 'block';
+        sec.classList.remove('active');
+        return;
+      }
       if (sectionId === 'section-website') {
         window.open('https://callmeeddiepark.github.io/directormarket_work/index.html#hero', '_blank');
         // Reset pill view since we opened external link
