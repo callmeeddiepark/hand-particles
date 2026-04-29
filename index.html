@@ -2038,8 +2038,6 @@
         // Only call showLanding if we're already past the scan page and on a sub-page
         if (portfolioActive || labsActive || contactActive || aboutActive) {
           showLanding();
-        } else if (location.hash !== '#home') {
-          location.hash = '#home';
         }
         break;
     }
