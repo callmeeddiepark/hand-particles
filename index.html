@@ -2047,8 +2047,8 @@
     navigateToHash();
   });
 
-  // === Skip Scan on Revisit ===
-  if (localStorage.getItem('cameraApproved')) {
+  // === Skip Scan on Revisit (only if hash is present) ===
+  if (localStorage.getItem('cameraApproved') && location.hash && location.hash !== '#' && location.hash !== '#home') {
     // Returning visitor: skip scan page, go directly to content
     pageAttention.style.display = 'none';
     pageAttention.classList.add('exit');
