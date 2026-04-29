@@ -3310,7 +3310,7 @@
   function initLabsDots() {
     const w = labsCanvas.width;
     const h = labsCanvas.height;
-    const spacing = 15;
+    const spacing = 20;
     labsDots = [];
     for (let gx = 0; gx <= w; gx += spacing) {
       for (let gy = 0; gy <= h; gy += spacing) {
@@ -3456,38 +3456,7 @@
       ctx.arc(x, y, radius, 0, Math.PI * 2);
       ctx.fill();
     }
-    // Draw interpolated midpoints between tessellation edges (doubles dot count)
-    const tess2 = FACEMESH_TESSELATION;
-    for (let i = 0; i < tess2.length; i++) {
-      const [a, b] = tess2[i];
-      const pA = landmarks[a];
-      const pB = landmarks[b];
-      if (!pA || !pB) continue;
-      const mx = (1 - (pA.x + pB.x) / 2) * w;
-      const my = ((pA.y + pB.y) / 2) * h;
-      const mz = ((pA.z || 0) + (pB.z || 0)) / 2;
-      const mlevel = Math.floor(((maxZ - mz) / zRange) * 19.99);
-      const mr = 0.8 + mlevel * 0.1;
-      const ma = 0.1 + mlevel * 0.05;
-      ctx.fillStyle = `rgba(57, 255, 20, ${ma})`;
-      ctx.beginPath();
-      ctx.arc(mx, my, mr, 0, Math.PI * 2);
-      ctx.fill();
-    }
-    // Draw tessellation lines faintly
-    ctx.strokeStyle = 'rgba(57, 255, 20, 0.08)';
-    ctx.lineWidth = 0.5;
-    const tess = FACEMESH_TESSELATION;
-    for (let i = 0; i < tess.length; i++) {
-      const [a, b] = tess[i];
-      const pA = landmarks[a];
-      const pB = landmarks[b];
-      if (!pA || !pB) continue;
-      ctx.beginPath();
-      ctx.moveTo((1 - pA.x) * w, pA.y * h);
-      ctx.lineTo((1 - pB.x) * w, pB.y * h);
-      ctx.stroke();
-    }
+    // Tessellation lines removed for performance
   }
 
   function getMouthPos(landmarks, w, h) {
@@ -3523,9 +3492,9 @@
         });
         labsFaceMeshInstance.setOptions({
           maxNumFaces: 1,
-          refineLandmarks: true,
-          minDetectionConfidence: 0.5,
-          minTrackingConfidence: 0.5
+          refineLandmarks: false,
+          minDetectionConfidence: 0.4,
+          minTrackingConfidence: 0.4
         });
         labsFaceMeshInstance.onResults((results) => {
           if (results.multiFaceLandmarks && results.multiFaceLandmarks.length > 0) {
@@ -3548,8 +3517,9 @@
         const sendFrame = async () => {
           if (!labsFaceMeshRunning || !labsFaceMeshInstance) return;
           try {
-            await labsFaceMeshInstance.send({ image: video });
-            if (handsInstance) await handsInstance.send({ image: video });
+            const promises = [labsFaceMeshInstance.send({ image: video })];
+            if (handsInstance) promises.push(handsInstance.send({ image: video }));
+            await Promise.all(promises);
           } catch (e) { /* ignore frame errors */ }
           if (labsFaceMeshRunning) {
             labsFaceMeshCam = requestAnimationFrame(sendFrame);
@@ -3667,7 +3637,7 @@
       const repulseStrength = 4;
       const facePoints = [];
       if (labsFaceLandmarks) {
-        for (let i = 0; i < labsFaceLandmarks.length; i += 10) {
+        for (let i = 0; i < labsFaceLandmarks.length; i += 15) {
           const lm = labsFaceLandmarks[i];
           facePoints.push({ x: (1 - lm.x) * w, y: lm.y * h });
         }
