@@ -4299,6 +4299,8 @@
     }
 
     // Meteor trail following hand tracking
+    // (Mouse-mode trail points are pushed from the mousemove handler with
+    //  coalesced events, so we only sample here when hands are active.)
     if (allHandLandmarks && allHandLandmarks.length > 0) {
       for (let hi = 0; hi < allHandLandmarks.length; hi++) {
         const lm = allHandLandmarks[hi];
@@ -4307,34 +4309,65 @@
         const ty = lm[8].y * ah;
         aboutMeteorTrail.push({ x: tx, y: ty, t: performance.now(), alpha: 1 });
       }
-    } else if (aMouseX > 0) {
-      // Mouse fallback
-      aboutMeteorTrail.push({ x: aMouseX, y: aMouseY, t: performance.now(), alpha: 1 });
     }
 
-    // Draw meteor trail (smooth white)
+    // Draw meteor trail — smoothed via Catmull-Rom-style averaging + Bezier curves
     const now = performance.now();
     aboutMeteorTrail = aboutMeteorTrail.filter(p => now - p.t < 1200);
-    if (aboutMeteorTrail.length > 2) {
+
+    // Compute smoothed positions: weighted moving average over 5-point window
+    // This rounds out sharp corners caused by sudden direction changes.
+    const trail = aboutMeteorTrail;
+    if (trail.length >= 3) {
+      const smoothed = new Array(trail.length);
+      for (let i = 0; i < trail.length; i++) {
+        const i0 = Math.max(0, i - 2);
+        const i1 = Math.max(0, i - 1);
+        const i2 = i;
+        const i3 = Math.min(trail.length - 1, i + 1);
+        const i4 = Math.min(trail.length - 1, i + 2);
+        const sx = trail[i0].x * 0.1 + trail[i1].x * 0.2 + trail[i2].x * 0.4 + trail[i3].x * 0.2 + trail[i4].x * 0.1;
+        const sy = trail[i0].y * 0.1 + trail[i1].y * 0.2 + trail[i2].y * 0.4 + trail[i3].y * 0.2 + trail[i4].y * 0.1;
+        smoothed[i] = { x: sx, y: sy, t: trail[i].t };
+      }
+
       aboutCtx.lineCap = 'round';
       aboutCtx.lineJoin = 'round';
-      for (let i = 1; i < aboutMeteorTrail.length; i++) {
-        const a = aboutMeteorTrail[i - 1];
-        const b = aboutMeteorTrail[i];
+      // Draw cubic-style curve using quadratic through midpoints on smoothed path
+      for (let i = 1; i < smoothed.length - 1; i++) {
+        const a = smoothed[i - 1];
+        const b = smoothed[i];
+        const c = smoothed[i + 1];
         const age = (now - b.t) / 1200;
         const alpha = (1 - age) * 0.5;
         const width = (1 - age) * 2.5;
+        const m1x = (a.x + b.x) / 2, m1y = (a.y + b.y) / 2;
+        const m2x = (b.x + c.x) / 2, m2y = (b.y + c.y) / 2;
         aboutCtx.beginPath();
-        aboutCtx.moveTo(a.x, a.y);
-        aboutCtx.lineTo(b.x, b.y);
+        aboutCtx.moveTo(m1x, m1y);
+        aboutCtx.quadraticCurveTo(b.x, b.y, m2x, m2y);
         aboutCtx.strokeStyle = `rgba(255,255,255,${alpha})`;
         aboutCtx.lineWidth = width;
         aboutCtx.stroke();
       }
+      // Replace trail head used by glow with smoothed last point
+      aboutMeteorTrail._smoothedHead = smoothed[smoothed.length - 1];
+    } else if (trail.length === 2) {
+      const a = trail[0];
+      const b = trail[1];
+      const age = (now - b.t) / 1200;
+      aboutCtx.lineCap = 'round';
+      aboutCtx.beginPath();
+      aboutCtx.moveTo(a.x, a.y);
+      aboutCtx.lineTo(b.x, b.y);
+      aboutCtx.strokeStyle = `rgba(255,255,255,${(1 - age) * 0.5})`;
+      aboutCtx.lineWidth = (1 - age) * 2.5;
+      aboutCtx.stroke();
+      aboutMeteorTrail._smoothedHead = b;
     }
-    // Meteor head glow (white)
+    // Meteor head glow (white) — uses smoothed head position when available
     if (aboutMeteorTrail.length > 0) {
-      const head = aboutMeteorTrail[aboutMeteorTrail.length - 1];
+      const head = aboutMeteorTrail._smoothedHead || aboutMeteorTrail[aboutMeteorTrail.length - 1];
       const grad = aboutCtx.createRadialGradient(head.x, head.y, 0, head.x, head.y, 20);
       grad.addColorStop(0, 'rgba(255,255,255,0.25)');
       grad.addColorStop(1, 'rgba(255,255,255,0)');
@@ -4347,13 +4380,28 @@
     aBgAnimId = requestAnimationFrame(animateAboutBg);
   }
 
-  // About mouse tracking
+  // About mouse tracking — sample sub-frame movement via coalesced events
   aboutPage.addEventListener('mousemove', (e) => {
     if (!aboutActive) return;
     aMouseX = e.clientX; aMouseY = e.clientY;
     aboutLight.style.display = 'block';
     aboutLight.style.left = e.clientX + 'px';
     aboutLight.style.top = e.clientY + 'px';
+    if (mouseMode && !allHandLandmarks) {
+      const events = (typeof e.getCoalescedEvents === 'function') ? e.getCoalescedEvents() : [e];
+      const tNow = performance.now();
+      for (const ev of events) {
+        const last = aboutMeteorTrail[aboutMeteorTrail.length - 1];
+        // Skip near-duplicate points to keep the smoothing stable
+        if (!last || Math.hypot(ev.clientX - last.x, ev.clientY - last.y) > 2) {
+          aboutMeteorTrail.push({ x: ev.clientX, y: ev.clientY, t: tNow, alpha: 1 });
+        }
+      }
+      // Cap trail length to avoid runaway buildup on fast scribbles
+      if (aboutMeteorTrail.length > 200) {
+        aboutMeteorTrail.splice(0, aboutMeteorTrail.length - 200);
+      }
+    }
   });
   aboutPage.addEventListener('mouseleave', () => {
     aboutLight.style.display = 'none';
