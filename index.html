@@ -721,6 +721,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1675469240/hands.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh@0.4.1633559619/face_mesh.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils@0.3.1675466862/camera_utils.js"></script>
+<script src="tracking-bridge.js?v=5"></script>
 <script>
 (() => {
   const pageAttention = document.getElementById('page-attention');
@@ -1510,21 +1511,17 @@
     }
   }
 
-  // === MediaPipe Init ===
-  let handsInstance = null;
+  // === MediaPipe Init (via Tracking bridge) ===
+  let handsInstance = null; // kept for legacy ?legacy=1 path compatibility
   async function initCamera() {
-    if (typeof Hands === 'undefined' || typeof Camera === 'undefined') throw new Error('MediaPipe failed to load.');
-    if (!handsInstance) {
-      handsInstance = new Hands({ locateFile: f => `https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1675469240/${f}` });
-      handsInstance.setOptions({ maxNumHands: 2, modelComplexity: 1, minDetectionConfidence: 0.7, minTrackingConfidence: 0.5 });
-      handsInstance.onResults(onResults);
-    }
-
     mediaStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user', width: 1280, height: 720 } });
     video.srcObject = mediaStream; await video.play(); video.classList.add('visible');
 
-    mediaCam = new Camera(video, { onFrame: async () => { await handsInstance.send({ image: video }); }, width: 1280, height: 720 });
-    mediaCam.start();
+    await Tracking.attachHands(
+      { maxNumHands: 2, modelComplexity: 1, minDetectionConfidence: 0.7, minTrackingConfidence: 0.5 },
+      onResults
+    );
+    Tracking.bindVideo(video);
     statusText.textContent = 'Searching';
   }
 
@@ -2078,8 +2075,9 @@
   function switchToMouseMode() {
     mouseMode = true;
 
-    // Stop camera
+    // Stop camera + bridge frame loop
     if (mediaCam) { mediaCam.stop(); mediaCam = null; }
+    if (window.Tracking) Tracking.unbindVideo();
     if (mediaStream) {
       mediaStream.getTracks().forEach(t => t.stop());
       mediaStream = null;
@@ -3030,7 +3028,7 @@
     const guideText = document.getElementById('portfolioGuideText');
     if (guideText) guideText.textContent = mouseMode ? 'Click the floating square' : 'Place your fingers on the floating square';
     // Restart camera if in mouse mode (camera was stopped)
-    if (mouseMode && !mediaCam) {
+    if (mouseMode && !video.srcObject) {
       initCamera().catch(err => console.warn('Camera restart failed:', err));
     }
     if (!pfHandAnimId) animatePortfolioHands();
@@ -3478,63 +3476,35 @@
     video.style.opacity = '0';
     video.style.pointerEvents = 'none';
 
-    const startFM = async () => {
-      // Ensure video stream
+    (async () => {
       if (!video.srcObject) {
         mediaStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user', width: 1280, height: 720 } });
         video.srcObject = mediaStream;
         await video.play();
       }
 
-      if (!labsFaceMeshInstance && typeof FaceMesh !== 'undefined') {
-        labsFaceMeshInstance = new FaceMesh({
-          locateFile: f => `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh@0.4.1633559619/${f}`
-        });
-        labsFaceMeshInstance.setOptions({
-          maxNumFaces: 1,
-          refineLandmarks: false,
-          minDetectionConfidence: 0.4,
-          minTrackingConfidence: 0.4
-        });
-        labsFaceMeshInstance.onResults((results) => {
+      await Tracking.attachHands(
+        { maxNumHands: 2, modelComplexity: 1, minDetectionConfidence: 0.7, minTrackingConfidence: 0.5 },
+        onResults
+      );
+      await Tracking.attachFace(
+        { maxNumFaces: 1, refineLandmarks: false, minDetectionConfidence: 0.4, minTrackingConfidence: 0.4 },
+        (results) => {
           if (results.multiFaceLandmarks && results.multiFaceLandmarks.length > 0) {
             labsFaceLandmarks = results.multiFaceLandmarks[0];
           } else {
             labsFaceLandmarks = null;
           }
-        });
-      }
-
-      // Initialize hands model if not yet created
-      if (!handsInstance && typeof Hands !== 'undefined') {
-        handsInstance = new Hands({ locateFile: f => `https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1675469240/${f}` });
-        handsInstance.setOptions({ maxNumHands: 2, modelComplexity: 1, minDetectionConfidence: 0.7, minTrackingConfidence: 0.5 });
-        handsInstance.onResults(onResults);
-      }
-
-      // Send frames to face mesh AND hands on a timer
-      if (labsFaceMeshInstance) {
-        const sendFrame = async () => {
-          if (!labsFaceMeshRunning || !labsFaceMeshInstance) return;
-          try {
-            const promises = [labsFaceMeshInstance.send({ image: video })];
-            if (handsInstance) promises.push(handsInstance.send({ image: video }));
-            await Promise.all(promises);
-          } catch (e) { /* ignore frame errors */ }
-          if (labsFaceMeshRunning) {
-            labsFaceMeshCam = requestAnimationFrame(sendFrame);
-          }
-        };
-        sendFrame();
-      }
-    };
-
-    startFM().catch(e => console.error('Labs Face Mesh init error:', e));
+        }
+      );
+      Tracking.bindVideo(video);
+    })().catch(e => console.error('Labs Face Mesh init error:', e));
   }
 
   function stopLabsFaceMesh() {
     labsFaceMeshRunning = false;
     if (labsFaceMeshCam) { cancelAnimationFrame(labsFaceMeshCam); labsFaceMeshCam = null; }
+    Tracking.detachFace();
     labsFaceLandmarks = null;
   }
 
@@ -4238,7 +4208,7 @@
 
     if (djPlaying) djStop();
     // Restart hand tracking camera if not running
-    if (!mediaCam) {
+    if (!video.srcObject) {
       initCamera().catch(err => console.warn('Camera restart failed:', err));
     }
     // Init pills and start labs face mesh
@@ -4594,49 +4564,21 @@
     video.style.opacity = '0';
     video.style.pointerEvents = 'none';
 
-    // Ensure camera stream is available
-    const startFM = async () => {
-      // Stop existing hands camera to avoid conflicts
-      if (mediaCam) { mediaCam.stop(); mediaCam = null; }
-
-      // If no stream, get one
+    (async () => {
       if (!video.srcObject) {
         mediaStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user', width: 1280, height: 720 } });
         video.srcObject = mediaStream;
         await video.play();
       }
 
-      if (!faceMeshInstance && typeof FaceMesh !== 'undefined') {
-        faceMeshInstance = new FaceMesh({
-          locateFile: f => `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh@0.4.1633559619/${f}`
-        });
-        faceMeshInstance.setOptions({
-          maxNumFaces: 1,
-          refineLandmarks: true,
-          minDetectionConfidence: 0.5,
-          minTrackingConfidence: 0.5
-        });
-        faceMeshInstance.onResults(onFaceMeshResults);
-      }
-
-      // Start sending frames
-      if (faceMeshInstance) {
-        faceMeshCam = new Camera(video, {
-          onFrame: async () => {
-            if (faceMeshRunning && faceMeshInstance) {
-              await faceMeshInstance.send({ image: video });
-            }
-          },
-          width: 1280,
-          height: 720
-        });
-        faceMeshCam.start();
-      }
+      await Tracking.attachFace(
+        { maxNumFaces: 1, refineLandmarks: true, minDetectionConfidence: 0.5, minTrackingConfidence: 0.5 },
+        onFaceMeshResults
+      );
+      Tracking.bindVideo(video);
 
       if (!faceMeshAnimId) animateFaceMesh();
-    };
-
-    startFM().catch(e => console.error('Face Mesh init error:', e));
+    })().catch(e => console.error('Face Mesh init error:', e));
   }
 
   function onFaceMeshResults(results) {
@@ -4712,6 +4654,7 @@
     faceMeshRunning = false;
     if (faceMeshCam) { faceMeshCam.stop(); faceMeshCam = null; }
     if (faceMeshAnimId) { cancelAnimationFrame(faceMeshAnimId); faceMeshAnimId = null; }
+    Tracking.detachFace();
     faceMeshLandmarks = null;
     // Don't hide video here — labs pill view may still need it for face mesh
   }
